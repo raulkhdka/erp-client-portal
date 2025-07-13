@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // Import BelongsTo
+use Illuminate\Database\Eloquent\Relations\HasMany;   // Import HasMany
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Services\ClientCacheService;
 
 class Client extends Model
@@ -60,10 +63,10 @@ class Client extends Model
         return $this->hasMany(ClientDocument::class);
     }
 
-    public function newDocuments()
-    {
-        return $this->hasMany(Document::class);
-    }
+    // public function newDocuments()
+    // {
+    //     return $this->hasMany(Document::class);
+    // }
 
     public function clientServices()
     {
@@ -85,13 +88,13 @@ class Client extends Model
         return $this->hasMany(DynamicFormResponse::class);
     }
 
-    public function accessibleEmployees()
-    {
-        return $this->belongsToMany(Employee::class, 'client_employee_accesses')
-                    ->using(ClientEmployeeAccess::class)
-                    ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
-                    ->withTimestamps();
-    }
+    // public function accessibleEmployees()
+    // {
+    //     return $this->belongsToMany(Employee::class, 'client_employee_accesses')
+    //                 ->using(ClientEmployeeAccess::class)
+    //                 ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
+    //                 ->withTimestamps();
+    // }
 
     public function assignedEmployees()
     {
@@ -103,7 +106,8 @@ class Client extends Model
 
     public function services()
     {
-        return $this->belongsToMany(Service::class, 'client_services')
+        return $this->belongsToMany(Service::class, 'client_services', 'client_id', 'service_id')
+                    ->withPivot('status', 'description', 'created_at')
                     ->withTimestamps();
     }
 

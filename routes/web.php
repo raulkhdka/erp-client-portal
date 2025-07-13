@@ -2,17 +2,38 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\LoginController; // Assuming this is your login controller
+
+// Dashboard Controllers
 use App\Http\Controllers\DashboardController;
+
+// Admin/Shared Controllers
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DynamicFormController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CallLogController;
 use App\Http\Controllers\TaskController;
-use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentController; // For admin/employee general document management
 use App\Http\Controllers\DocumentCategoryController;
-use App\Http\Controllers\ClientServiceController;
+use App\Http\Controllers\ClientServiceController; // For managing client-service assignments by admin/employee
+
+// Client-specific Controllers (Make sure these exist!)
+use App\Http\Controllers\ClientServicesController;
+use App\Http\Controllers\ClientEmployeesController;
+use App\Http\Controllers\ClientDocumentController; // Specific controller for client's own documents
+use App\Http\Controllers\ClientFormController;     // Specific controller for client's forms
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
 
 // CSRF Token refresh route
 Route::get('/csrf-token', function() {
@@ -33,51 +54,78 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Dashboard Routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/', [DashboardController::class, 'adminDashboard'])->name('dashboard');
-    Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
-    Route::get('/employee/dashboard', [DashboardController::class, 'employeeDashboard'])->name('employee.dashboard');
-    Route::get('/client/dashboard', [DashboardController::class, 'clientDashboard'])->name('client.dashboard');
-});
-
-// Admin Routes
-Route::middleware(['auth'])->group(function () {
-    Route::resource('clients', ClientController::class);
-    Route::resource('employees', EmployeeController::class);
-    Route::resource('dynamic-forms', DynamicFormController::class);
-    Route::resource('services', ServiceController::class);
-    Route::resource('call-logs', CallLogController::class);
-    Route::resource('tasks', TaskController::class);
-    // Route::post('/services/quick-add', [ServiceController::class, 'quickAdd'])->name('services.quickAdd');
-
-    // Task-specific routes
-    Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('tasks.my-tasks');
-
-    // Client-specific routes
-    Route::get('/clients/{client}/manage-access', [ClientController::class, 'manageAccess'])->name('clients.manage-access');
-
-    // Service-specific routes
-    Route::patch('/services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
-
-    // Call log specific routes
-    Route::patch('/call-logs/{call_log}/status', [CallLogController::class, 'updateStatus'])->name('call-logs.update-status');
-    Route::get('/call-logs/client/{client}/contacts', [CallLogController::class, 'getClientContacts'])->name('call-logs.client-contacts');
-
-    // Document routes
-    Route::resource('documents', DocumentController::class);
-    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
-    Route::get('/documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
-    Route::get('/documents/{document}/manage-access', [DocumentController::class, 'manageAccess'])->name('documents.manage-access');
-    Route::patch('/documents/{document}/access', [DocumentController::class, 'updateAccess'])->name('documents.update-access');
-
-    // Document category routes
-    Route::resource('document-categories', DocumentCategoryController::class);
-
-    // Client Service routes
-    Route::resource('client-services', ClientServiceController::class);
-});
-
-// Public Dynamic Form Routes (for clients to fill)
+// Public Dynamic Form Routes (for clients to fill without being logged in if needed)
+// Keep these outside the 'auth' middleware if anonymous submission is allowed
 Route::get('/forms/{form}', [DynamicFormController::class, 'showPublicForm'])->name('dynamic-forms.public');
 Route::post('/forms/{form}/submit', [DynamicFormController::class, 'submitPublicForm'])->name('dynamic-forms.submit');
+
+
+// Authenticated Routes - All routes below this require authentication
+Route::middleware(['auth'])->group(function () {
+
+    // Dashboard redirection for all authenticated users
+    Route::get('/', [DashboardController::class, 'redirectBasedOnRole'])->name('dashboard');
+
+    // --- Admin Routes ---
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
+
+        // Resources for Admin
+        Route::resource('clients', ClientController::class);
+        Route::resource('employees', EmployeeController::class);
+        Route::resource('dynamic-forms', DynamicFormController::class);
+        Route::resource('services', ServiceController::class);
+        Route::resource('call-logs', CallLogController::class);
+        Route::resource('tasks', TaskController::class);
+        Route::resource('documents', DocumentController::class); // Admin's comprehensive document management
+        Route::resource('document-categories', DocumentCategoryController::class);
+        Route::resource('client-services', ClientServiceController::class); // Admin managing client-service pivot
+
+        // Admin-specific routes
+        Route::get('/clients/{client}/manage-access', [ClientController::class, 'manageAccess'])->name('clients.manage-access');
+        Route::patch('/services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
+        Route::patch('/call-logs/{call_log}/status', [CallLogController::class, 'updateStatus'])->name('call-logs.update-status');
+        Route::get('/call-logs/client/{client}/contacts', [CallLogController::class, 'getClientContacts'])->name('call-logs.client-contacts');
+        Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+        Route::get('/documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
+        Route::get('/documents/{document}/manage-access', [DocumentController::class, 'manageAccess'])->name('documents.manage-access');
+        Route::patch('/documents/{document}/access', [DocumentController::class, 'updateAccess'])->name('documents.update-access');
+    });
+
+    // --- Employee Routes ---
+    Route::middleware(['role:employee'])->group(function () {
+        Route::get('/employee/dashboard', [DashboardController::class, 'employeeDashboard'])->name('employee.dashboard');
+
+        // Employee-specific tasks/logs
+        Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('tasks.my-tasks'); // Shared route name, ensure logic handles employee context
+        Route::get('/employee/call-logs', [CallLogController::class, 'index'])->name('employee.call-logs.index');
+        Route::get('/employee/tasks', [TaskController::class, 'index'])->name('employee.tasks.index'); // Employee's view of all tasks
+
+        // Employee access to general documents (perhaps filtered by their accessible clients)
+        Route::get('/employee/documents', [DocumentController::class, 'index'])->name('employee.documents.index');
+        // Employee's view of client list (if they manage clients)
+        Route::get('/employee/clients', [ClientController::class, 'index'])->name('employee.clients.index'); // Or specific list of accessible clients
+    });
+
+    // --- Client Routes ---
+    Route::middleware(['role:client'])->group(function () {
+        Route::get('/client/dashboard', [DashboardController::class, 'clientDashboard'])->name('client.dashboard');
+
+        // Client's dedicated pages - These were missing!
+        Route::get('/client/services', [ClientServicesController::class, 'index'])->name('client.services.index');
+        Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('client.employees.index');
+        Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('client.documents.index');
+        Route::get('/client/forms', [ClientFormController::class, 'index'])->name('client.forms.index');
+
+        // Optional: Client-specific document actions (if allowed to upload/download their own)
+        Route::get('/client/documents/upload', [ClientDocumentController::class, 'create'])->name('client.documents.create');
+        Route::post('/client/documents', [ClientDocumentController::class, 'store'])->name('client.documents.store');
+        Route::get('/client/documents/{document}/download', [ClientDocumentController::class, 'download'])->name('client.documents.download');
+        Route::get('/client/documents/{document}/preview', [ClientDocumentController::class, 'preview'])->name('client.documents.preview');
+        //Route::get('/client/images', [ClientImageController::class, 'index'])->name('client.images.index');
+
+        // Optional: Client-specific form response viewing
+        Route::get('/client/form-responses/{dynamicFormResponse}', [ClientFormController::class, 'show'])->name('client.form-responses.show');
+    });
+
+});
