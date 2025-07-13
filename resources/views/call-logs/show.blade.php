@@ -73,8 +73,8 @@
 
                             <div class="mb-3">
                                 <strong>Status:</strong><br>
-                                <span class="badge badge-{{ $callLog->getStatusColor() }}">
-                                    {{ $callLog->getStatusText() }}
+                                <span class="badge bg-{{ $callLog->status_color }}">...</span>
+                                    {{ $callLog->status_label }}
                                 </span>
                                 <button class="btn btn-sm btn-outline-primary ml-2" onclick="updateStatus()">
                                     Change Status
@@ -177,8 +177,8 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="badge badge-{{ $task->getStatusColor() }}">
-                                                {{ $task->getStatusText() }}
+                                            <span class="badge badge-{{ $task->status_color }}">
+                                                {{ $task->status_label }}
                                             </span>
                                         </td>
                                         <td>

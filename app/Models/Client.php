@@ -75,10 +75,10 @@ class Client extends Model
         return $this->hasMany(ClientImage::class);
     }
 
-    public function employeeAccesses()
-    {
-        return $this->hasMany(ClientEmployeeAccess::class);
-    }
+    // public function employeeAccesses()
+    // {
+    //     return $this->hasMany(ClientEmployeeAccess::class);
+    // }
 
     public function formResponses()
     {
@@ -88,6 +88,7 @@ class Client extends Model
     public function accessibleEmployees()
     {
         return $this->belongsToMany(Employee::class, 'client_employee_accesses')
+                    ->using(ClientEmployeeAccess::class)
                     ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
                     ->withTimestamps();
     }
@@ -95,6 +96,7 @@ class Client extends Model
     public function assignedEmployees()
     {
         return $this->belongsToMany(Employee::class, 'client_employee_accesses')
+                    ->using(ClientEmployeeAccess::class)
                     ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
                     ->withTimestamps();
     }

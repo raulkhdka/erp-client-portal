@@ -18,7 +18,7 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Task::with(['client', 'assignedEmployee.user', 'creator.user', 'callLog'])
+        $query = Task::with(['client', 'assignedTo', 'createdBy', 'callLog'])
                      ->orderBy('created_at', 'desc');
 
         // Filter by employee role - employees only see their assigned tasks
@@ -62,7 +62,7 @@ class TaskController extends Controller
             return redirect()->route('tasks.index');
         }
 
-        $query = Task::with(['client', 'assignedEmployee.user', 'creator.user', 'callLog'])
+        $query = Task::with(['client', 'assignedTo', 'createdBy', 'callLog'])
                      ->where('assigned_to', Auth::user()->employee->id)
                      ->orderBy('created_at', 'desc');
 
@@ -142,7 +142,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        $task->load(['client', 'assignedEmployee.user', 'creator.user', 'callLog']);
+        $task->load(['client', 'assignedTo', 'createdBy', 'callLog']);
         return view('tasks.show', compact('task'));
     }
 

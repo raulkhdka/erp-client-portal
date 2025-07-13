@@ -31,7 +31,7 @@ class DashboardController extends Controller
         $totalTasks = Task::count();
         $pendingTasks = Task::where('status', Task::STATUS_PENDING)->count();
         $inProgressTasks = Task::where('status', Task::STATUS_IN_PROGRESS)->count();
-        $recentTasks = Task::with(['client', 'assignedEmployee.user'])->latest()->take(5)->get();
+        $recentTasks = Task::with(['client', 'assignedTo'])->latest()->take(5)->get();
 
         return view('dashboard.admin', compact(
             'totalClients', 'totalEmployees', 'activeClients', 'recentClients',

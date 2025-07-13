@@ -49,6 +49,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('services', ServiceController::class);
     Route::resource('call-logs', CallLogController::class);
     Route::resource('tasks', TaskController::class);
+    // Route::post('/services/quick-add', [ServiceController::class, 'quickAdd'])->name('services.quickAdd');
 
     // Task-specific routes
     Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('tasks.my-tasks');

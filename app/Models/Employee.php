@@ -32,14 +32,15 @@ class Employee extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function clientAccesses()
-    {
-        return $this->hasMany(ClientEmployeeAccess::class);
-    }
+    // public function clientAccesses()
+    // {
+    //     return $this->hasMany(ClientEmployeeAccess::class);
+    // }
 
     public function accessibleClients()
     {
         return $this->belongsToMany(Client::class, 'client_employee_accesses')
+                    ->using(ClientEmployeeAccess::class)
                     ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
                     ->withTimestamps();
     }

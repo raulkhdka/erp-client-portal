@@ -14,8 +14,8 @@ class ServiceController extends Controller
     public function index()
     {
         $services = Service::withCount('clients')
-                          ->orderBy('name')
-                          ->paginate(15);
+            ->orderBy('name')
+            ->paginate(15);
 
         return view('services.index', compact('services'));
     }
@@ -55,8 +55,7 @@ class ServiceController extends Controller
             }
 
             return redirect()->route('services.index')
-                            ->with('success', 'Service created successfully.');
-
+                ->with('success', 'Service created successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
@@ -102,7 +101,7 @@ class ServiceController extends Controller
         $service->update($validated);
 
         return redirect()->route('services.index')
-                        ->with('success', 'Service updated successfully.');
+            ->with('success', 'Service updated successfully.');
     }
 
     /**
@@ -113,13 +112,13 @@ class ServiceController extends Controller
         // Check if service has any clients
         if ($service->clients()->count() > 0) {
             return redirect()->route('services.index')
-                           ->with('error', 'Cannot delete service that is assigned to clients. Please remove all client assignments first.');
+                ->with('error', 'Cannot delete service that is assigned to clients. Please remove all client assignments first.');
         }
 
         $service->delete();
 
         return redirect()->route('services.index')
-                        ->with('success', 'Service deleted successfully.');
+            ->with('success', 'Service deleted successfully.');
     }
 
     /**
@@ -132,6 +131,27 @@ class ServiceController extends Controller
         $status = $service->is_active ? 'activated' : 'deactivated';
 
         return redirect()->back()
-                        ->with('success', "Service {$status} successfully.");
+            ->with('success', "Service {$status} successfully.");
     }
+    // public function quickAdd(Request $request)
+    // {
+    //     $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'type' => 'required|integer|min:0|max:10',
+    //         'detail' => 'nullable|string|max:1000',
+    //         'is_active' => 'nullable|boolean',
+    //     ]);
+
+    //     $service = Service::create([
+    //         'name' => $request->name,
+    //         'type' => $request->type,
+    //         'detail' => $request->detail,
+    //         'is_active' => $request->boolean('is_active', true),
+    //     ]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'service' => $service,
+    //     ]);
+    // }
 }

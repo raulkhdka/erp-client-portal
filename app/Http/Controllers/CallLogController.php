@@ -18,7 +18,7 @@ class CallLogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = CallLog::with(['client', 'employee', 'task'])
+        $query = CallLog::with(['client', 'employee', 'tasks'])
                         ->orderBy('call_date', 'desc');
 
         // Filter by status
@@ -148,7 +148,7 @@ class CallLogController extends Controller
      */
     public function show(CallLog $callLog)
     {
-        $callLog->load(['client', 'employee.user', 'tasks.assignedEmployee.user']);
+        $callLog->load(['client', 'employee', 'tasks.assignedTo']);
         return view('call-logs.show', compact('callLog'));
     }
 

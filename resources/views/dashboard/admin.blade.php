@@ -210,8 +210,8 @@
                                 <td>{{ $callLog->client->company_name ?? 'N/A' }}</td>
                                 <td>{{ Str::limit($callLog->subject, 20) }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $callLog->getStatusColor() }}">
-                                        {{ $callLog->getStatusText() }}
+                                    <span class="badge bg-{{ $callLog->status_color }}">
+                                        {{ $callLog->status_label }}
                                     </span>
                                 </td>
                                 <td>{{ $callLog->created_at->format('M d') }}</td>
@@ -273,8 +273,8 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ $task->getStatusColor() }}">
-                                        {{ $task->getStatusText() }}
+                                    <span class="badge bg-{{ $task->status_color }}">
+                                        {{ $task->status_label }}
                                     </span>
                                 </td>
                                 <td>

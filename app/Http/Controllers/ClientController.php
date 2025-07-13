@@ -104,7 +104,7 @@ class ClientController extends Controller
                     if (!empty($phoneData['phone'])) {
                         $client->phones()->create([
                             'phone' => $phoneData['phone'],
-                            'type' => $phoneData['type'] ?? 'primary',
+                            'type' => $phoneData['type'],
                         ]);
                     }
                 }
@@ -116,7 +116,7 @@ class ClientController extends Controller
                     if (!empty($emailData['email'])) {
                         $client->emails()->create([
                             'email' => $emailData['email'],
-                            'type' => $emailData['type'] ?? 'secondary',
+                            'type' => $emailData['type'],
                         ]);
                     }
                 }
@@ -124,7 +124,6 @@ class ClientController extends Controller
 
             DB::commit();
             return redirect()->route('clients.index')->with('success', 'Client created successfully.');
-
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to create client: ' . $e->getMessage()]);
@@ -137,7 +136,7 @@ class ClientController extends Controller
     public function show(string $id)
     {
         $client = Client::with(['user', 'phones', 'emails', 'services', 'documents', 'images', 'formResponses.dynamicForm'])
-                        ->findOrFail($id);
+            ->findOrFail($id);
         return view('clients.show', compact('client'));
     }
 
@@ -223,7 +222,7 @@ class ClientController extends Controller
                     if (!empty($phoneData['phone'])) {
                         $client->phones()->create([
                             'phone' => $phoneData['phone'],
-                            'type' => $phoneData['type'] ?? 'primary',
+                            'type' => $phoneData['type'],
                         ]);
                     }
                 }
@@ -236,7 +235,7 @@ class ClientController extends Controller
                     if (!empty($emailData['email'])) {
                         $client->emails()->create([
                             'email' => $emailData['email'],
-                            'type' => $emailData['type'] ?? 'secondary',
+                            'type' => $emailData['type'],
                         ]);
                     }
                 }
@@ -244,7 +243,6 @@ class ClientController extends Controller
 
             DB::commit();
             return redirect()->route('clients.show', $client->id)->with('success', 'Client updated successfully.');
-
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to update client: ' . $e->getMessage()]);
@@ -265,10 +263,10 @@ class ClientController extends Controller
 
             DB::commit();
             return redirect()->route('clients.index')->with('success', 'Client deleted successfully.');
-
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to delete client: ' . $e->getMessage()]);
         }
     }
+
 }

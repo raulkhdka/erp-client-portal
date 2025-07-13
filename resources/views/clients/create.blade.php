@@ -19,7 +19,6 @@
                 <form method="POST" action="{{ route('clients.store') }}">
                     @csrf
 
-                    <!-- User Information -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="border-bottom pb-2 mb-3">Contact Person Information</h5>
@@ -50,7 +49,6 @@
                         </div>
                     </div>
 
-                    <!-- Company Information -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="border-bottom pb-2 mb-3">Company Information</h5>
@@ -89,7 +87,6 @@
                         </div>
                     </div>
 
-                    <!-- Phone Numbers -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
@@ -104,19 +101,12 @@
                                         <input type="text" class="form-control" name="phones[0][phone]" placeholder="Phone number" value="{{ old('phones.0.phone') }}">
                                     </div>
                                     <div class="col-md-4">
-                                        <input type="text" class="form-control" name="phones[0][type]"
-                                               placeholder="Type (e.g., Primary, Mobile)"
-                                               list="phoneTypes"
-                                               value="{{ old('phones.0.type', 'Primary') }}">
-                                        <datalist id="phoneTypes">
-                                            <option value="Primary">
-                                            <option value="Mobile">
-                                            <option value="Office">
-                                            <option value="Fax">
-                                            <option value="Home">
-                                            <option value="Work">
-                                            <option value="Emergency">
-                                        </datalist>
+                                        <select class="form-select" name="phones[0][type]">
+                                            <option value="mobile" {{ old('phones.0.type', 'mobile') == 'mobile' ? 'selected' : '' }}>Mobile</option>
+                                            <option value="office" {{ old('phones.0.type') == 'office' ? 'selected' : '' }}>Office</option>
+                                            <option value="home" {{ old('phones.0.type') == 'home' ? 'selected' : '' }}>Home</option>
+                                            <option value="fax" {{ old('phones.0.type') == 'fax' ? 'selected' : '' }}>Fax</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-2">
                                         <button type="button" class="btn btn-outline-danger btn-sm remove-phone" style="display: none;">
@@ -128,7 +118,6 @@
                         </div>
                     </div>
 
-                    <!-- Email Addresses -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
@@ -143,20 +132,12 @@
                                         <input type="email" class="form-control" name="emails[0][email]" placeholder="Additional email address" value="{{ old('emails.0.email') }}">
                                     </div>
                                     <div class="col-md-4">
-                                        <input type="text" class="form-control" name="emails[0][type]"
-                                               placeholder="Type (e.g., Secondary, Billing)"
-                                               list="emailTypes"
-                                               value="{{ old('emails.0.type', 'Secondary') }}">
-                                        <datalist id="emailTypes">
-                                            <option value="Secondary">
-                                            <option value="Billing">
-                                            <option value="Support">
-                                            <option value="Personal">
-                                            <option value="Finance">
-                                            <option value="Legal">
-                                            <option value="HR">
-                                            <option value="Technical">
-                                        </datalist>
+                                        <select class="form-select" name="emails[0][type]">
+                                            <option value="primary" {{ old('emails.0.type', 'primary') == 'primary' ? 'selected' : '' }}>Primary</option>
+                                            <option value="billing" {{ old('emails.0.type') == 'billing' ? 'selected' : '' }}>Billing</option>
+                                            <option value="support" {{ old('emails.0.type') == 'support' ? 'selected' : '' }}>Support</option>
+                                            <option value="personal" {{ old('emails.0.type') == 'personal' ? 'selected' : '' }}>Personal</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-2">
                                         <button type="button" class="btn btn-outline-danger btn-sm remove-email" style="display: none;">
@@ -168,7 +149,6 @@
                         </div>
                     </div>
 
-                    <!-- Services -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
@@ -209,7 +189,6 @@
                         </div>
                     </div>
 
-                    <!-- Notes -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <label for="notes" class="form-label">Notes</label>
@@ -218,43 +197,25 @@
                         </div>
                     </div>
 
-                    <!-- Employee Assignment -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="border-bottom pb-2 mb-3">Employee Assignment</h5>
-                            <p class="text-muted small mb-3">Select employees who will have access to this client's information</p>
+                            <p class="text-muted small mb-3">Select employees who will have access to this client's information. Hold `Ctrl` (or `Cmd` on Mac) to select multiple.</p>
                             @if($employees->count() > 0)
-                                <div class="row">
-                                    @foreach($employees as $employee)
-                                        <div class="col-md-6 col-lg-4 mb-3">
-                                            <div class="card border">
-                                                <div class="card-body p-3">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox"
-                                                               name="assigned_employees[]" value="{{ $employee->id }}"
-                                                               id="employee_{{ $employee->id }}"
-                                                               {{ in_array($employee->id, old('assigned_employees', [])) ? 'checked' : '' }}>
-                                                        <label class="form-check-label w-100" for="employee_{{ $employee->id }}">
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="flex-shrink-0">
-                                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                                        <i class="fas fa-user"></i>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="flex-grow-1 ms-3">
-                                                                    <h6 class="mb-0">{{ $employee->user->name }}</h6>
-                                                                    <small class="text-muted">{{ $employee->position }}</small>
-                                                                    @if($employee->department)
-                                                                        <br><small class="text-muted">{{ $employee->department }}</small>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                <div class="mb-3">
+                                    <label for="assigned_employees" class="form-label visually-hidden">Assign Employees</label>
+                                    <select class="form-select @error('assigned_employees') is-invalid @enderror"
+                                            id="assigned_employees" name="assigned_employees[]" multiple aria-label="Select employees">
+                                        @foreach($employees as $employee)
+                                            <option value="{{ $employee->id }}"
+                                                    {{ in_array($employee->id, old('assigned_employees', [])) ? 'selected' : '' }}>
+                                                {{ $employee->user->name }} ({{ $employee->position }}{{ $employee->department ? ' - ' . $employee->department : '' }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('assigned_employees')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             @else
                                 <div class="alert alert-info">
@@ -265,7 +226,6 @@
                         </div>
                     </div>
 
-                    <!-- Submit Buttons -->
                     <div class="row">
                         <div class="col-12">
                             <div class="d-flex justify-content-end gap-2">
@@ -319,23 +279,7 @@
 
 @push('scripts')
 <script>
-// Employee assignment visual feedback
 document.addEventListener('DOMContentLoaded', function() {
-    const employeeCheckboxes = document.querySelectorAll('input[name="assigned_employees[]"]');
-
-    employeeCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const card = this.closest('.card');
-            if (this.checked) {
-                card.classList.add('border-primary');
-                card.style.backgroundColor = '#f8f9ff';
-            } else {
-                card.classList.remove('border-primary');
-                card.style.backgroundColor = '';
-            }
-        });
-    });
-
     // Phone and Email Management
     let phoneIndex = 1; // Start from 1 since index 0 is already used
     let emailIndex = 1; // Start from 1 since index 0 is already used
@@ -349,10 +293,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="text" class="form-control" name="phones[${phoneIndex}][phone]" placeholder="Phone number">
                 </div>
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="phones[${phoneIndex}][type]"
-                           placeholder="Type (e.g., Primary, Mobile)"
-                           list="phoneTypes"
-                           value="Primary">
+                    <select class="form-select" name="phones[${phoneIndex}][type]">
+                        <option value="mobile" selected>Mobile</option>
+                        <option value="office">Office</option>
+                        <option value="home">Home</option>
+                        <option value="fax">Fax</option>
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <button type="button" class="btn btn-outline-danger btn-sm remove-phone">
@@ -375,10 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="email" class="form-control" name="emails[${emailIndex}][email]" placeholder="Additional email address">
                 </div>
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="emails[${emailIndex}][type]"
-                           placeholder="Type (e.g., Secondary, Billing)"
-                           list="emailTypes"
-                           value="Secondary">
+                    <select class="form-select" name="emails[${emailIndex}][type]">
+                        <option value="primary" selected>Primary</option>
+                        <option value="billing">Billing</option>
+                        <option value="support">Support</option>
+                        <option value="personal">Personal</option>
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <button type="button" class="btn btn-outline-danger btn-sm remove-email">
@@ -416,6 +364,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    // Initial call to hide remove button if only one item exists on load
+    updateRemoveButtons('phone');
+    updateRemoveButtons('email');
 });
 
 // Quick Service Creation
@@ -435,7 +386,7 @@ function createQuickService() {
     .then(data => {
         if (data.success) {
             // Add new service to the services list
-            const servicesContainer = document.getElementById('servicesContainer');
+            let servicesContainer = document.getElementById('servicesContainer');
             const noServicesAlert = document.getElementById('noServicesAlert');
 
             if (noServicesAlert) {
@@ -449,6 +400,7 @@ function createQuickService() {
                 newContainer.className = 'row';
                 newContainer.id = 'servicesContainer';
                 parentDiv.insertBefore(newContainer, noServicesAlert);
+                servicesContainer = newContainer; // Update reference
             }
 
             const serviceHtml = `
@@ -464,7 +416,11 @@ function createQuickService() {
                 </div>
             `;
 
-            document.getElementById('servicesContainer').insertAdjacentHTML('beforeend', serviceHtml);
+            servicesContainer.insertAdjacentHTML('beforeend', serviceHtml);
+
+            // Re-initialize tooltips for new elements if necessary (Bootstrap 5)
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
             // Reset form and close modal
             document.getElementById('quickServiceForm').reset();
@@ -477,7 +433,9 @@ function createQuickService() {
                 Service "${data.service.name}" created successfully and selected!
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
+            // Insert alert after the form card body, or at the top of the main content div
             document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
+
 
             // Auto-dismiss after 3 seconds
             setTimeout(() => {
@@ -504,7 +462,6 @@ function createQuickService() {
 </script>
 @endpush
 
-<!-- Quick Service Creation Modal -->
 <div class="modal fade" id="quickServiceModal" tabindex="-1" aria-labelledby="quickServiceModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -530,7 +487,9 @@ function createQuickService() {
                                 <label for="quickServiceType" class="form-label">Type <span class="text-danger">*</span></label>
                                 <select class="form-select" id="quickServiceType" name="type" required>
                                     <option value="">Select...</option>
-                                    @for($i = 0; $i <= 10; $i++)
+                                    {{-- Assuming 'types' are passed from controller or defined elsewhere. For a quick add,
+                                         you might want a fixed set or fetch dynamically. Using placeholder example for now. --}}
+                                    @for($i = 0; $i <= 10; $i++) {{-- Replace with actual service types from your DB/logic --}}
                                         <option value="{{ $i }}">Type {{ $i }}</option>
                                     @endfor
                                 </select>

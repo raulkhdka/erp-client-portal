@@ -61,9 +61,9 @@ class CallLog extends Model
         return $this->belongsTo(Employee::class);
     }
 
-    public function task()
+    public function tasks()
     {
-        return $this->hasOne(Task::class);
+        return $this->hasMany(Task::class, 'call_log_id');
     }
 
     // Scopes
