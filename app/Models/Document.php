@@ -19,9 +19,12 @@ class Document extends Model
         'file_type',
         'file_size',
         'mime_type',
-        'category_id',
+        'categories_id',
         'client_id',
+        'employee_id',
         'uploaded_by',
+        'is_approved', // Approval status
+        'approved_by', // User who approved the document
         'access_permissions',
         'is_public',
         'is_confidential',
@@ -34,6 +37,7 @@ class Document extends Model
         'access_permissions' => 'array',
         'is_public' => 'boolean',
         'is_confidential' => 'boolean',
+        'is_approved' => 'boolean',
         'expires_at' => 'datetime',
         'last_accessed_at' => 'datetime',
     ];
@@ -52,6 +56,11 @@ class Document extends Model
     public function uploader()
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     // Accessors
@@ -106,7 +115,47 @@ class Document extends Model
         });
     }
 
-    // Methods
+    public function scopeAccessibleBy($query, $userId)
+    {
+        $user = User::find($userId);
+
+        if (!$user) {
+            return $query->where('id', null); // Return empty result
+        }
+
+        // Admin sees all documents
+        if ($user->isAdmin()) {
+            return $query;
+        }
+
+        return $query->where(function($q) use ($userId, $user) {
+            // Public documents
+            $q->where('is_public', true)
+              // User's own documents
+              ->orWhere('uploaded_by', $userId)
+              // Documents with explicit access
+              ->orWhereJsonContains('access_permissions', $userId);
+
+            // For employees, add client-specific access
+            if ($user->isEmployee()) {
+                $clientIds = DB::table('client_employee_accesses')
+                    ->where('employee_id', $user->id)
+                    ->where('is_active', true)
+                    ->pluck('client_id');
+
+                    $q->orWhereIn('client_id', $clientIds);
+                }
+
+                if ($user->isClient()) {
+                    $client = Client::where('user_id', $userId)->first();
+                    if ($client) {
+                        $q->orWhere('client_id', $client->id);
+                    }
+                }
+            });
+    }
+
+    // Helpers
     public function incrementDownloadCount()
     {
         $this->increment('download_count');
@@ -175,69 +224,13 @@ class Document extends Model
                 if ($hasClientAccess) {
                     return true;
                 }
-
-                // Check if employee is assigned to any service for this client
-                $hasServiceAccess = ClientService::where('client_id', $this->client_id)
-                    ->where('assigned_employee_id', $userId)
-                    ->exists();
-
-                if ($hasServiceAccess) {
-                    return true;
-                }
             }
         }
 
         return false;
     }
 
-    public function scopeAccessibleBy($query, $userId)
-    {
-        $user = User::find($userId);
-
-        if (!$user) {
-            return $query->where('id', null); // Return empty result
-        }
-
-        // Admin sees all documents
-        if ($user->role === 'admin') {
-            return $query;
-        }
-
-        return $query->where(function($q) use ($userId, $user) {
-            // Public documents
-            $q->where('is_public', true)
-              // User's own documents
-              ->orWhere('uploaded_by', $userId)
-              // Documents with explicit access
-              ->orWhereJsonContains('access_permissions', $userId);
-
-            // For employees, add client-specific access
-            if ($user->role === 'employee') {
-                $clientIds = DB::table('client_employee_accesses')
-                    ->where('employee_id', $user->id)
-                    ->where('is_active', true)
-                    ->pluck('client_id');
-
-                $serviceClientIds = ClientService::where('assigned_employee_id', $userId)
-                    ->pluck('client_id');
-
-                $allClientIds = $clientIds->merge($serviceClientIds)->unique();
-
-                if ($allClientIds->isNotEmpty()) {
-                    $q->orWhereIn('client_id', $allClientIds);
-                }
-            }
-
-            // For clients, add their own documents
-            if ($user->role === 'client') {
-                $client = Client::where('user_id', $userId)->first();
-                if ($client) {
-                    $q->orWhere('client_id', $client->id);
-                }
-            }
-        });
-    }
-
+    //Override delete to remove files
     public function delete()
     {
         // Delete the file from storage

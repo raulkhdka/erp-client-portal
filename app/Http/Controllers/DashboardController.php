@@ -108,6 +108,8 @@ class DashboardController extends Controller
         }
 
         // --- Fetch service statistics for the authenticated client ---
+        $totalDocuments = $client->documents()->count();
+        $recentDocuments = $client->documents()->latest()->limit(5)->get();
         $totalAssignedServices = $client->services()->count();
         $activeServices = $client->services()->wherePivot('status', 'active')->count();
         $inactiveServices = $client->services()->wherePivot('status', 'inactive')->count();
@@ -136,14 +138,15 @@ class DashboardController extends Controller
         $recentTasks = $client->tasks()->latest()->take(5)->get();
 
         return view('dashboard.client', compact(
-            'client',
+            'totalDocuments',
+            'recentDocuments',
             'totalAssignedServices',
             'activeServices',
             'inactiveServices',
             'suspendedServices',
             'expiredServices',
             'assignedEmployee', // Only these are used in the simplified blade
-             'clientServices', // Pass services data
+            'clientServices', // Pass services data
             'clientEmployees' // Pass employees data
             // 'recentDocuments', // Not used in simplified blade
             // 'recentImages',    // Not used in simplified blade

@@ -4,13 +4,22 @@
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-plus me-2"></i>Create Dynamic Form</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('dynamic-forms.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Forms
-        </a>
-    </div>
+    <h1 class="h2"><i class="fas fa-plus-circle me-2"></i>Create Dynamic Form</h1>
+    <a href="{{ route('dynamic-forms.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Forms
+    </a>
 </div>
+
+@if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
 
 <div class="row">
     <div class="col-lg-8">
@@ -19,56 +28,57 @@
                 <form method="POST" action="{{ route('dynamic-forms.store') }}" id="dynamicFormCreate">
                     @csrf
 
-                    <!-- Form Information -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Form Information</h5>
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Form Name *</label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required autocomplete="off">
+                        @error('name')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="3" autocomplete="off">{{ old('description') }}</textarea>
+                        @error('description')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked autocomplete="off">
+                            <label class="form-check-label" for="is_active">Form is Active</label>
                         </div>
-                        <div class="col-md-12">
-                            <label for="name" class="form-label">Form Name *</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                   id="name" name="name" value="{{ old('name') }}" required>
-                            @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <small class="text-muted">Active forms can receive submissions</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                            <h5 class="mb-0">Form Fields</h5>
+                            <button type="button" class="btn btn-sm btn-success" id="addField">
+                                <i class="fas fa-plus me-1"></i>Add Field
+                            </button>
                         </div>
-                        <div class="col-md-12 mt-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror"
-                                      id="description" name="description" rows="3">{{ old('description') }}</textarea>
-                            @error('description')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+
+                        <div id="fieldsContainer">
+                            {{-- Fields will be appended here by JavaScript --}}
+                            {{-- If old fields exist (e.g., validation error), re-populate --}}
+                            @if (old('fields'))
+                                @foreach (old('fields') as $index => $field)
+                                    @include('dynamic-forms._field_template', [
+                                        'index' => $index,
+                                        'field' => (object) $field // Cast to object for consistent access
+                                    ])
+                                @endforeach
+                            @endif
                         </div>
                     </div>
 
-                    <!-- Form Fields -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                                <h5 class="mb-0">Form Fields</h5>
-                                <button type="button" class="btn btn-sm btn-success" id="addField">
-                                    <i class="fas fa-plus me-1"></i>Add Field
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div id="fieldsContainer">
-                                <!-- Dynamic fields will be added here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Submit Buttons -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ route('dynamic-forms.index') }}" class="btn btn-secondary">Cancel</a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Create Form
-                                </button>
-                            </div>
-                        </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ route('dynamic-forms.index') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Create Form
+                        </button>
                     </div>
                 </form>
             </div>
@@ -76,166 +86,123 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="card shadow mb-4">
-            <div class="card-header bg-info text-white">
-                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Information</h6>
-            </div>
-            <div class="card-body">
-                <h6>Creating Dynamic Forms</h6>
-                <p class="small text-muted mb-3">
-                    Dynamic forms allow you to create custom data collection forms for clients.
-                    These forms can be shared with clients to gather specific information.
-                </p>
-
-                <h6>Field Types</h6>
-                <ul class="small text-muted mb-3">
-                    <li><strong>Text:</strong> Single line text input</li>
-                    <li><strong>Email:</strong> Email address validation</li>
-                    <li><strong>Number:</strong> Numeric input only</li>
-                    <li><strong>Date:</strong> Date picker</li>
-                    <li><strong>Textarea:</strong> Multi-line text</li>
-                    <li><strong>Select:</strong> Dropdown menu</li>
-                    <li><strong>Checkbox:</strong> Multiple selection</li>
-                    <li><strong>Radio:</strong> Single selection</li>
-                    <li><strong>File:</strong> File upload</li>
-                </ul>
-
-                <div class="alert alert-warning small mb-0">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    <strong>Note:</strong> You must add at least one field to create a form.
-                </div>
-            </div>
-        </div>
-
         <div class="card shadow">
-            <div class="card-header bg-secondary text-white">
-                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h6>
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Field Guidelines</h6>
             </div>
             <div class="card-body">
-                <ul class="small text-muted mb-0">
-                    <li>Use clear, descriptive field labels</li>
-                    <li>Mark required fields appropriately</li>
-                    <li>Group related fields together</li>
-                    <li>Test your form before sharing</li>
-                    <li>Consider the order of fields for better UX</li>
+                <ul class="small text-muted mb-3">
+                    <li>Each field requires a label. The "Field Name" will be auto-generated.</li>
+                    <li>Options are required for "Select", "Checkbox", and "Radio" fields (one per line).</li>
+                    <li>"Field Order" controls display order.</li>
+                    <li>File uploads: Supported types (PDF, DOC, DOCX, JPG, PNG, GIF), max 10MB (add server-side validation).</li>
                 </ul>
+                <div class="alert alert-info small mb-0">
+                    <i class="fas fa-lightbulb me-1"></i>
+                    <strong>Tip:</strong> Use clear labels for better UX.
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Field Template -->
+{{-- This template will be cloned by JavaScript --}}
 <template id="fieldTemplate">
-    <div class="card mb-3 field-item">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="field-title">New Field</span>
-            <button type="button" class="btn btn-sm btn-outline-danger remove-field">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <label class="form-label">Field Name *</label>
-                    <input type="text" class="form-control field-name" name="fields[][field_name]" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Field Label *</label>
-                    <input type="text" class="form-control field-label" name="fields[][field_label]" required>
-                </div>
-                <div class="col-md-6 mt-3">
-                    <label class="form-label">Field Type *</label>
-                    <select class="form-control field-type" name="fields[][field_type]" required>
-                        <option value="">Select Type</option>
-                        <option value="text">Text</option>
-                        <option value="email">Email</option>
-                        <option value="number">Number</option>
-                        <option value="date">Date</option>
-                        <option value="textarea">Textarea</option>
-                        <option value="select">Select</option>
-                        <option value="checkbox">Checkbox</option>
-                        <option value="radio">Radio</option>
-                        <option value="file">File</option>
-                    </select>
-                </div>
-                <div class="col-md-6 mt-3">
-                    <div class="form-check">
-                        <input class="form-check-input field-required" type="checkbox" name="fields[][is_required]" value="1">
-                        <label class="form-check-label">Required Field</label>
-                    </div>
-                </div>
-                <div class="col-md-12 mt-3">
-                    <label class="form-label">Field Options (for select, checkbox, radio - one per line)</label>
-                    <textarea class="form-control field-options" name="fields[][field_options]" rows="3" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('dynamic-forms._field_template', ['index' => '__INDEX__', 'field' => null])
 </template>
 
-@section('scripts')
+@endsection
+
+@push('scripts')
 <script>
-let fieldIndex = 0;
+    document.addEventListener('DOMContentLoaded', function() {
+        let fieldIndex = {{ old('fields') ? count(old('fields')) : 0 }}; // Start index from existing fields or 0
+        const addFieldBtn = document.getElementById('addField');
+        const fieldsContainer = document.getElementById('fieldsContainer');
+        const templateElement = document.getElementById('fieldTemplate');
 
-document.getElementById('addField').addEventListener('click', function() {
-    const template = document.getElementById('fieldTemplate');
-    const clone = template.content.cloneNode(true);
+        if (!addFieldBtn || !fieldsContainer || !templateElement) {
+            console.error('Required elements (addFieldBtn, fieldsContainer, or templateElement) not found in the DOM.');
+            return;
+        }
 
-    // Update field names with unique indices
-    const inputs = clone.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        if (input.name) {
-            input.name = input.name.replace('[]', `[${fieldIndex}]`);
+        // Function to add a new field (used for both initial load and add button)
+        function addField(fieldData = null) {
+            let templateContent = templateElement.innerHTML;
+            templateContent = templateContent.replace(/__INDEX__/g, fieldIndex);
+
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = templateContent;
+            const fieldCard = wrapper.firstElementChild; // The actual card element
+
+            fieldsContainer.appendChild(fieldCard);
+
+            // Populate fields if fieldData is provided (for old input re-population)
+            if (fieldData) {
+                fieldCard.querySelector('.field-id').value = fieldData.id || ''; // Hidden field for existing field ID
+                fieldCard.querySelector('.field-label').value = fieldData.field_label || '';
+                fieldCard.querySelector('.field-type').value = fieldData.field_type || '';
+                if (fieldData.is_required) {
+                    fieldCard.querySelector('.field-required').checked = true;
+                }
+                fieldCard.querySelector('.field-order').value = fieldData.sort_order || (fieldIndex + 1);
+                fieldCard.querySelector('.field-options').value = (fieldData.field_options && Array.isArray(fieldData.field_options)) ? fieldData.field_options.join('\n') : (fieldData.field_options || '');
+                fieldCard.querySelector('.field-placeholder').value = fieldData.placeholder || '';
+                fieldCard.querySelector('.field-help-text').value = fieldData.help_text || '';
+                fieldCard.querySelector('.field-title').textContent = fieldData.field_label || 'New Field';
+            }
+
+            // Attach event listeners for the newly added field
+            attachFieldListeners(fieldCard);
+            fieldIndex++; // Increment for the next field
+        }
+
+        // Function to attach listeners to a field card
+        function attachFieldListeners(fieldCard) {
+            // Remove functionality
+            fieldCard.querySelector('.remove-field').addEventListener('click', function() {
+                if (confirm('Are you sure you want to remove this field?')) {
+                    this.closest('.field-item').remove();
+                }
+            });
+
+            // Title update functionality based on field label
+            const labelInput = fieldCard.querySelector('.field-label');
+            const titleSpan = fieldCard.querySelector('.field-title');
+            if (labelInput && titleSpan) {
+                labelInput.addEventListener('input', function() {
+                    titleSpan.textContent = this.value || 'New Field';
+                });
+            }
+        }
+
+        // Add Field button click handler
+        addFieldBtn.addEventListener('click', function() {
+            addField();
+        });
+
+        // Re-attach listeners for fields loaded from old() input
+        fieldsContainer.querySelectorAll('.field-item').forEach(fieldCard => {
+            attachFieldListeners(fieldCard);
+        });
+
+
+        // Form validation
+        const form = document.getElementById('dynamicFormCreate');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Ensure at least one field is present
+                if (fieldsContainer.children.length === 0) {
+                    e.preventDefault();
+                    alert('Please add at least one field to the form before submitting.');
+                    fieldsContainer.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+
+                // Optional: Client-side validation for field names (e.g., unique within form)
+                // This is already handled server-side by Str::slug and validation.
+            });
         }
     });
-
-    document.getElementById('fieldsContainer').appendChild(clone);
-    fieldIndex++;
-
-    // Add event listener to remove button
-    const removeBtn = document.getElementById('fieldsContainer').lastElementChild.querySelector('.remove-field');
-    removeBtn.addEventListener('click', function() {
-        this.closest('.field-item').remove();
-    });
-
-    // Add event listener to field name input for dynamic title update
-    const fieldNameInput = document.getElementById('fieldsContainer').lastElementChild.querySelector('.field-name');
-    const fieldTitle = document.getElementById('fieldsContainer').lastElementChild.querySelector('.field-title');
-    fieldNameInput.addEventListener('input', function() {
-        fieldTitle.textContent = this.value || 'New Field';
-    });
-});
-
-// Add initial field
-document.getElementById('addField').click();
-
-// Form validation
-document.getElementById('dynamicFormCreate').addEventListener('submit', function(e) {
-    const fieldsContainer = document.getElementById('fieldsContainer');
-    if (fieldsContainer.children.length === 0) {
-        e.preventDefault();
-        alert('Please add at least one field to the form.');
-        return false;
-    }
-
-    // Validate that all required fields are filled
-    const requiredInputs = fieldsContainer.querySelectorAll('input[required], select[required]');
-    let isValid = true;
-
-    requiredInputs.forEach(input => {
-        if (!input.value.trim()) {
-            input.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            input.classList.remove('is-invalid');
-        }
-    });
-
-    if (!isValid) {
-        e.preventDefault();
-        alert('Please fill in all required fields.');
-    }
-});
 </script>
-@endsection
-@endsection
+@endpush

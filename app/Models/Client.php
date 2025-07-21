@@ -60,8 +60,14 @@ class Client extends Model
 
     public function documents()
     {
-        return $this->hasMany(ClientDocument::class);
+        return $this->hasMany(Document::class);
     }
+
+    public function newDocuments()
+    {
+        return $this->hasMany(Document::class, 'client_id')->where('is_approved', false);
+    }
+
 
     // public function newDocuments()
     // {
@@ -85,7 +91,7 @@ class Client extends Model
 
     public function formResponses()
     {
-        return $this->hasMany(DynamicFormResponse::class);
+        return $this->hasMany(\App\Models\DynamicFormResponse::class, 'client_id');
     }
 
     // public function accessibleEmployees()
@@ -99,16 +105,16 @@ class Client extends Model
     public function assignedEmployees()
     {
         return $this->belongsToMany(Employee::class, 'client_employee_accesses')
-                    ->using(ClientEmployeeAccess::class)
-                    ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
-                    ->withTimestamps();
+            ->using(ClientEmployeeAccess::class)
+            ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
+            ->withTimestamps();
     }
 
     public function services()
     {
         return $this->belongsToMany(Service::class, 'client_services', 'client_id', 'service_id')
-                    ->withPivot('status', 'description', 'created_at')
-                    ->withTimestamps();
+            ->withPivot('status', 'description', 'created_at')
+            ->withTimestamps();
     }
 
     public function callLogs()

@@ -297,6 +297,21 @@
     </div>
 </div>
 
+<div class="col-lg-12 mb-4">
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Document Management</h6>
+            <a href="{{ route('documents.index') }}" class="btn btn-sm btn-primary">Manage Documents</a>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-0">
+                Upload, approve, or manage all documents in the system.
+            </p>
+        </div>
+    </div>
+</div>
+
+
 @push('styles')
 <style>
 .border-left-primary {

@@ -35,7 +35,7 @@ class EmployeeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:8',
+            'password' => 'required|min:6',
             'employee_id' => 'required|string|unique:employees',
             'department' => 'nullable|string',
             'position' => 'required|string',
@@ -99,7 +99,7 @@ class EmployeeController extends Controller
     public function update(Request $request, string $id)
     {
         $employee = Employee::findOrFail($id);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $employee->user_id,
@@ -146,15 +146,15 @@ class EmployeeController extends Controller
     public function destroy(string $id)
     {
         $employee = Employee::findOrFail($id);
-        
+
         try {
             DB::beginTransaction();
-            
+
             $employee->user->delete(); // This will cascade delete the employee
-            
+
             DB::commit();
             return redirect()->route('employees.index')->with('success', 'Employee deleted successfully.');
-            
+
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to delete employee: ' . $e->getMessage()]);

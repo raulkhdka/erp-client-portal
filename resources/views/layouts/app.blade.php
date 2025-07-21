@@ -12,7 +12,8 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
-    <style>
+
+        <style>
         .sidebar {
             min-height: 100vh;
             box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
@@ -34,7 +35,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">
+            <a class="navbar-brand" href="{{ auth()->check() ? route('dashboard') : url('/') }}">
                 <i class="fas fa-building me-2"></i>ERP System
             </a>
 
@@ -173,7 +174,7 @@
                                 <li class="nav-item">
                                     {{-- IMPORTANT: Replace '#' with the actual route for My Documents --}}
                                     <a class="nav-link {{ request()->routeIs('client.documents.*') ? 'active' : '' }}"
-                                        href="{{ route('client.documents.index') }}">
+                                        href="{{ route('documents.index') }}">
                                         <i class="fas fa-file-alt me-2"></i>My Documents
                                     </a>
                                 </li>
@@ -228,6 +229,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery (required for Select2) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 

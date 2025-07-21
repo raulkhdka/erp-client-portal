@@ -91,4 +91,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(Employee::class);
     }
+
+    public function assignedClients()
+    {
+        return $this->belongsToMany(Client::class, 'employee_client_assignments');
+    }
+
+    public function canApproveDocuments()
+    {
+        return $this->role === 'admin' || $this->role === 'employee';
+    }
 }

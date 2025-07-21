@@ -14,52 +14,50 @@ use Illuminate\Support\Str;
 
 class DocumentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = Document::with(['category', 'client', 'uploader'])
-                        ->notExpired()
-                        ->orderBy('created_at', 'desc');
+            ->notExpired()
+            ->orderBy('created_at', 'desc');
 
-        // Filter by category
+        $user = Auth::user();
+
+        if ($user->isClient()) {
+            $client = $user->client;
+            $query->where('client_id', $client->id);
+        }
+
+        // Filters (Admin/Employee can use these)
         if ($request->filled('category_id')) {
-            $query->byCategory($request->category_id);
+            $query->where('category_id', $request->category_id);
         }
 
-        // Filter by client
         if ($request->filled('client_id')) {
-            $query->byClient($request->client_id);
+            $query->where('client_id', $request->client_id);
         }
 
-        // Filter by access level
         if ($request->filled('access_level')) {
-            switch ($request->access_level) {
-                case 'public':
-                    $query->public();
-                    break;
-                case 'confidential':
-                    $query->confidential();
-                    break;
-                case 'my_documents':
-                    $query->where('uploaded_by', Auth::id());
-                    break;
+            if ($request->access_level == 'public') {
+                $query->where('is_public', true);
+            } elseif ($request->access_level == 'confidential') {
+                $query->where('is_confidential', true);
+            } elseif ($request->access_level == 'my_documents') {
+                $query->where('uploaded_by', $user->id);
             }
         }
 
-        // Search
+        if ($request->filled('approval_status')) {
+            $query->where('is_approved', $request->approval_status == 'approved');
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
                   ->orWhere('file_name', 'like', "%{$search}%");
             });
         }
-
-        // Apply access control
-        $query->accessibleBy(Auth::id());
 
         $documents = $query->paginate(20);
         $categories = DocumentCategory::active()->ordered()->get();
@@ -68,29 +66,28 @@ class DocumentController extends Controller
         return view('documents.index', compact('documents', 'categories', 'clients'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Request $request)
     {
+        $user = Auth::user();
+
         $categories = DocumentCategory::getSelectOptions();
         $clients = ClientCacheService::getClientsForSelect();
         $users = User::where('id', '!=', Auth::id())->orderBy('name')->pluck('name', 'id');
+
         $selectedClientId = $request->get('client_id');
 
-        return view('documents.create', compact('categories', 'clients', 'users', 'selectedClientId'));
+        return view('documents.create', compact('categories', 'clients', 'users', 'selectedClientId', 'user'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'file' => 'required|file|max:10240', // 10MB max
-            'category_id' => 'nullable|exists:document_categories,id',
+            'categories_id' => 'nullable|exists:document_categories,id',
             'client_id' => 'nullable|exists:clients,id',
             'access_permissions' => 'nullable|array',
             'access_permissions.*' => 'exists:users,id',
@@ -103,7 +100,25 @@ class DocumentController extends Controller
         $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('documents', $filename, 'public');
 
-        $document = Document::create([
+        $isClient = $user->isClient();
+
+        $employeeId = null;
+        $clientId = $request->client_id;
+        $isApproved = !$isClient;
+
+        if ($isClient) {
+            $client = $user->client;
+            $clientId = $client->id;
+
+            $assignedEmployee = $client->assignedEmployees()->first();
+            if ($assignedEmployee) {
+                $employeeId = $assignedEmployee->id;
+            }
+
+            $isApproved = false; // Client upload needs approval
+        }
+
+        Document::create([
             'title' => $request->title,
             'description' => $request->description,
             'file_name' => $file->getClientOriginalName(),
@@ -111,205 +126,97 @@ class DocumentController extends Controller
             'file_type' => $file->getClientOriginalExtension(),
             'file_size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
-            'category_id' => $request->category_id,
-            'client_id' => $request->client_id,
-            'uploaded_by' => Auth::id(),
+            'categories_id' => $request->categories_id,
+            'client_id' => $clientId,
+            'employee_id' => $employeeId,
+            'uploaded_by' => $user->id,
+            'is_approved' => $isApproved,
             'access_permissions' => $request->access_permissions,
             'is_public' => $request->boolean('is_public'),
             'is_confidential' => $request->boolean('is_confidential'),
             'expires_at' => $request->expires_at,
         ]);
 
-        return redirect()->route('documents.index')
-                        ->with('success', 'Document uploaded successfully!');
+        return redirect()->route('documents.index')->with('success', 'Document uploaded successfully!');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Document $document)
     {
-        // Check access permission
-        if (!$document->hasAccess(Auth::id()) && !Auth::user()->isAdmin()) {
-            abort(403, 'You do not have permission to view this document.');
-        }
+        $this->checkAccess($document);
 
         $document->load(['category', 'client', 'uploader']);
 
         return view('documents.show', compact('document'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Document $document)
+    public function download(Document $document)
     {
-        // Check permission
-        if ($document->uploaded_by !== Auth::id() && !Auth::user()->isAdmin()) {
-            abort(403, 'You do not have permission to edit this document.');
-        }
+        $this->checkAccess($document);
 
-        $categories = DocumentCategory::getSelectOptions();
-        $clients = ClientCacheService::getClientsForSelect();
-        $users = User::where('id', '!=', Auth::id())->orderBy('name')->pluck('name', 'id');
+        $document->incrementDownloadCount();
 
-        return view('documents.edit', compact('document', 'categories', 'clients', 'users'));
+        return response()->download(Storage::disk('public')->path($document->file_path), $document->file_name);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Document $document)
-    {
-        // Check permission
-        if ($document->uploaded_by !== Auth::id() && !Auth::user()->isAdmin()) {
-            abort(403, 'You do not have permission to edit this document.');
-        }
-
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'file' => 'nullable|file|max:10240', // 10MB max
-            'category_id' => 'nullable|exists:document_categories,id',
-            'client_id' => 'nullable|exists:clients,id',
-            'access_permissions' => 'nullable|array',
-            'access_permissions.*' => 'exists:users,id',
-            'is_public' => 'boolean',
-            'is_confidential' => 'boolean',
-            'expires_at' => 'nullable|date|after:today',
-        ]);
-
-        $updateData = [
-            'title' => $request->title,
-            'description' => $request->description,
-            'category_id' => $request->category_id,
-            'client_id' => $request->client_id,
-            'access_permissions' => $request->access_permissions,
-            'is_public' => $request->boolean('is_public'),
-            'is_confidential' => $request->boolean('is_confidential'),
-            'expires_at' => $request->expires_at,
-        ];
-
-        // Handle file replacement
-        if ($request->hasFile('file')) {
-            // Delete old file
-            if (Storage::disk('public')->exists($document->file_path)) {
-                Storage::disk('public')->delete($document->file_path);
-            }
-
-            // Store new file
-            $file = $request->file('file');
-            $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('documents', $filename, 'public');
-
-            $updateData = array_merge($updateData, [
-                'file_name' => $file->getClientOriginalName(),
-                'file_path' => $path,
-                'file_type' => $file->getClientOriginalExtension(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-            ]);
-        }
-
-        $document->update($updateData);
-
-        return redirect()->route('documents.index')
-                        ->with('success', 'Document updated successfully!');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Document $document)
     {
-        // Check permission
-        if ($document->uploaded_by !== Auth::id() && !Auth::user()->isAdmin()) {
-            abort(403, 'You do not have permission to delete this document.');
+        $this->checkAccess($document, true);
+
+        if (Storage::disk('public')->exists($document->file_path)) {
+            Storage::disk('public')->delete($document->file_path);
         }
 
         $document->delete();
 
-        return redirect()->route('documents.index')
-                        ->with('success', 'Document deleted successfully!');
+        return redirect()->route('documents.index')->with('success', 'Document deleted successfully.');
     }
 
-    /**
-     * Download the document file
-     */
-    public function download(Document $document)
+    // Approve/Reject (same as your previous logic)
+    public function approve(Document $document)
     {
-        // Check access permission
-        if (!$document->hasAccess(Auth::id()) && !Auth::user()->isAdmin()) {
-            abort(403, 'You do not have permission to download this document.');
-        }
-
-        // Increment download count
-        $document->incrementDownloadCount();
-
-        // Return file download
-        return response()->download(Storage::disk('public')->path($document->file_path), $document->file_name);
-    }
-
-    /**
-     * Preview the document (for supported file types)
-     */
-    public function preview(Document $document)
-    {
-        // Check access permission
-        if (!$document->hasAccess(Auth::id()) && !Auth::user()->isAdmin()) {
-            abort(403, 'You do not have permission to preview this document.');
-        }
-
-        $supportedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'txt'];
-
-        if (!in_array(strtolower($document->file_type), $supportedTypes)) {
-            return redirect()->route('documents.download', $document);
-        }
-
-        // Update last accessed time
-        $document->update(['last_accessed_at' => now()]);
-
-        return response()->file(Storage::disk('public')->path($document->file_path));
-    }
-
-    /**
-     * Manage access permissions for a document
-     */
-    public function manageAccess(Document $document)
-    {
-        // Check permission
-        if ($document->uploaded_by !== Auth::id() && !Auth::user()->isAdmin()) {
-            abort(403, 'You do not have permission to manage access for this document.');
-        }
-
-        $users = User::where('id', '!=', Auth::id())->orderBy('name')->get();
-        $currentPermissions = $document->access_permissions ?: [];
-
-        return view('documents.manage-access', compact('document', 'users', 'currentPermissions'));
-    }
-
-    /**
-     * Update access permissions
-     */
-    public function updateAccess(Request $request, Document $document)
-    {
-        // Check permission
-        if ($document->uploaded_by !== Auth::id() && !Auth::user()->isAdmin()) {
-            abort(403, 'You do not have permission to manage access for this document.');
-        }
-
-        $request->validate([
-            'access_permissions' => 'nullable|array',
-            'access_permissions.*' => 'exists:users,id',
-            'is_public' => 'boolean',
-        ]);
+        $this->checkEmployeeOrAdmin();
 
         $document->update([
-            'access_permissions' => $request->access_permissions,
-            'is_public' => $request->boolean('is_public'),
+            'is_approved' => true,
+            'approved_by' => Auth::id(),
         ]);
 
-        return redirect()->route('documents.show', $document)
-                        ->with('success', 'Access permissions updated successfully!');
+        return back()->with('success', 'Document approved.');
+    }
+
+    public function reject(Document $document)
+    {
+        $this->checkEmployeeOrAdmin();
+
+        $document->delete();
+
+        return back()->with('success', 'Document rejected and deleted.');
+    }
+
+    // Access check helper
+    protected function checkAccess(Document $document, $allowUploader = false)
+    {
+        $user = Auth::user();
+
+        if ($user->isAdmin() || $user->isEmployee()) {
+            return true;
+        }
+
+        if ($user->isClient() && $document->client_id === $user->client->id) {
+            return true;
+        }
+
+        if ($allowUploader && $document->uploaded_by === $user->id) {
+            return true;
+        }
+
+        abort(403, 'Unauthorized access.');
+    }
+
+    protected function checkEmployeeOrAdmin()
+    {
+        if (!Auth::user()->isAdmin() && !Auth::user()->isEmployee()) {
+            abort(403, 'Only admin or employee can perform this action.');
+        }
     }
 }

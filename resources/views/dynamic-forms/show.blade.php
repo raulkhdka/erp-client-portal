@@ -1,316 +1,187 @@
 @extends('layouts.app')
 
-@section('title', 'Dynamic Form - ' . $form->name)
+@section('title', 'Dynamic Form Details')
 
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">
-        <i class="fas fa-clipboard-list me-2"></i>{{ $form->name }}
-        <span class="badge bg-{{ $form->is_active ? 'success' : 'secondary' }} ms-2">
-            {{ $form->is_active ? 'Active' : 'Inactive' }}
-        </span>
-    </h1>
+    <h1 class="h2"><i class="fas fa-info-circle me-2"></i>Form Details: {{ $form->name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{{ route('dynamic-forms.edit', $form->id) }}" class="btn btn-primary">
-                <i class="fas fa-edit me-2"></i>Edit
-            </a>
-            <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#shareModal">
-                <i class="fas fa-share me-2"></i>Share
-            </button>
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                <i class="fas fa-trash me-2"></i>Delete
-            </button>
-        </div>
-        <a href="{{ route('dynamic-forms.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ route('dynamic-forms.index') }}" class="btn btn-outline-secondary me-2">
             <i class="fas fa-arrow-left me-2"></i>Back to Forms
         </a>
+        <a href="{{ route('dynamic-forms.edit', $form->id) }}" class="btn btn-warning text-white me-2">
+            <i class="fas fa-edit me-2"></i>Edit Form
+        </a>
+        <a href="{{ route('dynamic-forms.public-show', $form->id) }}" target="_blank" class="btn btn-info me-2">
+            <i class="fas fa-share-alt me-2"></i>View Public Form
+        </a>
+        <form action="{{ route('dynamic-forms.destroy', $form->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('Are you sure you want to delete this form and all its associated fields and responses?');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash me-2"></i>Delete Form
+            </button>
+        </form>
     </div>
 </div>
 
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
 <div class="row">
-    <div class="col-lg-8">
-        <!-- Form Information -->
+    <div class="col-md-6">
         <div class="card shadow mb-4">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Form Information</h5>
+                <h5 class="mb-0">Basic Information</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <strong>Form Name:</strong>
-                        <p class="text-muted">{{ $form->name }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Status:</strong>
-                        <p class="text-muted">
-                            <span class="badge bg-{{ $form->is_active ? 'success' : 'secondary' }}">
-                                {{ $form->is_active ? 'Active' : 'Inactive' }}
-                            </span>
-                        </p>
-                    </div>
-                    <div class="col-md-12">
-                        <strong>Description:</strong>
-                        <p class="text-muted">{{ $form->description ?: 'No description provided' }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Created:</strong>
-                        <p class="text-muted">{{ $form->created_at->format('F j, Y g:i A') }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Last Updated:</strong>
-                        <p class="text-muted">{{ $form->updated_at->format('F j, Y g:i A') }}</p>
-                    </div>
-                </div>
+                <p><strong>Name:</strong> {{ $form->name }}</p>
+                <p><strong>Description:</strong> {{ $form->description ?? 'N/A' }}</p>
+                <p><strong>Status:</strong>
+                    @if ($form->is_active)
+                        <span class="badge bg-success">Active</span>
+                    @else
+                        <span class="badge bg-danger">Inactive</span>
+                    @endif
+                </p>
+                <p><strong>Created At:</strong> {{ $form->created_at->format('M d, Y H:i A') }}</p>
+                <p><strong>Last Updated:</strong> {{ $form->updated_at->format('M d, Y H:i A') }}</p>
+                {{-- Add settings if you want to display them --}}
+                {{-- <p><strong>Settings:</strong> {{ $form->settings ? json_encode($form->settings) : 'N/A' }}</p> --}}
             </div>
         </div>
-
-        <!-- Form Fields -->
+    </div>
+    <div class="col-md-6">
         <div class="card shadow mb-4">
             <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Form Fields ({{ $form->fields->count() }})</h5>
+                <h5 class="mb-0">Form Fields ({{ $form->fields->count() }})</h5>
             </div>
             <div class="card-body">
-                @if($form->fields->count() > 0)
-                    <div class="row">
-                        @foreach($form->fields as $index => $field)
-                            <div class="col-md-6 mb-3">
-                                <div class="card border">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h6 class="card-title mb-0">{{ $field->field_label }}</h6>
-                                            @if($field->is_required)
-                                                <span class="badge bg-danger">Required</span>
-                                            @endif
-                                        </div>
-                                        <p class="small text-muted mb-1">
-                                            <strong>Name:</strong> {{ $field->field_name }}
-                                        </p>
-                                        <p class="small text-muted mb-1">
-                                            <strong>Type:</strong>
-                                            <span class="badge bg-secondary">{{ ucfirst($field->field_type) }}</span>
-                                        </p>
-                                        @if($field->field_options)
-                                            <p class="small text-muted mb-0">
-                                                <strong>Options:</strong> {{ implode(', ', json_decode($field->field_options, true) ?? []) }}
-                                            </p>
-                                        @endif
-                                        <p class="small text-muted mb-0">
-                                            <strong>Order:</strong> {{ $field->field_order }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
+                @if ($form->fields->isEmpty())
                     <p class="text-muted">No fields defined for this form.</p>
+                @else
+                    <ul class="list-group list-group-flush">
+                        @foreach ($form->fields as $field)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ $field->sort_order }}. {{ $field->field_label }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        Type: {{ ucfirst($field->field_type) }}
+                                        @if ($field->is_required) | Required @endif
+                                        @if ($field->field_options) | Options: {{ implode(', ', (array) $field->field_options) }} @endif
+                                    </small>
+                                </div>
+                                <small><code>{{ $field->field_name }}</code></small>
+                            </li>
+                        @endforeach
+                    </ul>
                 @endif
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Form Preview -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Form Preview</h5>
+<div class="card shadow mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">Form Responses ({{ $form->responses->count() }})</h5>
+    </div>
+    <div class="card-body">
+        @if ($form->responses->isEmpty())
+            <p class="text-muted">No responses received for this form yet.</p>
+        @else
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>Response ID</th>
+                            <th>Submitted By (Client)</th>
+                            <th>Submitted At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($form->responses as $response)
+                            <tr>
+                                <td>{{ $response->id }}</td>
+                                <td>
+                                    @if ($response->client)
+                                        <a href="{{ route('clients.show', $response->client->id) }}">{{ $response->client->user->name ?? $response->client->company_name }}</a>
+                                    @else
+                                        Guest
+                                    @endif
+                                </td>
+                                <td>{{ $response->submitted_at->format('M d, Y H:i A') }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#responseModal{{ $response->id }}">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-            <div class="card-body">
-                <form class="preview-form">
-                    @foreach($form->fields->sortBy('field_order') as $field)
-                        <div class="mb-3">
-                            <label class="form-label">
-                                {{ $field->field_label }}
-                                @if($field->is_required)
-                                    <span class="text-danger">*</span>
+
+            {{-- Response Modals --}}
+            @foreach ($form->responses as $response)
+                <div class="modal fade" id="responseModal{{ $response->id }}" tabindex="-1" aria-labelledby="responseModalLabel{{ $response->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="responseModalLabel{{ $response->id }}">Response #{{ $response->id }} Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Form:</strong> {{ $form->name }}</p>
+                                <p><strong>Submitted By:</strong>
+                                    @if ($response->client)
+                                        {{ $response->client->user->name ?? $response->client->company_name }}
+                                    @else
+                                        Guest
+                                    @endif
+                                </p>
+                                <p><strong>Submitted At:</strong> {{ $response->submitted_at->format('M d, Y H:i A') }}</p>
+                                <hr>
+                                <h6>Response Data:</h6>
+                                @if ($response->response_data && is_array($response->response_data))
+                                    <ul class="list-group">
+                                        @foreach ($response->response_data as $key => $value)
+                                            <li class="list-group-item">
+                                                <strong>{{ $form->fields->firstWhere('field_name', $key)->field_label ?? Str::title(str_replace('_', ' ', $key)) }}:</strong>
+                                                @if (is_array($value))
+                                                    {{ implode(', ', $value) }}
+                                                @elseif (Str::startsWith($value, 'dynamic_form_uploads/'))
+                                                    <a href="{{ Storage::url($value) }}" target="_blank" class="btn btn-sm btn-outline-primary">View File <i class="fas fa-download ms-1"></i></a>
+                                                @else
+                                                    {{ $value }}
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <p class="text-muted">No response data available.</p>
                                 @endif
-                            </label>
-
-                            @switch($field->field_type)
-                                @case('text')
-                                @case('email')
-                                @case('number')
-                                @case('date')
-                                    <input type="{{ $field->field_type }}" class="form-control" disabled placeholder="Sample {{ $field->field_type }} input">
-                                    @break
-
-                                @case('textarea')
-                                    <textarea class="form-control" rows="3" disabled placeholder="Sample textarea input"></textarea>
-                                    @break
-
-                                @case('select')
-                                    <select class="form-control" disabled>
-                                        <option>-- Select an option --</option>
-                                        @if($field->field_options)
-                                            @foreach(json_decode($field->field_options, true) ?? [] as $option)
-                                                <option>{{ $option }}</option>
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                    @break
-
-                                @case('checkbox')
-                                    @if($field->field_options)
-                                        @foreach(json_decode($field->field_options, true) ?? [] as $option)
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" disabled>
-                                                <label class="form-check-label">{{ $option }}</label>
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                    @break
-
-                                @case('radio')
-                                    @if($field->field_options)
-                                        @foreach(json_decode($field->field_options, true) ?? [] as $option)
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="{{ $field->field_name }}_preview" disabled>
-                                                <label class="form-check-label">{{ $option }}</label>
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                    @break
-
-                                @case('file')
-                                    <input type="file" class="form-control" disabled>
-                                    @break
-                            @endswitch
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
                         </div>
-                    @endforeach
-
-                    <button type="button" class="btn btn-primary" disabled>Submit (Preview)</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
-        <!-- Form Statistics -->
-        <div class="card shadow mb-4">
-            <div class="card-header bg-warning text-dark">
-                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Form Statistics</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Total Fields:</span>
-                    <span class="badge bg-primary">{{ $form->fields->count() }}</span>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Required Fields:</span>
-                    <span class="badge bg-danger">{{ $form->fields->where('is_required', true)->count() }}</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Total Responses:</span>
-                    <span class="badge bg-success">{{ $form->responses->count() }}</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Form Status:</span>
-                    <span class="badge bg-{{ $form->is_active ? 'success' : 'secondary' }}">
-                        {{ $form->is_active ? 'Active' : 'Inactive' }}
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="card shadow">
-            <div class="card-header bg-dark text-white">
-                <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('dynamic-forms.edit', $form->id) }}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-edit me-2"></i>Edit Form
-                    </a>
-                    <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
-                        <i class="fas fa-share me-2"></i>Share Form
-                    </button>
-                    <a href="{{ route('dynamic-forms.public', $form->id) }}" target="_blank" class="btn btn-outline-success btn-sm">
-                        <i class="fas fa-external-link-alt me-2"></i>View Public Form
-                    </a>
-                    <button type="button" class="btn btn-outline-warning btn-sm">
-                        <i class="fas fa-download me-2"></i>Export Responses
-                    </button>
-                </div>
-            </div>
-        </div>
+            @endforeach
+        @endif
     </div>
 </div>
-
-<!-- Share Modal -->
-<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="shareModalLabel">Share Form</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Share this form with clients using the public link:</p>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="publicUrl" value="{{ route('dynamic-forms.public', $form->id) }}" readonly>
-                    <button class="btn btn-outline-secondary" type="button" id="copyButton">
-                        <i class="fas fa-copy"></i> Copy
-                    </button>
-                </div>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-1"></i>
-                    This link allows anyone to fill out and submit the form.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Delete Form</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the form <strong>{{ $form->name }}</strong>?</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This action cannot be undone and will also delete all responses.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="POST" action="{{ route('dynamic-forms.destroy', $form->id) }}" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i>Delete Form
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@section('scripts')
-<script>
-// Copy URL functionality
-document.getElementById('copyButton').addEventListener('click', function() {
-    const urlInput = document.getElementById('publicUrl');
-    urlInput.select();
-    urlInput.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(urlInput.value).then(function() {
-        const button = document.getElementById('copyButton');
-        const originalText = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        button.classList.remove('btn-outline-secondary');
-        button.classList.add('btn-success');
-
-        setTimeout(function() {
-            button.innerHTML = originalText;
-            button.classList.remove('btn-success');
-            button.classList.add('btn-outline-secondary');
-        }, 2000);
-    });
-});
-</script>
-@endsection
 @endsection

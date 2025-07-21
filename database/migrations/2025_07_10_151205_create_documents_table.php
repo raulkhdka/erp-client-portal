@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('mime_type');
             $table->foreignId('categories_id')->nullable()->constrained('document_categories')->nullOnDelete();
             $table->foreignId('client_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('employee_id')->nullable()->constrained('employees')->nullOnDelete();
             $table->foreignId('uploaded_by')->constrained('users');
             $table->json('access_permissions')->nullable(); // Store who can access
             $table->boolean('is_public')->default(false);

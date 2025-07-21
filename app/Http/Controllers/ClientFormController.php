@@ -29,11 +29,10 @@ class ClientFormController extends Controller
 
         // Fetch available forms for the client to fill out
         // Adjust this query based on how you determine which forms are available to clients
-        $availableForms = DynamicForm::where('is_active', true) // Only active forms
-                                     ->where('is_client_facing', true) // Assuming a column to mark forms as client-facing
-                                     ->get();
+        $forms = DynamicForm::where('is_active', true)->get();
 
-        return view('client.forms.index', compact('client', 'formResponses', 'availableForms'));
+
+        return view('client.forms.index', compact('client', 'formResponses'));
     }
 
     /**

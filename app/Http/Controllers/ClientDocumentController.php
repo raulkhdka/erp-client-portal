@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\ClientDocument; // Make sure your Document model exists
+use App\Models\Document; // Make sure your Document model exists
+use App\Models\DocumentCategory;
 use App\Models\Client; // Make sure your Client model exists
 use Illuminate\Support\Facades\Storage; // For file operations
 use Illuminate\Support\Facades\Log;
@@ -16,22 +17,23 @@ class ClientDocumentController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        $client = $user->client;
+        $client = Auth::user()->client;
 
-        if (!$client) {
+        if(!$client) {
             Auth::logout();
             return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
         }
 
-        // Fetch all documents belonging to this client, paginated
-        // Ensure your Client model has a 'documents' relationship
-        $documents = ClientDocument::where('client_id', $client->id)
-                     ->with('uploadedBy')
-                     ->latest()
-                     ->paginate(10);
+        // Fetch documents for the authenticated client
+        $documents = Document::where('client_id', $client->id)
+                   ->with('uploadedBy') // Eager load the user who uploaded the document
+                   ->latest()
+                   ->paginate(10);
 
-        return view('client.documents.index', compact('client', 'documents'));
+        $categories = DocumentCategory::all(); // Loan categories
+        $clients = Client::count();
+
+        return view('documents.index', compact('documents', 'categories'));
     }
 
     /**
@@ -39,15 +41,14 @@ class ClientDocumentController extends Controller
      */
     public function create()
     {
-        $user = Auth::user();
-        $client = $user->client;
+        $client = Auth::user()->client;
 
         if (!$client) {
             Auth::logout();
             return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
         }
 
-        return view('client.documents.create', compact('client'));
+        return view('documents.create', compact('client'));
     }
 
     /**
@@ -55,29 +56,23 @@ class ClientDocumentController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
-        $client = $user->client;
+        $client = Auth::user()->client;
 
         if (!$client) {
             return redirect()->route('login')->with('error', 'Client profile not found.');
         }
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'document_file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:10240', // 10MB
-            'd_type' => 'nullable|string|max:255',
-            'document_type' => 'nullable|string|max:50',
+            'description' => 'nullable|string|max:1000',
+            'file_type' => 'nullable|string|max:50',
+            'categories_id' => 'nullable|integer|exists:document_categories,id',
         ]);
-
-        $client = Auth::user()->client;
-
-        if (!$client) {
-            return redirect()->back()->with('error', 'Client profile not found. Unable to upload document.');
-        }
 
         $file = $request->file('document_file');
         $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $filePath = 'client_documents/' . $client->id . '/' . $fileName;
+        $filePath = 'documents/' . $client->id . '/' . $fileName;
 
         $fileSize = $file->getSize(); // Size in bytes
         $fileMimeType = $file->getMimeType();
@@ -86,18 +81,21 @@ class ClientDocumentController extends Controller
             Storage::disk('public')->put($filePath, file_get_contents($file));
 
             // Save document details to the client_documents table
-            ClientDocument::create([ // <--- CHANGED: Use ClientDocument
-                'name' => $request->name,
-                'description' => $request->description,
+            Document::create([
+                'title' => $request->name,
+                'description' => $request->description ?? '',
+                'file_name' => $fileName,
                 'file_path' => $filePath,
                 'file_size' => $fileSize,
                 'file_mime_type' => $fileMimeType,
-                'document_type' => $request->document_type,
+                'file_type' => $request->file_type ?? 'general',
+                'categories_id' => $request->categories_id ?? null,
                 'client_id' => $client->id,
-                'uploaded_by_user_id' => Auth::id(),
+                'uploaded_by' => Auth::id(),
+                'is_approved' => false, // Default to false, i.e. not approved
             ]);
 
-            return redirect()->route('client.documents.index')->with('success', 'Document uploaded successfully!');
+            return redirect()->route('documents.index')->with('success', 'Document uploaded successfully!');
 
         } catch (\Exception $e) {
             Log::error('Client document upload failed: ' . $e->getMessage(), ['exception' => $e]);
@@ -113,32 +111,37 @@ class ClientDocumentController extends Controller
     /**
      * Download the specified document.
      */
-    public function show(ClientDocument $document) // <--- CHANGED: Use ClientDocument for route model binding
+    public function show(Document $document)
     {
-        // Ensure the authenticated client owns this document
-        if (Auth::user()->client->id !== $document->client_id) {
+        $clientId = Auth::user()->client->id;
+
+        if ($document->client_id !== $clientId) {
             abort(403, 'Unauthorized access.');
         }
 
-        return view('client.documents.show', compact('document'));
+        $document->load('uploadedBy');
+
+        return view('documents.show', compact('document'));
     }
 
     /**
      * Preview the specified document (if supported by browser/format).
      */
-    public function download(ClientDocument $document) // <--- CHANGED: Use ClientDocument for route model binding
+    public function download(Document $document) // <--- CHANGED: Use ClientDocument for route model binding
     {
+        $clientId = Auth::user()->client->id;
         // Ensure the authenticated client owns this document
-        if (Auth::user()->client->id !== $document->client_id) {
+        if ($document->client_id !== $clientId) {
             abort(403, 'Unauthorized access.');
         }
 
         $filePath = storage_path('app/public/' . $document->file_path);
+        $extension = pathinfo($document->file_path, PATHINFO_EXTENSION);
 
         if (!Storage::disk('public')->exists($document->file_path)) {
             abort(404, 'File not found.');
         }
 
-        return response()->download($filePath, $document->name . '.' . pathinfo($document->file_path, PATHINFO_EXTENSION));
+        return response()->download($filePath, $document->name . '.' . $extension);
     }
 }

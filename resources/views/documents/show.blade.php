@@ -42,7 +42,7 @@
                             'doc', 'docx' => 'fas fa-file-word',
                             'xls', 'xlsx' => 'fas fa-file-excel',
                             'ppt', 'pptx' => 'fas fa-file-powerpoint',
-                            'jpg', 'jpeg', 'png', 'gif' => 'fas fa-file-image',
+                            'jpg', 'jpeg', 'png', 'gif', 'svg' => 'fas fa-file-image',
                             'zip', 'rar' => 'fas fa-file-archive',
                             default => 'fas fa-file'
                         };
@@ -54,12 +54,10 @@
                     </div>
                 </div>
 
-                <!-- Badges -->
                 <div class="mb-3">
                     @if($document->category)
                         <span class="badge bg-light text-dark me-2">
-                            <i class="{{ $document->category->icon }}"></i>
-                            {{ $document->category->name }}
+                            <i class="{{ $document->category->icon }}"></i> {{ $document->category->name }}
                         </span>
                     @endif
                     @if($document->is_public)
@@ -69,13 +67,10 @@
                         <span class="badge bg-danger me-2">Confidential</span>
                     @endif
                     @if($document->expires_at)
-                        <span class="badge bg-warning text-dark me-2">
-                            Expires {{ $document->expires_at->format('M d, Y') }}
-                        </span>
+                        <span class="badge bg-warning text-dark me-2">Expires {{ $document->expires_at->format('M d, Y') }}</span>
                     @endif
                 </div>
 
-                <!-- Stats -->
                 <div class="row text-center">
                     <div class="col-3">
                         <div class="opacity-75">Size</div>
@@ -95,6 +90,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="col-md-4 text-end">
                 <div class="btn-group-vertical" role="group">
                     <a href="{{ route('documents.download', $document) }}" class="btn btn-light btn-lg mb-2">
@@ -119,32 +115,30 @@
     </div>
 
     <div class="row">
-        <!-- Document Details -->
+        <!-- Left Panel -->
         <div class="col-md-8">
-            <!-- Description -->
             @if($document->description)
                 <div class="card action-card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-align-left me-2"></i>Description</h5>
+                        <h5><i class="fas fa-align-left me-2"></i>Description</h5>
                     </div>
                     <div class="card-body">
-                        <p class="mb-0">{{ $document->description }}</p>
+                        <p>{{ $document->description }}</p>
                     </div>
                 </div>
             @endif
 
-            <!-- Preview (if supported) -->
             @if(in_array(strtolower($document->file_type), ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'txt']))
                 <div class="card action-card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Preview</h5>
+                        <h5><i class="fas fa-eye me-2"></i>Preview</h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="preview-container">
                             @if(strtolower($document->file_type) === 'pdf')
                                 <iframe src="{{ route('documents.preview', $document) }}" width="100%" height="600px"></iframe>
-                            @elseif(in_array(strtolower($document->file_type), ['jpg', 'jpeg', 'png', 'gif']))
-                                <img src="{{ route('documents.preview', $document) }}" class="img-fluid" alt="{{ $document->title }}">
+                            @elseif(in_array(strtolower($document->file_type), ['jpg', 'jpeg', 'png', 'gif', 'svg']))
+                                <img src="{{ route('documents.preview', $document) }}" class="img-fluid">
                             @elseif(strtolower($document->file_type) === 'txt')
                                 <div class="p-3">
                                     <pre>{{ Storage::disk('public')->get($document->file_path) }}</pre>
@@ -154,168 +148,53 @@
                     </div>
                 </div>
             @endif
-
-            <!-- Access Permissions -->
-            @if($document->uploaded_by === Auth::id() || Auth::user()->isAdmin())
-                <div class="card action-card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-lock me-2"></i>Access Permissions</h5>
-                    </div>
-                    <div class="card-body">
-                        @if($document->is_public)
-                            <div class="alert alert-success">
-                                <i class="fas fa-globe me-2"></i>This document is public and can be accessed by all users.
-                            </div>
-                        @else
-                            <div class="alert alert-warning">
-                                <i class="fas fa-lock me-2"></i>This document has restricted access.
-                            </div>
-                            @if($document->access_permissions && count($document->access_permissions) > 0)
-                                <h6>Users with Access:</h6>
-                                <ul class="list-unstyled">
-                                    @foreach(App\Models\User::whereIn('id', $document->access_permissions)->get() as $user)
-                                        <li><i class="fas fa-user me-2"></i>{{ $user->name }}</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                <p class="text-muted">Only you and administrators can access this document.</p>
-                            @endif
-                        @endif
-
-                        <a href="{{ route('documents.manage-access', $document) }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-users-cog me-2"></i>Manage Access
-                        </a>
-                    </div>
-                </div>
-            @endif
         </div>
 
-        <!-- Sidebar -->
+        <!-- Right Panel -->
         <div class="col-md-4">
-            <!-- Document Info -->
             <div class="card action-card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Document Information</h5>
+                    <h5><i class="fas fa-info-circle me-2"></i>Details</h5>
                 </div>
                 <div class="card-body">
                     <dl class="row">
-                        <dt class="col-sm-5">File Type:</dt>
+                        <dt class="col-sm-5">Type:</dt>
                         <dd class="col-sm-7">{{ strtoupper($document->file_type) }}</dd>
 
-                        <dt class="col-sm-5">File Size:</dt>
+                        <dt class="col-sm-5">Size:</dt>
                         <dd class="col-sm-7">{{ $document->formatted_file_size }}</dd>
-
-                        <dt class="col-sm-5">MIME Type:</dt>
-                        <dd class="col-sm-7">{{ $document->mime_type }}</dd>
 
                         <dt class="col-sm-5">Uploaded By:</dt>
                         <dd class="col-sm-7">{{ $document->uploader->name }}</dd>
 
-                        <dt class="col-sm-5">Upload Date:</dt>
+                        <dt class="col-sm-5">Date:</dt>
                         <dd class="col-sm-7">{{ $document->created_at->format('M d, Y H:i') }}</dd>
 
                         @if($document->client)
                             <dt class="col-sm-5">Client:</dt>
-                            <dd class="col-sm-7">
-                                <a href="{{ route('clients.show', $document->client) }}">
-                                    {{ $document->client->company_name }}
-                                </a>
-                            </dd>
-                        @endif
-
-                        @if($document->expires_at)
-                            <dt class="col-sm-5">Expires:</dt>
-                            <dd class="col-sm-7">
-                                <span class="text-warning">{{ $document->expires_at->format('M d, Y') }}</span>
-                            </dd>
+                            <dd class="col-sm-7">{{ $document->client->company_name }}</dd>
                         @endif
                     </dl>
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="card action-card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('documents.download', $document) }}" class="btn btn-primary">
-                            <i class="fas fa-download me-2"></i>Download Document
-                        </a>
-
-                        @if($document->uploaded_by === Auth::id() || Auth::user()->isAdmin())
-                            <a href="{{ route('documents.edit', $document) }}" class="btn btn-outline-primary">
-                                <i class="fas fa-edit me-2"></i>Edit Document
-                            </a>
-
-                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            @if($document->uploaded_by === Auth::id() || Auth::user()->isAdmin())
+                <div class="card action-card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bolt me-2"></i>Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ route('documents.destroy', $document) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger w-100">
                                 <i class="fas fa-trash me-2"></i>Delete Document
                             </button>
-                        @endif
-
-                        <hr>
-
-                        <a href="{{ route('documents.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Documents
-                        </a>
+                        </form>
                     </div>
                 </div>
-            </div>
-
-            <!-- Related Documents -->
-            @if($document->category)
-                @php
-                    $relatedDocs = App\Models\Document::where('category_id', $document->category_id)
-                                                   ->where('id', '!=', $document->id)
-                                                   ->limit(5)
-                                                   ->get();
-                @endphp
-                @if($relatedDocs->count() > 0)
-                    <div class="card action-card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Related Documents</h5>
-                        </div>
-                        <div class="card-body">
-                            @foreach($relatedDocs as $relatedDoc)
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-file me-2 text-muted"></i>
-                                    <a href="{{ route('documents.show', $relatedDoc) }}" class="text-decoration-none">
-                                        {{ $relatedDoc->title }}
-                                    </a>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
             @endif
         </div>
     </div>
 </div>
-
-<!-- Delete Confirmation Modal -->
-@if($document->uploaded_by === Auth::id() || Auth::user()->isAdmin())
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Document</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete <strong>{{ $document->title }}</strong>?</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This action cannot be undone and will permanently delete the file.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form action="{{ route('documents.destroy', $document) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Delete Document</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
 @endsection

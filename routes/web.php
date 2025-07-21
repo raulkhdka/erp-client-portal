@@ -24,6 +24,9 @@ use App\Http\Controllers\ClientEmployeesController;
 use App\Http\Controllers\ClientDocumentController; // Specific controller for client's own documents
 use App\Http\Controllers\ClientFormController;     // Specific controller for client's forms
 
+use App\Http\Controllers\DocumentApprovalController; // For document approval by admin/employee.
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -56,8 +59,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Public Dynamic Form Routes (for clients to fill without being logged in if needed)
 // Keep these outside the 'auth' middleware if anonymous submission is allowed
-Route::get('/forms/{form}', [DynamicFormController::class, 'showPublicForm'])->name('dynamic-forms.public');
-Route::post('/forms/{form}/submit', [DynamicFormController::class, 'submitPublicForm'])->name('dynamic-forms.submit');
+Route::get('/dynamic-forms/public/{form}', [DynamicFormController::class, 'showPublicForm'])->name('dynamic-forms.public-show');
+Route::post('/dynamic-forms/public/{form}/submit', [DynamicFormController::class, 'submitPublicForm'])->name('dynamic-forms.public-submit');
 
 
 // Authenticated Routes - All routes below this require authentication
@@ -65,6 +68,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard redirection for all authenticated users
     Route::get('/', [DashboardController::class, 'redirectBasedOnRole'])->name('dashboard');
+
+    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
 
     // --- Admin Routes ---
     Route::middleware(['role:admin'])->group(function () {
@@ -112,20 +117,38 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/client/dashboard', [DashboardController::class, 'clientDashboard'])->name('client.dashboard');
 
         // Client's dedicated pages - These were missing!
+        Route::get('/documents', [ClientDocumentController::class, 'index'])->name('documents.index');
         Route::get('/client/services', [ClientServicesController::class, 'index'])->name('client.services.index');
         Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('client.employees.index');
-        Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('client.documents.index');
+        //Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('documents.index');
         Route::get('/client/forms', [ClientFormController::class, 'index'])->name('client.forms.index');
 
         // Optional: Client-specific document actions (if allowed to upload/download their own)
-        Route::get('/client/documents/upload', [ClientDocumentController::class, 'create'])->name('client.documents.create');
-        Route::post('/client/documents', [ClientDocumentController::class, 'store'])->name('client.documents.store');
-        Route::get('/client/documents/{document}/download', [ClientDocumentController::class, 'download'])->name('client.documents.download');
-        Route::get('/client/documents/{document}/preview', [ClientDocumentController::class, 'preview'])->name('client.documents.preview');
+        // Route::get('/client/documents/upload', [ClientDocumentController::class, 'create'])->name('documents.create');
+        // Route::post('/client/documents', [ClientDocumentController::class, 'store'])->name('documents.store');
+        // Route::get('/client/documents/{document}/download', [ClientDocumentController::class, 'download'])->name('documents.download');
+        // Route::get('/client/documents/{document}/show', [ClientDocumentController::class, 'show'])->name('documents.show');
         //Route::get('/client/images', [ClientImageController::class, 'index'])->name('client.images.index');
 
         // Optional: Client-specific form response viewing
         Route::get('/client/form-responses/{dynamicFormResponse}', [ClientFormController::class, 'show'])->name('client.form-responses.show');
     });
 
+    // --- Shared Document Routes (Admin, Employee, Client) ---
+    Route::resource('documents', DocumentController::class);
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
+    Route::post('/documents/{document}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
+
+
+     // --- Document Approval Routes (Shared by Admin & Assigned Employees) ---
+     Route::prefix('document-approvals')->name('document-approvals.')->group(function () {
+        Route::get('/', [DocumentApprovalController::class, 'index'])->name('index');
+        Route::get('/{document}', [DocumentApprovalController::class, 'show'])->name('show');
+        Route::post('/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('reject');
+    });
+
+    Route::post('/documents/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('documents.approve');
+    Route::post('/documents/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('documents.reject');
 });

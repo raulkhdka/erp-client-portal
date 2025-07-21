@@ -24,4 +24,8 @@ class ClientDocument extends Model
     {
         return $this->belongsTo(Client::class);
     }
+    public function uploadedBy()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by_user_id');
+    }
 }

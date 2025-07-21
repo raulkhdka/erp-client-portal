@@ -2,7 +2,6 @@
 
 @section('title', 'My Documents')
 
-{{-- Define the navbar-title section here to display "My Documents" in the top navigation bar --}}
 @section('page-navbar-title')
     <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>My Documents</h5>
 @endsection
@@ -14,9 +13,11 @@
             <div class="card">
                 <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">My Documents List</h5>
-                    <a href="{{ route('client.documents.create') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus me-1"></i> Upload New Document
-                    </a>
+                    @if(auth()->user()->isClient())
+                        <a href="{{ route('documents.create') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> Upload New Document
+                        </a>
+                    @endif
                 </div>
                 <div class="card-body">
                     @if(session('success'))
@@ -53,13 +54,27 @@
                                             <td>{{ $document->uploadedBy->name ?? 'N/A' }}</td>
                                             <td>{{ $document->created_at->format('M d, Y H:i A') }}</td>
                                             <td>
-                                                <a href="{{ route('client.documents.show', $document->id) }}" class="btn btn-info btn-sm me-1" title="View Document">
+                                                <a href="{{ route('documents.show', $document->id) }}" class="btn btn-info btn-sm me-1" title="View Document">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
-                                                {{-- Assuming you have a download route --}}
-                                                <a href="{{ route('client.documents.download', $document->id) }}" class="btn btn-success btn-sm" title="Download Document">
+                                                <a href="{{ route('documents.download', $document->id) }}" class="btn btn-success btn-sm me-1" title="Download Document">
                                                     <i class="fas fa-download"></i> Download
                                                 </a>
+
+                                                {{-- Only admins and employees can edit/delete --}}
+                                                @if(!auth()->user()->isClient())
+                                                    <a href="{{ route('documents.edit', $document->id) }}" class="btn btn-warning btn-sm me-1" title="Edit Document">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
+
+                                                    <form action="{{ route('documents.destroy', $document->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-sm" title="Delete Document">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -74,10 +89,12 @@
                         <div class="text-center py-5">
                             <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">You haven't uploaded or received any documents yet.</h5>
-                            <p class="text-muted">Click the "Upload New Document" button to add your first document.</p>
-                            <a href="{{ route('client.documents.create') }}" class="btn btn-primary mt-3">
-                                <i class="fas fa-plus me-1"></i> Upload Document
-                            </a>
+                            @if(auth()->user()->isClient())
+                                <p class="text-muted">Click the "Upload New Document" button to add your first document.</p>
+                                <a href="{{ route('documents.create') }}" class="btn btn-primary mt-3">
+                                    <i class="fas fa-plus me-1"></i> Upload Document
+                                </a>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -89,7 +106,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Any specific JavaScript for this page can go here
+    // Custom JS if needed
 });
 </script>
 @endpush

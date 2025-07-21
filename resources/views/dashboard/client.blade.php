@@ -93,6 +93,23 @@
     </div>
 </div>
 
+<div class="col-xl-3 col-md-6 mb-4">
+    <div class="card border-left-secondary shadow h-100 py-2">
+        <div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Total Documents</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalDocuments }}</div>
+                </div>
+                <div class="col-auto">
+                    <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div class="row">
     <div class="col-lg-6 mb-4">
         <div class="card shadow h-100">
@@ -181,6 +198,42 @@
             </div>
         </div>
     </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-secondary">Recent Documents</h6>
+                <a href="{{ route('documents.index') }}" class="btn btn-sm btn-secondary">View All</a>
+            </div>
+            <div class="card-body">
+                @if($recentDocuments->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Uploaded By</th>
+                                <th>Upload Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($recentDocuments as $document)
+                            <tr>
+                                <td>{{ $document->title }}</td>
+                                <td>{{ $document->uploadedByUser->name ?? 'N/A' }}</td>
+                                <td>{{ $document->created_at->format('M d, Y') }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                <p class="text-muted text-center">No documents found.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @push('styles')
