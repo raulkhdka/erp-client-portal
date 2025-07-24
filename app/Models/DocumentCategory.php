@@ -22,6 +22,7 @@ class DocumentCategory extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'sort_order' => 'integer',
     ];
 
     // Boot method to auto-generate slug
@@ -45,7 +46,7 @@ class DocumentCategory extends Model
     // Relationships
     public function documents()
     {
-        return $this->hasMany(Document::class, 'category_id');
+        return $this->hasMany(Document::class, 'categories_id');
     }
 
     // Scopes

@@ -10,6 +10,12 @@
         </div>
     @endif
 
+    @php
+        $user = Auth::user();
+        $isAdmin = $user->isAdmin();
+        $isEmployee = $user->isEmployee();
+    @endphp
+
     @if($documents->count() > 0)
         <table class="min-w-full bg-white shadow rounded-lg overflow-hidden">
             <thead>
@@ -27,15 +33,36 @@
                         <td class="px-4 py-2">{{ $document->client->name ?? 'N/A' }}</td>
                         <td class="px-4 py-2">{{ $document->created_at->format('Y-m-d H:i') }}</td>
                         <td class="px-4 py-2 flex space-x-2">
-                            <button onclick="openModal({{ $document->id }}, '{{ $document->title }}')"
-                                class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">
-                                Review
-                            </button>
-
                             <a href="{{ route('documents.download', $document->id) }}"
-                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                               class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
                                 Download
                             </a>
+
+                            @if($isAdmin || $isEmployee)
+                                <form action="{{ route('document-approvals.approve', $document->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit"
+                                            class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                                            onclick="return confirm('Approve this document?')">
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('document-approvals.reject', $document->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit"
+                                            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                            onclick="return confirm('Reject this document?')">
+                                        Reject
+                                    </button>
+                                </form>
+                            @endif
+
+                            {{-- Optional: keep Review button to open modal if you want --}}
+                            {{-- <button onclick="openModal({{ $document->id }}, '{{ $document->title }}')"
+                                class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">
+                                Review
+                            </button> --}}
                         </td>
                     </tr>
                 @endforeach
@@ -49,30 +76,7 @@
         <p>No pending documents found.</p>
     @endif
 </div>
-
-<!-- Modal -->
-<div id="approvalModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50">
-    <div class="bg-white p-6 rounded-lg w-full max-w-md">
-        <h2 id="modalTitle" class="text-xl font-semibold mb-4">Review Document</h2>
-
-        <div class="flex justify-between space-x-4">
-            <button id="approveBtn"
-                class="bg-green-500 w-1/2 text-white px-3 py-2 rounded hover:bg-green-600">
-                Approve
-            </button>
-
-            <button id="rejectBtn"
-                class="bg-red-500 w-1/2 text-white px-3 py-2 rounded hover:bg-red-600">
-                Reject
-            </button>
-        </div>
-
-        <button onclick="closeModal()" class="mt-4 text-gray-500 hover:underline">Cancel</button>
-    </div>
-</div>
-
 @endsection
-
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>

@@ -27,11 +27,15 @@
             overflow-x: hidden;
             overflow-y: auto;
         }
+
+        .nav-link {
+            white-space: nowrap;
+        }
     </style>
     @stack('styles')
 </head>
 
-<body>
+<body class="m-0 p-0">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
@@ -113,6 +117,13 @@
                                     <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
                                         href="{{ route('documents.index') }}">
                                         <i class="fas fa-folder me-2"></i>Documents
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('document-categories.*') ? 'active' : '' }}"
+                                        href="{{ route('document-categories.index') }}">
+                                        <i class="fas fa-folder me-2"></i>Documents Categories
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -229,7 +240,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery (required for Select2) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 

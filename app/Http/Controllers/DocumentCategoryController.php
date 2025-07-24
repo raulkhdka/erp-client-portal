@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DocumentCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DocumentCategoryController extends Controller
 {
@@ -15,6 +16,7 @@ class DocumentCategoryController extends Controller
         $categories = DocumentCategory::withCount('documents')
                                     ->ordered()
                                     ->get();
+
 
         return view('document-categories.index', compact('categories'));
     }
@@ -32,18 +34,36 @@ class DocumentCategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        Log::info('Store request Data:', $request->all());
+       $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:document_categories',
             'description' => 'nullable|string',
             'icon' => 'nullable|string|max:50',
             'color' => 'nullable|string|max:7',
             'sort_order' => 'nullable|integer|min:0',
+            'is_active' => 'sometimes|boolean',
         ]);
 
-        DocumentCategory::create($request->all());
+        try {
+            $category = DocumentCategory::create([
+                'name' => $validatedData['name'],
+                'description' => $validatedData['description'],
+                'icon' => $validatedData['icon'],
+                'color' => $validatedData['color'],
+                'sort_order' => $validatedData['sort_order'],
+                'is_active' => $request->has('is_active'), // Default to true if not set
+            ]);
 
-        return redirect()->route('document-categories.index')
-                        ->with('success', 'Document category created successfully!');
+            if ($category) {
+                return redirect()->route('document-categories.index')
+                                ->with('success', 'Document category created successfully!');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error creating category: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Failed to create category. Please try again.');
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Unknown error occurred.');
     }
 
     /**
@@ -69,7 +89,8 @@ class DocumentCategoryController extends Controller
      */
     public function update(Request $request, DocumentCategory $documentCategory)
     {
-        $request->validate([
+        Log::info('Update request data:', $request->all());
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:document_categories,name,' . $documentCategory->id,
             'description' => 'nullable|string',
             'icon' => 'nullable|string|max:50',
@@ -78,10 +99,22 @@ class DocumentCategoryController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $documentCategory->update($request->all());
+        try {
+            $documentCategory->update([
+                'name' => $validatedData['name'],
+                'description' => $validatedData['description'],
+                'icon' => $validatedData['icon'],
+                'color' => $validatedData['color'],
+                'sort_order' => $validatedData['sort_order'],
+                'is_active' => $validatedData['is_active'] ?? $documentCategory->is_active,
+            ]);
 
-        return redirect()->route('document-categories.index')
-                        ->with('success', 'Document category updated successfully!');
+            return redirect()->route('document-categories.index')
+                            ->with('success', 'Document category updated successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error updating category: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Failed to update category. Please try again.');
+        }
     }
 
     /**
