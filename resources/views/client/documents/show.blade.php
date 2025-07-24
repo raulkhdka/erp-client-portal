@@ -1,116 +1,140 @@
 @extends('layouts.app')
 
-@section('title', 'View Document: ' . $document->name)
+@section('title', $document->title)
 
-@section('page-navbar-title')
-    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Document Details</h5>
-@endsection
+@push('styles')
+<style>
+    .document-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    .action-card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+    .action-card:hover {
+        transform: translateY(-5px);
+    }
+    .preview-container {
+        max-height: 600px;
+        overflow: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+</style>
+@endpush
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-lg-8 offset-lg-2">
-            <div class="card">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Details for: {{ $document->name }}</h5>
-                    <div class="btn-group" role="group">
-                        <a href="{{ route('documents.download', $document->id) }}" class="btn btn-success btn-sm" title="Download Document">
-                            <i class="fas fa-download me-1"></i> Download
-                        </a>
-
-                        {{-- Show edit/delete only if user is logged in and NOT client --}}
-                        @if(Auth::check() && !Auth::user()->isClient())
-                            <a href="{{ route('documents.edit', $document->id) }}" class="btn btn-warning btn-sm" title="Edit Document">
-                                <i class="fas fa-edit me-1"></i> Edit
-                            </a>
-
-                            <form action="{{ route('documents.destroy', $document->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this document?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" title="Delete Document">
-                                    <i class="fas fa-trash me-1"></i> Delete
-                                </button>
-                            </form>
-                        @endif
-
-                        {{-- Show approve/reject only if user is logged in, not client, and document is not approved --}}
-                        @if(Auth::check() && !Auth::user()->isClient() && !$document->is_approved)
-                            <form action="{{ route('documents.approve', $document) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-success" title="Approve Document">
-                                    <i class="fas fa-check"></i> Approve
-                                </button>
-                            </form>
-
-                            <form action="{{ route('documents.reject', $document) }}" method="POST" class="d-inline" onsubmit="return confirm('Reject this document?')">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Reject Document">
-                                    <i class="fas fa-times"></i> Reject
-                                </button>
-                            </form>
-                        @endif
+<div class="container-fluid">
+    <div class="document-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-3">
+                    @php
+                        $iconClass = match(strtolower($document->file_type)) {
+                            'pdf' => 'fas fa-file-pdf',
+                            'doc', 'docx' => 'fas fa-file-word',
+                            'xls', 'xlsx' => 'fas fa-file-excel',
+                            'ppt', 'pptx' => 'fas fa-file-powerpoint',
+                            'jpg', 'jpeg', 'png', 'gif', 'svg' => 'fas fa-file-image',
+                            'zip', 'rar' => 'fas fa-file-archive',
+                            default => 'fas fa-file'
+                        };
+                    @endphp
+                    <i class="{{ $iconClass }} fa-3x me-3"></i>
+                    <div>
+                        <h2 class="mb-1">{{ $document->title }}</h2>
+                        <p class="mb-0 opacity-75">{{ $document->file_name }}</p>
                     </div>
                 </div>
 
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted">Document Name:</div>
-                        <div class="col-md-8">{{ $document->name }}</div>
+                <div class="mb-3">
+                    @if($document->category)
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="{{ $document->category->icon }}"></i> {{ $document->category->name }}
+                        </span>
+                    @endif
+                    @if($document->is_public)
+                        <span class="badge bg-success me-2">Public</span>
+                    @endif
+                    @if($document->is_confidential)
+                        <span class="badge bg-danger me-2">Confidential</span>
+                    @endif
+                </div>
+
+                <hr class="opacity-50">
+
+                {{-- Added Document Details --}}
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Uploaded By:</strong>
+                            @if($document->uploader)
+                                {{ $document->uploader->name }}
+                            @else
+                                N/A
+                            @endif
+                        </p>
+                        <p class="mb-0"><strong>Upload Date:</strong> {{ $document->created_at->format('M d, Y H:i A') }}</p>
                     </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted">Document Type:</div>
-                        <div class="col-md-8">{{ $document->file_type ?? 'N/A' }}</div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Approved By:</strong>
+                            @if($document->approver)
+                                {{ $document->approver->name }}
+                            @else
+                                <span class="badge bg-warning">Pending Approval</span>
+                            @endif
+                        </p>
+                        @if($document->approved_at)
+                            <p class="mb-0"><strong>Approved On:</strong> {{ $document->approved_at->format('M d, Y H:i A') }}</p>
+                        @endif
                     </div>
+                </div>
+                {{-- End Added Document Details --}}
 
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted">Description:</div>
-                        <div class="col-md-8">{{ $document->description ?? 'N/A' }}</div>
-                    </div>
+            </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted">File Size:</div>
-                        <div class="col-md-8">{{ number_format($document->file_size / 1024, 2) }} KB</div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted">MIME Type:</div>
-                        <div class="col-md-8">{{ $document->mime_type }}</div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted">Uploaded By:</div>
-                        <div class="col-md-8">{{ $document->uploadedBy->name ?? 'N/A' }}</div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted">Upload Date:</div>
-                        <div class="col-md-8">{{ $document->created_at->format('M d, Y H:i A') }}</div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted">Last Updated:</div>
-                        <div class="col-md-8">{{ $document->updated_at->format('M d, Y H:i A') }}</div>
-                    </div>
-
-                    <hr>
-
-                    <div class="d-flex justify-content-end">
-                        <a href="{{ route('documents.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Back to Documents
+            <div class="col-md-4 text-end">
+                <div class="btn-group-vertical" role="group">
+                    <a href="{{ route('documents.download', $document) }}" class="btn btn-light btn-lg mb-2">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                    @if(in_array(strtolower($document->file_type), ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'txt']))
+                        <a href="{{ route('client.documents.preview', $document) }}" class="btn btn-outline-light mb-2" target="_blank">
+                            <i class="fas fa-eye me-2"></i>Preview
                         </a>
-                    </div>
+                    @endif
+                    <a href="{{ route('client.documents.index') }}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Documents
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
+    @if(in_array(strtolower($document->file_type), ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'txt']))
+        <div class="card action-card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-eye me-2"></i>Preview</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="preview-container">
+                    @if(strtolower($document->file_type) === 'pdf')
+                        <iframe src="{{ route('documents.preview', $document) }}" width="100%" height="600px"></iframe>
+                    @elseif(in_array(strtolower($document->file_type), ['jpg', 'jpeg', 'png', 'gif', 'svg']))
+                        <img src="{{ route('documents.preview', $document) }}" class="img-fluid">
+                    @elseif(strtolower($document->file_type) === 'txt')
+                        <div class="p-3">
+                            <pre>{{ Storage::disk('public')->get($document->file_path) }}</pre>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 @endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Additional JS if needed.
-});
-</script>
-@endpush

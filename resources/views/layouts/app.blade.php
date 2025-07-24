@@ -185,7 +185,7 @@
                                 <li class="nav-item">
                                     {{-- IMPORTANT: Replace '#' with the actual route for My Documents --}}
                                     <a class="nav-link {{ request()->routeIs('client.documents.*') ? 'active' : '' }}"
-                                        href="{{ route('documents.index') }}">
+                                        href="{{ route('client.documents.index') }}">
                                         <i class="fas fa-file-alt me-2"></i>My Documents
                                     </a>
                                 </li>

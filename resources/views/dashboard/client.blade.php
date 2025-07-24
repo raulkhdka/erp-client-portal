@@ -203,7 +203,7 @@
         <div class="card shadow h-100">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-secondary">Recent Documents</h6>
-                <a href="{{ route('documents.index') }}" class="btn btn-sm btn-secondary">View All</a>
+                <a href="{{ route('client.documents.index') }}" class="btn btn-sm btn-secondary">View All</a>
             </div>
             <div class="card-body">
                 @if($recentDocuments->count() > 0)

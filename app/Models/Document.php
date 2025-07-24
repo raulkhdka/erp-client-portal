@@ -45,7 +45,7 @@ class Document extends Model
     // Relationships
     public function category()
     {
-        return $this->belongsTo(DocumentCategory::class, 'category_id');
+        return $this->belongsTo(DocumentCategory::class, 'categories_id');
     }
 
     public function client()
@@ -109,9 +109,9 @@ class Document extends Model
 
     public function scopeNotExpired($query)
     {
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->whereNull('expires_at')
-              ->orWhere('expires_at', '>', now());
+                ->orWhere('expires_at', '>', now());
         });
     }
 
@@ -128,13 +128,13 @@ class Document extends Model
             return $query;
         }
 
-        return $query->where(function($q) use ($userId, $user) {
+        return $query->where(function ($q) use ($userId, $user) {
             // Public documents
             $q->where('is_public', true)
-              // User's own documents
-              ->orWhere('uploaded_by', $userId)
-              // Documents with explicit access
-              ->orWhereJsonContains('access_permissions', $userId);
+                // User's own documents
+                ->orWhere('uploaded_by', $userId)
+                // Documents with explicit access
+                ->orWhereJsonContains('access_permissions', $userId);
 
             // For employees, add client-specific access
             if ($user->isEmployee()) {
@@ -143,16 +143,16 @@ class Document extends Model
                     ->where('is_active', true)
                     ->pluck('client_id');
 
-                    $q->orWhereIn('client_id', $clientIds);
-                }
+                $q->orWhereIn('client_id', $clientIds);
+            }
 
-                if ($user->isClient()) {
-                    $client = Client::where('user_id', $userId)->first();
-                    if ($client) {
-                        $q->orWhere('client_id', $client->id);
-                    }
+            if ($user->isClient()) {
+                $client = Client::where('user_id', $userId)->first();
+                if ($client) {
+                    $q->orWhere('client_id', $client->id);
                 }
-            });
+            }
+        });
     }
 
     // Helpers

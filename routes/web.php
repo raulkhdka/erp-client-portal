@@ -117,7 +117,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/client/dashboard', [DashboardController::class, 'clientDashboard'])->name('client.dashboard');
 
         // Client's dedicated pages - These were missing!
-        Route::get('/documents', [ClientDocumentController::class, 'index'])->name('documents.index');
+        Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('client.documents.index');
+        Route::get('/client/documents/{document}/show', [ClientDocumentController::class, 'show'])->name('client.documents.show');
+        Route::get('/client/documents/{document}/preview', [ClientDocumentController::class, 'preview'])->name('client.documents.preview');
         Route::get('/client/services', [ClientServicesController::class, 'index'])->name('client.services.index');
         Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('client.employees.index');
         //Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('documents.index');
@@ -137,6 +139,7 @@ Route::middleware(['auth'])->group(function () {
     // --- Shared Document Routes (Admin, Employee, Client) ---
     Route::resource('documents', DocumentController::class);
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
     Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
     Route::post('/documents/{document}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
 

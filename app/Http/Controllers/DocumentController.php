@@ -54,8 +54,8 @@ class DocumentController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('file_name', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('file_name', 'like', "%{$search}%");
             });
         }
 
@@ -89,6 +89,7 @@ class DocumentController extends Controller
             'file' => 'required|file|max:10240', // 10MB max
             'categories_id' => 'nullable|exists:document_categories,id',
             'client_id' => 'nullable|exists:clients,id',
+            'employee_id' => 'nullable|exists:users,id',
             'access_permissions' => 'nullable|array',
             'access_permissions.*' => 'exists:users,id',
             'is_public' => 'boolean',
@@ -149,6 +150,69 @@ class DocumentController extends Controller
         return view('documents.show', compact('document'));
     }
 
+    public function edit(Document $document)
+    {
+        $this->checkAccess($document, true);
+
+        $categories = DocumentCategory::getSelectOptions();
+        $clients = ClientCacheService::getClientsForSelect();
+        $users = User::where('id', '!=', Auth::id())->orderBy('name')->pluck('name', 'id');
+
+        return view('documents.edit', compact('document', 'categories', 'clients', 'users'));
+    }
+
+    public function update(Request $request, Document $document)
+    {
+        $this->checkAccess($document, true);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'categories_id' => 'nullable|exists:document_categories,id',
+            'client_id' => 'nullable|exists:clients,id',
+            'employee_id' => 'nullable|exists:users,id',
+            'access_permissions' => 'nullable|array',
+            'access_permissions.*' => 'exists:users,id',
+            'is_public' => 'boolean',
+            'is_confidential' => 'boolean',
+            'expires_at' => 'nullable|date|after:today',
+            'file' => 'nullable|file|max:10240', // 10MB max
+        ]);
+
+        $data = $request->only([
+            'title',
+            'description',
+            'categories_id',
+            'client_id',
+            'employee_id',
+            'access_permissions',
+            'is_public',
+            'is_confidential',
+            'expires_at',
+        ]);
+
+        if ($request->hasFile('file')) {
+            // Delete old file if exists
+            if (Storage::disk('public')->exists($document->file_path)) {
+                Storage::disk('public')->delete($document->file_path);
+            }
+
+            $file = $request->file('file');
+            $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('documents', $filename, 'public');
+
+            $data['file_name'] = $file->getClientOriginalName();
+            $data['file_path'] = $path;
+            $data['file_type'] = $file->getClientOriginalExtension();
+            $data['file_size'] = $file->getSize();
+            $data['mime_type'] = $file->getMimeType();
+        }
+
+        $document->update($data);
+
+        return response()->json(['message' => 'Document updated successfully!'], 200);
+    }
+
     public function download(Document $document)
     {
         $this->checkAccess($document);
@@ -156,6 +220,40 @@ class DocumentController extends Controller
         $document->incrementDownloadCount();
 
         return response()->download(Storage::disk('public')->path($document->file_path), $document->file_name);
+    }
+
+    public function preview(Document $document)
+    {
+        $this->checkAccess($document);
+
+        // Ensure the file exists in storage
+        if (!Storage::disk('public')->exists($document->file_path)) {
+            return back()->with('error', 'Document file not found.'); // Use back() for a user-friendly message
+        }
+
+        $mimeType = $document->mime_type;
+
+        $allowedPreviewMimeTypes = [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/svg+xml',
+            // 'text/plain', // Be cautious with plain text, it might expose raw code etc.
+        ];
+
+        // Check if the mime type is explicitly allowed, or if it's a general image type
+        if (in_array($mimeType, $allowedPreviewMimeTypes) || Str::startsWith($mimeType, 'image/')) {
+            $path = Storage::disk('public')->path($document->file_path);
+
+            return response()->file($path, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . $document->file_name . '"'
+            ]);
+        }
+
+        // If the file type is not supported for preview, redirect back with an error message
+        return back()->with('error', 'Preview is not available for this file type. Please download the document to view it.');
     }
 
     public function destroy(Document $document)
@@ -172,26 +270,26 @@ class DocumentController extends Controller
     }
 
     // Approve/Reject (same as your previous logic)
-    public function approve(Document $document)
-    {
-        $this->checkEmployeeOrAdmin();
+    // public function approve(Document $document)
+    // {
+    //     $this->checkEmployeeOrAdmin();
 
-        $document->update([
-            'is_approved' => true,
-            'approved_by' => Auth::id(),
-        ]);
+    //     $document->update([
+    //         'is_approved' => true,
+    //         'approved_by' => Auth::id(),
+    //     ]);
 
-        return back()->with('success', 'Document approved.');
-    }
+    //     return back()->with('success', 'Document approved.');
+    // }
 
-    public function reject(Document $document)
-    {
-        $this->checkEmployeeOrAdmin();
+    // public function reject(Document $document)
+    // {
+    //     $this->checkEmployeeOrAdmin();
 
-        $document->delete();
+    //     $document->delete();
 
-        return back()->with('success', 'Document rejected and deleted.');
-    }
+    //     return back()->with('success', 'Document rejected and deleted.');
+    // }
 
     // Access check helper
     protected function checkAccess(Document $document, $allowUploader = false)

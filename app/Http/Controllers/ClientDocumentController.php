@@ -9,31 +9,33 @@ use App\Models\DocumentCategory;
 use App\Models\Client; // Make sure your Client model exists
 use Illuminate\Support\Facades\Storage; // For file operations
 use Illuminate\Support\Facades\Log;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ClientDocumentController extends Controller
 {
     /**
      * Display a listing of documents for the authenticated client.
      */
+    use AuthorizesRequests;
     public function index()
     {
         $client = Auth::user()->client;
 
-        if(!$client) {
+        if (!$client) {
             Auth::logout();
             return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
         }
 
         // Fetch documents for the authenticated client
         $documents = Document::where('client_id', $client->id)
-                   ->with('uploadedBy') // Eager load the user who uploaded the document
-                   ->latest()
-                   ->paginate(10);
+            ->with('uploader', 'approver') // Eager load the user who uploaded the document
+            ->latest()
+            ->paginate(10);
 
-        $categories = DocumentCategory::all(); // Loan categories
-        $clients = Client::count();
+        $categories = DocumentCategory::all(); // Load categories
+        //$clients = Client::count();
 
-        return view('documents.index', compact('documents', 'categories'));
+        return view('client.documents.index', compact('documents', 'categories'));
     }
 
     /**
@@ -95,8 +97,7 @@ class ClientDocumentController extends Controller
                 'is_approved' => false, // Default to false, i.e. not approved
             ]);
 
-            return redirect()->route('documents.index')->with('success', 'Document uploaded successfully!');
-
+            return redirect()->route('client.documents.index')->with('success', 'Document uploaded successfully!');
         } catch (\Exception $e) {
             Log::error('Client document upload failed: ' . $e->getMessage(), ['exception' => $e]);
             // If file was uploaded, attempt to delete it to prevent orphaned files
@@ -105,7 +106,6 @@ class ClientDocumentController extends Controller
             }
             return redirect()->back()->with('error', 'Failed to upload document. Please try again.')->withInput();
         }
-
     }
 
     /**
@@ -113,21 +113,55 @@ class ClientDocumentController extends Controller
      */
     public function show(Document $document)
     {
-        $clientId = Auth::user()->client->id;
+        $user = Auth::user();
 
-        if ($document->client_id !== $clientId) {
-            abort(403, 'Unauthorized access.');
+        if ($user->isClient() && optional($user->client)->id === $document->client_id) {
+            return view('client.documents.show', compact('document'));
         }
 
-        $document->load('uploadedBy');
-
-        return view('documents.show', compact('document'));
+        abort(403, 'Unauthorized to view this document.');
     }
+
 
     /**
      * Preview the specified document (if supported by browser/format).
      */
-    public function download(Document $document) // <--- CHANGED: Use ClientDocument for route model binding
+
+     public function preview(Document $document)
+     {
+        $clientId = Auth::user()->client->id; // Load client relationship
+
+         if (!$clientId || $document->client_id !== $clientId) {
+            abort(403, 'Unauthorized access to this document.');
+        }
+
+        if (!Storage::disk('public')->exists($document->file_path)) {
+            abort(404, 'Document file not found.');
+        }
+
+        $mimeType = $document->mime_type;
+
+        $allowedPreviewMimeTypes = [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/svg+xml',
+            'text/plain',
+        ];
+
+        if (in_array($mimeType, $allowedPreviewMimeTypes) || str_starts_with($mimeType, 'image/') || str_starts_with($mimeType, 'text/')) {
+            $fileContents = Storage::disk('public')->get($document->file_path);
+
+            return response($fileContents)
+                ->header('Content-Type', $mimeType)
+                ->header('Content-Disposition', 'inline; filename="' . $document->file_name . '"');
+        }
+
+        return back()->with('error', 'Preview is not available for this file type. Please download the document to view it.');
+    }
+
+    public function download(Document $document)
     {
         $clientId = Auth::user()->client->id;
         // Ensure the authenticated client owns this document
