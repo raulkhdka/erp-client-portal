@@ -21,13 +21,13 @@
 
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Contact Person Information</h5>
+                            <h5 class="border-bottom pb-2 mb-3">Client User Creation</h5>
                         </div>
                         <div class="col-md-6">
-                            <label for="name" class="form-label">Contact Person Name *</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                   id="name" name="name" value="{{ old('name') }}" required>
-                            @error('name')
+                            <label for="user_name" class="form-label">User Name *</label>
+                            <input type="text" class="form-control @error('user_name') is-invalid @enderror"
+                                   id="user_name" name="user_name" value="{{ old('user_name') }}" required>
+                            @error('user_name')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -51,7 +51,15 @@
 
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Company Information</h5>
+                            <h5 class="border-bottom pb-2 mb-3">Client Information</h5>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="client_name" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control @error('client_name') is-invalid @enderror"
+                                   id="client_name" name="client_name" value="{{ old('client_name') }}" required>
+                            @error('client_name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="col-md-6">
                             <label for="company_name" class="form-label">Company Name *</label>

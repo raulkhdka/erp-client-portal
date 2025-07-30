@@ -19,7 +19,7 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $query = Task::with(['client', 'assignedTo', 'createdBy', 'callLog'])
-                     ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc');
 
         // Filter by employee role - employees only see their assigned tasks
         if (Auth::user()->isEmployee()) {
@@ -63,8 +63,8 @@ class TaskController extends Controller
         }
 
         $query = Task::with(['client', 'assignedTo', 'createdBy', 'callLog'])
-                     ->where('assigned_to', Auth::user()->employee->id)
-                     ->orderBy('created_at', 'desc');
+            ->where('assigned_to', Auth::user()->employee->id)
+            ->orderBy('created_at', 'desc');
 
         // Filter by status
         if ($request->filled('status')) {
@@ -89,15 +89,17 @@ class TaskController extends Controller
 
     /**
      * Show the form for creating a new resource.
-     */    public function create(Request $request)
+     */
+    public function create(Request $request)
     {
         $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
+        $callLogs = CallLog::latest()->get();
 
         // Auto-select client if coming from client view
         $selectedClientId = $request->get('client_id');
 
-        return view('tasks.create', compact('clients', 'employees', 'selectedClientId'));
+        return view('tasks.create', compact('clients', 'employees', 'selectedClientId', 'callLogs'));
     }
 
     /**
@@ -108,33 +110,31 @@ class TaskController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'assigned_to' => 'nullable|exists:employees,id',
+            'call_log_id' => 'nullable|exists:call_logs,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|integer|min:1|max:9',
+            'due_date' => 'nullable|date',
             'started_at' => 'nullable|date',
             'completed_at' => 'nullable|date',
             'notes' => 'nullable|string'
         ]);
 
-        // Set call_log_id to null since we're creating standalone tasks
         $validated['call_log_id'] = null;
 
-        // Set created_by to current logged in employee
-        if (Auth::user()->isEmployee()) {
-            $validated['created_by'] = Auth::user()->employee->id;
-        } elseif (Auth::user()->isAdmin()) {
-            // Admin creating task - if no assignment specified, assign to self if they're also an employee
-            if (!$validated['assigned_to'] && Auth::user()->employee) {
-                $validated['assigned_to'] = Auth::user()->employee->id;
-            }
-            $validated['created_by'] = Auth::user()->employee ? Auth::user()->employee->id : null;
+        // ✅ Set the creator of the task (user_id)
+        $validated['created_by'] = Auth::id();
+
+        // ✅ Optionally assign to self if admin and not specified
+        if (Auth::user()->isAdmin() && !$validated['assigned_to'] && Auth::user()->employee) {
+            $validated['assigned_to'] = Auth::user()->employee->id;
         }
 
         $task = Task::create($validated);
 
         return redirect()->route('tasks.index')
-                        ->with('success', 'Task created successfully.');
+            ->with('success', 'Task created successfully.');
     }
 
     /**
@@ -153,8 +153,12 @@ class TaskController extends Controller
     {
         $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
+        $callLogs = CallLog::with('client')
+            ->where('client_id', $task->client_id)
+            ->latest()
+            ->get();
 
-        return view('tasks.edit', compact('task', 'clients', 'employees'));
+        return view('tasks.edit', compact('task', 'clients', 'employees', 'callLogs'));
     }
 
     /**
@@ -162,22 +166,39 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'assigned_to' => 'nullable|exists:employees,id',
+            'call_log_id' => 'nullable|exists:call_logs,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|integer|min:1|max:9',
+            'due_date' => 'nullable|date',
             'started_at' => 'nullable|date',
             'completed_at' => 'nullable|date',
             'notes' => 'nullable|string'
         ]);
 
-        $task->update($validated);
+        $task->update([
+            'client_id' => $validated['client_id'],
+            'assigned_to' => $validated['assigned_to'],
+            'call_log_id' => $validated['call_log_id'],
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'priority' => $validated['priority'],
+            'status' => $validated['status'],
+            'due_date' => $validated['due_date'],
+            'started_at' => $validated['started_at'],
+            'completed_at' => $validated['completed_at'],
+            'notes' => $validated['notes'],
+        ]);
 
         return redirect()->route('tasks.show', $task)
-                        ->with('success', 'Task updated successfully.');
+            ->with('success', 'Task updated successfully.');
     }
 
     /**
@@ -188,6 +209,6 @@ class TaskController extends Controller
         $task->delete();
 
         return redirect()->route('tasks.index')
-                        ->with('success', 'Task deleted successfully.');
+            ->with('success', 'Task deleted successfully.');
     }
 }

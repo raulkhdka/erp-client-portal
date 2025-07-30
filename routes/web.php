@@ -59,8 +59,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Public Dynamic Form Routes (for clients to fill without being logged in if needed)
 // Keep these outside the 'auth' middleware if anonymous submission is allowed
+Route::post('/dynamic-forms/store', [DynamicFormController::class, 'store'])->name('dynamic-forms.store');
 Route::get('/dynamic-forms/public/{form}', [DynamicFormController::class, 'showPublicForm'])->name('dynamic-forms.public-show');
-Route::post('/dynamic-forms/public/{form}/submit', [DynamicFormController::class, 'submitPublicForm'])->name('dynamic-forms.public-submit');
+Route::post('/dynamic-forms/public/{form}/submit', [DynamicFormController::class, 'submitPublicForm'])->name('dynamic-forms.submit');
 
 
 // Authenticated Routes - All routes below this require authentication
@@ -117,13 +118,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/client/dashboard', [DashboardController::class, 'clientDashboard'])->name('client.dashboard');
 
         // Client's dedicated pages - These were missing!
-        Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('client.documents.index');
-        Route::get('/client/documents/{document}/show', [ClientDocumentController::class, 'show'])->name('client.documents.show');
-        Route::get('/client/documents/{document}/preview', [ClientDocumentController::class, 'preview'])->name('client.documents.preview');
-        Route::get('/client/services', [ClientServicesController::class, 'index'])->name('client.services.index');
-        Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('client.employees.index');
+        Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('clients.documents.index');
+        Route::get('/client/documents/{document}/show', [ClientDocumentController::class, 'show'])->name('clients.documents.show');
+        Route::get('/client/documents/{document}/preview', [ClientDocumentController::class, 'preview'])->name('clients.documents.preview');
+        Route::get('/client/services', [ClientServicesController::class, 'index'])->name('clients.services.index');
+        Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('clients.employees.index');
         //Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('documents.index');
-        Route::get('/client/forms', [ClientFormController::class, 'index'])->name('client.forms.index');
+        Route::get('/client/forms', [ClientFormController::class, 'index'])->name('clients.forms.index');
 
         // Optional: Client-specific document actions (if allowed to upload/download their own)
         // Route::get('/client/documents/upload', [ClientDocumentController::class, 'create'])->name('documents.create');
@@ -133,7 +134,7 @@ Route::middleware(['auth'])->group(function () {
         //Route::get('/client/images', [ClientImageController::class, 'index'])->name('client.images.index');
 
         // Optional: Client-specific form response viewing
-        Route::get('/client/form-responses/{dynamicFormResponse}', [ClientFormController::class, 'show'])->name('client.form-responses.show');
+        Route::get('/client/form-responses/{dynamicFormResponse}', [ClientFormController::class, 'show'])->name('clients.form-responses.show');
     });
 
     // --- Shared Document Routes (Admin, Employee, Client) ---

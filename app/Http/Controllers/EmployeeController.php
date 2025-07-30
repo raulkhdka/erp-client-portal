@@ -33,7 +33,8 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'user_name'=> 'required|string|max:255',
+            'employee_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
             'employee_id' => 'required|string|unique:employees',
@@ -46,9 +47,9 @@ class EmployeeController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create user
+            // Create new user
             $user = User::create([
-                'name' => $request->name,
+                'name' => $request->user_name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => User::ROLE_EMPLOYEE,
@@ -57,6 +58,7 @@ class EmployeeController extends Controller
             // Create employee
             Employee::create([
                 'user_id' => $user->id,
+                'name' => $request->employee_name,
                 'employee_id' => $request->employee_id,
                 'department' => $request->department,
                 'position' => $request->position,

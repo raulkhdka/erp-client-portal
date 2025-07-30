@@ -18,7 +18,7 @@
                 <div class="card-body">
                     {{-- Form for document upload --}}
                     {{-- Make sure your form has enctype="multipart/form-data" for file uploads --}}
-                    <form action="{{ route('client.documents.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('clients.documents.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-3">

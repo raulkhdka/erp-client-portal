@@ -115,7 +115,7 @@
         <div class="card shadow h-100">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">My Services</h6>
-                <a href="{{ route('client.services.index') }}" class="btn btn-sm btn-primary">View All</a>
+                <a href="{{ route('clients.services.index') }}" class="btn btn-sm btn-primary">View All</a>
             </div>
             <div class="card-body">
                 @if($clientServices->count() > 0)
@@ -164,7 +164,7 @@
         <div class="card shadow h-100">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-info">My Assigned Employees</h6>
-                <a href="{{ route('client.employees.index') }}" class="btn btn-sm btn-info">View All</a>
+                <a href="{{ route('clients.employees.index') }}" class="btn btn-sm btn-info">View All</a>
             </div>
             <div class="card-body">
                 @if($clientEmployees->count() > 0)
@@ -203,7 +203,7 @@
         <div class="card shadow h-100">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-secondary">Recent Documents</h6>
-                <a href="{{ route('client.documents.index') }}" class="btn btn-sm btn-secondary">View All</a>
+                <a href="{{ route('clients.documents.index') }}" class="btn btn-sm btn-secondary">View All</a>
             </div>
             <div class="card-body">
                 @if($recentDocuments->count() > 0)

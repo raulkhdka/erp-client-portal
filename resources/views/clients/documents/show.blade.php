@@ -104,11 +104,11 @@
                         <i class="fas fa-download me-2"></i>Download
                     </a>
                     @if(in_array(strtolower($document->file_type), ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'txt']))
-                        <a href="{{ route('client.documents.preview', $document) }}" class="btn btn-outline-light mb-2" target="_blank">
+                        <a href="{{ route('clients.documents.preview', $document) }}" class="btn btn-outline-light mb-2" target="_blank">
                             <i class="fas fa-eye me-2"></i>Preview
                         </a>
                     @endif
-                    <a href="{{ route('client.documents.index') }}" class="btn btn-outline-light">
+                    <a href="{{ route('clients.documents.index') }}" class="btn btn-outline-light">
                         <i class="fas fa-arrow-left me-2"></i>Back to Documents
                     </a>
                 </div>

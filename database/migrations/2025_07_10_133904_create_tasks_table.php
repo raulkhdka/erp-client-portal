@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('call_log_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('client_id')->constrained()->onDelete('cascade');
             $table->foreignId('assigned_to')->constrained('employees')->onDelete('cascade');
-            $table->foreignId('created_by')->constrained('employees')->onDelete('cascade');
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->string('title');
             $table->text('description');
             $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');

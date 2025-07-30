@@ -1,211 +1,1608 @@
 @extends('layouts.app')
-
 @section('title', 'Edit Dynamic Form')
 
+@push('styles')
+<style>
+/* Same styles as create.blade.php */
+.preview-container {
+    background: #ffffff;
+    border: 2px solid #e9ecef;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    min-height: 400px;
+    position: relative;
+}
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+.fullscreen-preview {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.fullscreen-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.preview-device-frame {
+    transition: all 0.3s ease;
+}
+
+.preview-device-frame.desktop { width: 100%; }
+.preview-device-frame.tablet { max-width: 768px; margin: 0 auto; }
+.preview-device-frame.mobile { max-width: 375px; margin: 0 auto; }
+
+.device-selector .device-btn {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    background: #f8f9fa;
+}
+
+.device-selector .device-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.preview-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.preview-stat {
+    text-align: center;
+}
+
+.preview-stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.preview-stat-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.preview-mode-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+}
+
+.preview-field {
+    margin-bottom: 1.5rem;
+}
+
+.preview-field-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.preview-field-help {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.preview-field-required {
+    color: #dc3545;
+}
+
+.sortable-container .field-item {
+    cursor: move;
+}
+
+.sortable-container .field-item.dragging {
+    opacity: 0.5;
+}
+
+.drag-handle {
+    cursor: move;
+}
+
+.field-collapsed .collapse-content {
+    display: none;
+}
+
+.field-options-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 1rem;
+}
+
+.field-options-list li {
+    background: #f8f9fa;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .preview-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .device-selector .device-btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+@endpush
+
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-edit me-2"></i>Edit Dynamic Form: {{ $form->name }}</h1>
-    <a href="{{ route('dynamic-forms.index') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Back to Forms
-    </a>
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="text-center text-white">
+        <div class="spinner-border mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div>Processing...</div>
+    </div>
 </div>
 
-@if ($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Fullscreen Preview -->
+<div class="fullscreen-preview" id="fullscreenPreview">
+    <button class="fullscreen-close" id="fullscreenClose" title="Close Fullscreen">
+        <i class="fas fa-times"></i>
+    </button>
+    <div class="preview-container">
+        <div class="preview-header">
+            <h2 id="fullscreenPreviewTitle">Form Preview</h2>
+            <p id="fullscreenPreviewDescription" class="mb-0 opacity-75"></p>
+        </div>
+        <div class="preview-body">
+            <div id="fullscreenPreviewContent" class="preview-form">
+                <!-- Fullscreen preview content -->
+            </div>
+        </div>
     </div>
-@endif
+</div>
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-edit me-2 text-primary"></i>
+        Edit Dynamic Form
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-outline-info" id="togglePreview">
+                <i class="fas fa-eye me-2"></i>Show Live Preview
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="fullscreenBtn">
+                <i class="fas fa-expand me-2"></i>Fullscreen
+            </button>
+        </div>
+        <a href="{{ route('dynamic-forms.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Forms
+        </a>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress mb-4" style="height: 4px;">
+    <div class="progress-bar bg-primary" role="progressbar" style="width: 33%" id="progressBar"></div>
+</div>
+
+<!-- Error Display -->
+<div class="alert alert-danger alert-dismissible fade" role="alert" id="errorAlert" style="display: none;">
+    <ul class="mb-0" id="errorList"></ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<!-- Success Display -->
+<div class="alert alert-success alert-dismissible fade" role="alert" id="successAlert" style="display: none;">
+    <span id="successMessage"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
 
 <div class="row">
-    <div class="col-lg-8">
-        <div class="card shadow">
+    <!-- Form Builder Column -->
+    <div class="col-lg-6" id="builderColumn">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>Form Builder
+                    <span class="badge bg-secondary ms-2" id="fieldCount">0 fields</span>
+                </h5>
+            </div>
+
             <div class="card-body">
-                <form method="POST" action="{{ route('dynamic-forms.update', $form->id) }}" id="dynamicFormEdit">
+                <form id="dynamicFormEdit" novalidate method="POST" action="{{ route('dynamic-forms.update', $form->id) }}">
                     @csrf
-                    @method('PUT')
+                    @method('PATCH')
 
-                    <div class="mb-4">
-                        <label for="name" class="form-label">Form Name *</label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $form->name) }}" required autocomplete="off">
-                        @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                    <!-- Hidden Form ID -->
+                    <input type="hidden" name="id" value="{{ $form->id }}">
 
-                    <div class="mb-4">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="3" autocomplete="off">{{ old('description', $form->description) }}</textarea>
-                        @error('description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', $form->is_active) ? 'checked' : '' }} autocomplete="off">
-                            <label class="form-check-label" for="is_active">Form is Active</label>
+                    <!-- Basic Form Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <label for="name" class="form-label fw-bold">
+                                Form Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name"
+                                   value="{{ old('name', $form->name) }}" required autocomplete="off"
+                                   placeholder="Enter a descriptive form name">
+                            <div class="invalid-feedback"></div>
                         </div>
-                        <small class="text-muted">Active forms can receive submissions</small>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Status</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1"
+                                       {{ old('is_active', $form->is_active) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_active">
+                                    <span class="badge {{ $form->is_active ? 'bg-success' : 'bg-secondary' }}" id="statusBadge">
+                                        {{ $form->is_active ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                            <h5 class="mb-0">Form Fields</h5>
-                            <button type="button" class="btn btn-sm btn-success" id="addField">
-                                <i class="fas fa-plus me-1"></i>Add Field
+                        <label for="description" class="form-label fw-bold">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Describe what this form is for...">{{ old('description', $form->description) }}</textarea>
+                        <div class="form-text">This will be shown to users at the top of your form</div>
+                    </div>
+
+                    <!-- Form Fields Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                            <h6 class="mb-0 fw-bold">
+                                <i class="fas fa-list-ul me-2 text-primary"></i>
+                                Form Fields
+                            </h6>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-success btn-sm" id="addField">
+                                    <i class="fas fa-plus me-1"></i>Add Field
+                                </button>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                        Quick Add
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-field-type="text"><i class="fas fa-font me-2"></i>Text Field</a></li>
+                                        <li><a class="dropdown-item" href="#" data-field-type="email"><i class="fas fa-envelope me-2"></i>Email Field</a></li>
+                                        <li><a class="dropdown-item" href="#" data-field-type="textarea"><i class="fas fa-align-left me-2"></i>Textarea</a></li>
+                                        <li><a class="dropdown-item" href="#" data-field-type="select"><i class="fas fa-list me-2"></i>Select Dropdown</a></li>
+                                        <li><a class="dropdown-item" href="#" data-field-type="radio"><i class="fas fa-dot-circle me-2"></i>Radio Buttons</a></li>
+                                        <li><a class="dropdown-item" href="#" data-field-type="checkbox"><i class="fas fa-check-square me-2"></i>Checkboxes</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Container for dynamic form fields -->
+                        <div id="fieldsContainer" class="sortable-container">
+                            <div class="text-center py-5 text-muted" id="emptyState" style="display: none;">
+                                <i class="fas fa-plus-circle fa-3x mb-3 opacity-50"></i>
+                                <h6>No fields added yet</h6>
+                                <p class="small">Click "Add Field" to start building your form</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                        <div>
+                            <button type="button" class="btn btn-outline-info" id="saveAsDraft">
+                                <i class="fas fa-save me-2"></i>Save as Draft
                             </button>
                         </div>
-
-                        <div id="fieldsContainer">
-                            {{-- Existing fields will be appended here by JavaScript on load --}}
-                            {{-- If old input exists (e.g., validation error), prioritize it --}}
-                            @php
-                                $fieldsToLoad = old('fields', $form->fields);
-                            @endphp
-
-                            @foreach ($fieldsToLoad as $index => $field)
-                                @include('dynamic-forms._field_template', [
-                                    'index' => $index,
-                                    'field' => (object) $field // Cast to object for consistent access
-                                ])
-                            @endforeach
+                        <div class="btn-group">
+                            <a href="{{ route('dynamic-forms.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i>Update Form
+                            </button>
                         </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('dynamic-forms.show', $form->id) }}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Update Form
-                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-4">
-        <div class="card shadow">
-            <div class="card-header bg-warning text-dark">
-                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Field Guidelines</h6>
+    <!-- Live Preview Column -->
+    <div class="col-lg-6" id="previewColumn" style="display: none;">
+        <div class="preview-toggle">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-eye me-2 text-info"></i>Live Preview
+                </h5>
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-info" id="refreshPreview">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="hidePreview">
+                        <i class="fas fa-eye-slash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Selector -->
+        <div class="device-selector mb-3">
+            <button type="button" class="device-btn active" data-device="desktop">
+                <i class="fas fa-desktop me-1"></i> Desktop
+            </button>
+            <button type="button" class="device-btn" data-device="tablet">
+                <i class="fas fa-tablet-alt me-1"></i> Tablet
+            </button>
+            <button type="button" class="device-btn" data-device="mobile">
+                <i class="fas fa-mobile-alt me-1"></i> Mobile
+            </button>
+        </div>
+
+        <!-- Preview Stats -->
+        <div class="preview-stats">
+            <div class="preview-stat">
+                <div class="preview-stat-number" id="previewTotalFields">0</div>
+                <div class="preview-stat-label">Total Fields</div>
+            </div>
+            <div class="preview-stat">
+                <div class="preview-stat-number" id="previewRequiredFields">0</div>
+                <div class="preview-stat-label">Required</div>
+            </div>
+            <div class="preview-stat">
+                <div class="preview-stat-number" id="previewOptionalFields">0</div>
+                <div class="preview-stat-label">Optional</div>
+            </div>
+            <div class="preview-stat">
+                <div class="preview-stat-number" id="previewEstimatedTime">0</div>
+                <div class="preview-stat-label">Est. Time (min)</div>
+            </div>
+        </div>
+
+        <!-- Preview Container -->
+        <div class="preview-device-frame desktop" id="previewDeviceFrame">
+            <div class="preview-container">
+                <div class="preview-mode-indicator">LIVE PREVIEW</div>
+                <div class="preview-header">
+                    <h2 id="previewTitle">Form Preview</h2>
+                    <p id="previewDescription" class="mb-0 opacity-75">Add a description to see it here</p>
+                </div>
+                <div class="preview-body">
+                    <div id="previewContent" class="preview-form">
+                        <div class="preview-empty">
+                            <i class="fas fa-eye"></i>
+                            <h5>No preview available</h5>
+                            <p>Add some fields to see the live preview</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar (shown when preview is hidden) -->
+    <div class="col-lg-6" id="sidebarColumn">
+        <!-- Form Statistics -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-info bg-opacity-10">
+                <h6 class="mb-0 text-info">
+                    <i class="fas fa-chart-bar me-2"></i>Form Statistics
+                </h6>
             </div>
             <div class="card-body">
-                <ul class="small text-muted mb-3">
-                    <li>Each field requires a label. The "Field Name" will be auto-generated.</li>
-                    <li>Options are required for "Select", "Checkbox", and "Radio" fields (one per line).</li>
-                    <li>"Field Order" controls display order.</li>
-                    <li>File uploads: Supported types (PDF, DOC, DOCX, JPG, PNG, GIF), max 10MB (add server-side validation).</li>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="h4 mb-0 text-primary" id="totalFields">0</div>
+                        <div class="small text-muted">Fields</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="h4 mb-0 text-success" id="requiredFields">0</div>
+                        <div class="small text-muted">Required</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="h4 mb-0 text-info" id="optionalFields">0</div>
+                        <div class="small text-muted">Optional</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-primary bg-opacity-10">
+                <h6 class="mb-0 text-primary">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm quick-add-field" data-field-type="text">
+                        <i class="fas fa-font me-2"></i>Add Text Field
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm quick-add-field" data-field-type="email">
+                        <i class="fas fa-envelope me-2"></i>Add Email Field
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm quick-add-field" data-field-type="select">
+                        <i class="fas fa-list me-2"></i>Add Select Field
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm quick-add-field" data-field-type="textarea">
+                        <i class="fas fa-align-left me-2"></i>Add Textarea
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guidelines Card -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-warning bg-opacity-10 border-warning">
+                <h6 class="mb-0 text-warning-emphasis">
+                    <i class="fas fa-info-circle me-2"></i>Field Guidelines
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="small text-muted mb-3 list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Each field requires a clear label</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Options needed for Select/Radio/Checkbox</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use drag handles to reorder fields</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Preview your form before saving</li>
                 </ul>
                 <div class="alert alert-info small mb-0">
                     <i class="fas fa-lightbulb me-1"></i>
-                    <strong>Tip:</strong> Use clear labels for better UX.
+                    <strong>Pro Tip:</strong> Use the live preview to see changes in real-time!
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{{-- This template will be cloned by JavaScript --}}
+<!-- Field Template -->
 <template id="fieldTemplate">
-    @include('dynamic-forms._field_template', ['index' => '__INDEX__', 'field' => null])
+    <div class="field-item card mb-3 border-start border-4 border-primary border-opacity-25" data-field-index="__INDEX__">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-grip-vertical drag-handle me-2" title="Drag to reorder" aria-label="Drag to reorder field" role="button"></i>
+                <span class="field-type-icon">📝</span>
+                <strong class="field-title">New Field</strong>
+                <span class="badge bg-secondary ms-2 field-type-badge">Text</span>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-secondary btn-sm toggle-collapse" title="Collapse/Expand">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm duplicate-field" title="Duplicate Field">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-field" title="Remove Field">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body collapse-content">
+            <div class="row g-3">
+                <input type="hidden" class="field-id" name="fields[__INDEX__][field_id]" value="">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Field Label <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control field-label" name="fields[__INDEX__][field_label]" placeholder="Enter field label" required autocomplete="off">
+                    <div class="invalid-feedback">Field label is required</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Field Type <span class="text-danger">*</span></label>
+                    <select class="form-control field-type" name="fields[__INDEX__][field_type]" required autocomplete="off">
+                        <option value="">Select Type</option>
+                        <option value="text">Text</option>
+                        <option value="email">Email</option>
+                        <option value="number">Number</option>
+                        <option value="tel">Phone</option>
+                        <option value="url">URL</option>
+                        <option value="textarea">Textarea</option>
+                        <option value="select">Select</option>
+                        <option value="radio">Radio</option>
+                        <option value="checkbox">Checkbox</option>
+                        <option value="file">File</option>
+                        <option value="date">Date</option>
+                        <option value="time">Time</option>
+                        <option value="datetime-local">Date & Time</option>
+                    </select>
+                    <div class="invalid-feedback">Field type is required</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check mt-2">
+                        <input class="form-check-input field-required" type="checkbox" name="fields[__INDEX__][is_required]" value="1" autocomplete="off">
+                        <label class="form-check-label">Required Field</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Field Order <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control field-order" name="fields[__INDEX__][sort_order]" value="__INDEX__" min="1" required autocomplete="off">
+                    <div class="invalid-feedback">Field order must be a positive number</div>
+                </div>
+                <div class="col-md-12 mb-3 field-options-group" style="display: none;">
+                    <label for="fields[__INDEX__][field_options]" class="form-label fw-bold">Current Options</label>
+                    <ul class="field-options-list" data-options-field="fields[__INDEX__][field_options]"></ul>
+                    <label for="fields[__INDEX__][field_options]" class="form-label fw-bold">Field Options (one per line) <span class="text-danger">*</span></label>
+                    <textarea class="form-control field-options" name="fields[__INDEX__][field_options]" rows="3" placeholder="Option 1\nOption 2\nOption 3" autocomplete="off"></textarea>
+                    <small class="form-text text-muted">Enter each option on a new line (e.g., Option 1, Option 2)</small>
+                    <div class="invalid-feedback">At least 2 options are required</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Placeholder (optional)</label>
+                    <input type="text" class="form-control field-placeholder" name="fields[__INDEX__][field_placeholder]" placeholder="Enter placeholder text" autocomplete="off">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Help Text (optional)</label>
+                    <textarea class="form-control field-help-text" name="fields[__INDEX__][help_text]" rows="2" autocomplete="off"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
-
 @endsection
 
 @push('scripts')
+<!-- Axios CDN -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- SortableJS for drag and drop -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Calculate initial fieldIndex based on existing fields or old input
-        let fieldIndex = {{ old('fields') ? count(old('fields')) : $form->fields->count() }};
+class DynamicFormBuilder {
+    constructor() {
+        this.fieldIndex = {{ old('fields') ? count(old('fields')) : count($form->fields) }};
+        this.fields = [];
+        this.sortable = null;
+        this.currentDevice = 'desktop';
+        this.previewVisible = false;
 
-        const addFieldBtn = document.getElementById('addField');
-        const fieldsContainer = document.getElementById('fieldsContainer');
-        const templateElement = document.getElementById('fieldTemplate');
+        this.init();
+        this.bindEvents();
+        this.loadOldFields();
+        this.initSortable();
+        this.updateStatistics();
+        this.updatePreview();
+    }
 
-        if (!addFieldBtn || !fieldsContainer || !templateElement) {
-            console.error('Required elements not found: addFieldBtn, fieldsContainer, or fieldTemplate.');
+    init() {
+        this.elements = {
+            form: document.getElementById('dynamicFormEdit'),
+            fieldsContainer: document.getElementById('fieldsContainer'),
+            addFieldBtn: document.getElementById('addField'),
+            templateElement: document.getElementById('fieldTemplate'),
+            emptyState: document.getElementById('emptyState'),
+            fieldCount: document.getElementById('fieldCount'),
+            totalFields: document.getElementById('totalFields'),
+            requiredFields: document.getElementById('requiredFields'),
+            optionalFields: document.getElementById('optionalFields'),
+            previewContent: document.getElementById('previewContent'),
+            previewTitle: document.getElementById('previewTitle'),
+            previewDescription: document.getElementById('previewDescription'),
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            errorAlert: document.getElementById('errorAlert'),
+            successAlert: document.getElementById('successAlert'),
+            progressBar: document.getElementById('progressBar'),
+            previewDeviceFrame: document.getElementById('previewDeviceFrame'),
+            fullscreenPreview: document.getElementById('fullscreenPreview'),
+            fullscreenPreviewContent: document.getElementById('fullscreenPreviewContent'),
+            fullscreenPreviewTitle: document.getElementById('fullscreenPreviewTitle'),
+            fullscreenPreviewDescription: document.getElementById('fullscreenPreviewDescription'),
+            builderColumn: document.getElementById('builderColumn'),
+            previewColumn: document.getElementById('previewColumn'),
+            sidebarColumn: document.getElementById('sidebarColumn'),
+            togglePreviewBtn: document.getElementById('togglePreview')
+        };
+
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+    }
+
+    bindEvents() {
+        this.elements.addFieldBtn?.addEventListener('click', () => this.addField());
+        document.querySelectorAll('[data-field-type]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.addField(e.target.closest('[data-field-type]').dataset.fieldType);
+            });
+        });
+        document.querySelectorAll('.quick-add-field').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.addField(e.target.dataset.fieldType);
+            });
+        });
+        this.elements.form?.addEventListener('submit', (e) => this.handleSubmit(e));
+        document.getElementById('saveAsDraft')?.addEventListener('click', () => this.saveAsDraft());
+        this.elements.togglePreviewBtn?.addEventListener('click', () => this.togglePreview());
+        document.getElementById('hidePreview')?.addEventListener('click', () => this.hidePreview());
+        document.getElementById('refreshPreview')?.addEventListener('click', () => this.updatePreview());
+        document.getElementById('fullscreenBtn')?.addEventListener('click', () => this.showFullscreenPreview());
+        document.getElementById('fullscreenClose')?.addEventListener('click', () => this.hideFullscreenPreview());
+        document.querySelectorAll('.device-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.changeDevice(e.target.closest('.device-btn').dataset.device));
+        });
+        document.getElementById('name')?.addEventListener('input', () => this.updatePreview());
+        document.getElementById('description')?.addEventListener('input', () => this.updatePreview());
+        document.getElementById('is_active')?.addEventListener('change', (e) => {
+            const badge = document.getElementById('statusBadge');
+            if (e.target.checked) {
+                badge.textContent = 'Active';
+                badge.className = 'badge bg-success';
+            } else {
+                badge.textContent = 'Inactive';
+                badge.className = 'badge bg-secondary';
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.elements.fullscreenPreview.style.display !== 'none') {
+                this.hideFullscreenPreview();
+            }
+        });
+    }
+
+    initSortable() {
+        if (this.elements.fieldsContainer) {
+            this.sortable = Sortable.create(this.elements.fieldsContainer, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'dragging',
+                onEnd: (evt) => {
+                    this.reorderFields();
+                    this.updateStatistics();
+                    this.updatePreview();
+                }
+            });
+        }
+    }
+
+    togglePreview() {
+        if (this.previewVisible) {
+            this.hidePreview();
+        } else {
+            this.showPreview();
+        }
+    }
+
+    showPreview() {
+        this.previewVisible = true;
+        this.elements.builderColumn.className = 'col-lg-6';
+        this.elements.previewColumn.style.display = 'block';
+        this.elements.sidebarColumn.style.display = 'none';
+        this.elements.togglePreviewBtn.innerHTML = '<i class="fas fa-eye-slash me-2"></i>Hide Live Preview';
+        this.elements.togglePreviewBtn.className = 'btn btn-info';
+        this.updatePreview();
+        this.showToast('Live preview enabled!', 'success');
+    }
+
+    hidePreview() {
+        this.previewVisible = false;
+        this.elements.builderColumn.className = 'col-lg-6';
+        this.elements.previewColumn.style.display = 'none';
+        this.elements.sidebarColumn.style.display = 'block';
+        this.elements.togglePreviewBtn.innerHTML = '<i class="fas fa-eye me-2"></i>Show Live Preview';
+        this.elements.togglePreviewBtn.className = 'btn btn-outline-info';
+        this.showToast('Live preview disabled', 'info');
+    }
+
+    changeDevice(device) {
+        this.currentDevice = device;
+        document.querySelectorAll('.device-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`[data-device="${device}"]`).classList.add('active');
+        this.elements.previewDeviceFrame.className = `preview-device-frame ${device}`;
+        this.showToast(`Switched to ${device} view`, 'info');
+    }
+
+    addField(type = 'text', fieldData = null) {
+        if (!this.elements.templateElement || !this.elements.fieldsContainer) {
+            console.error('Required elements not found');
             return;
         }
 
-        // Function to add a new field (used for both initial load and add button)
-        function addField(fieldData = null) {
-            let templateContent = templateElement.innerHTML;
-            templateContent = templateContent.replace(/__INDEX__/g, fieldIndex);
-
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = templateContent;
-            const fieldCard = wrapper.firstElementChild; // The actual card element
-
-            fieldsContainer.appendChild(fieldCard);
-
-            // Populate fields if fieldData is provided (for existing fields or old input re-population)
-            if (fieldData) {
-                fieldCard.querySelector('.field-id').value = fieldData.id || ''; // Hidden field for existing field ID
-                fieldCard.querySelector('.field-label').value = fieldData.field_label || '';
-                fieldCard.querySelector('.field-type').value = fieldData.field_type || '';
-                if (fieldData.is_required) {
-                    fieldCard.querySelector('.field-required').checked = true;
-                }
-                fieldCard.querySelector('.field-order').value = fieldData.sort_order || (fieldIndex + 1);
-                fieldCard.querySelector('.field-options').value = (fieldData.field_options && Array.isArray(fieldData.field_options)) ? fieldData.field_options.join('\n') : (fieldData.field_options || '');
-                fieldCard.querySelector('.field-placeholder').value = fieldData.placeholder || '';
-                fieldCard.querySelector('.field-help-text').value = fieldData.help_text || '';
-                fieldCard.querySelector('.field-title').textContent = fieldData.field_label || 'New Field';
-            }
-
-            // Attach event listeners for the newly added field
-            attachFieldListeners(fieldCard);
-            fieldIndex++; // Increment for the next field
+        if (!fieldData) {
+            fieldData = {
+                field_label: `Field ${this.fieldIndex + 1}`,
+                field_type: type,
+                sort_order: this.fieldIndex + 1,
+                is_required: false,
+                placeholder: '',
+                help_text: '',
+                field_options: ['select', 'radio', 'checkbox'].includes(type) ? ['Option 1', 'Option 2'] : []
+            };
         }
 
-        // Function to attach listeners to a field card
-        function attachFieldListeners(fieldCard) {
-            // Remove functionality
-            fieldCard.querySelector('.remove-field').addEventListener('click', function() {
-                if (confirm('Are you sure you want to remove this field?')) {
-                    this.closest('.field-item').remove();
+        let templateContent = this.elements.templateElement.innerHTML;
+        templateContent = templateContent.replace(/__INDEX__/g, this.fieldIndex);
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = templateContent;
+        const fieldCard = wrapper.firstElementChild;
+
+        if (this.elements.emptyState) {
+            this.elements.emptyState.style.display = 'none';
+        }
+
+        this.elements.fieldsContainer.appendChild(fieldCard);
+
+        const typeSelect = fieldCard.querySelector('.field-type');
+        if (typeSelect) {
+            typeSelect.value = fieldData.field_type || type;
+            this.handleFieldTypeChange(typeSelect);
+        }
+
+        this.populateField(fieldCard, fieldData);
+
+        this.attachFieldListeners(fieldCard);
+
+        this.fieldIndex++;
+        this.updateStatistics();
+        this.updatePreview();
+
+        fieldCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        this.showToast(`${this.getFieldTypeLabel(type)} field added!`, 'success');
+
+        if (this.fieldIndex === 1 && !this.previewVisible) {
+            setTimeout(() => this.showPreview(), 500);
+        }
+    }
+
+    populateField(fieldCard, fieldData) {
+        const optionsList = fieldCard.querySelector('.field-options-list');
+        let cleanedOptions = '';
+
+        if (fieldData.field_options) {
+            try {
+                let options = typeof fieldData.field_options === 'string'
+                    ? JSON.parse(fieldData.field_options)
+                    : fieldData.field_options;
+                options = Array.isArray(options) ? options.map(opt => opt.trim()).filter(opt => opt) : [];
+                if (['select', 'radio', 'checkbox'].includes(fieldData.field_type) && options.length < 2) {
+                    options = ['Option 1', 'Option 2'];
+                }
+                if (optionsList && options.length > 0) {
+                    optionsList.innerHTML = options.map(opt => `<li>${opt}</li>`).join('');
+                } else if (optionsList) {
+                    optionsList.innerHTML = '<li class="text-muted">No options defined</li>';
+                }
+                cleanedOptions = options.join('\n');
+            } catch (e) {
+                console.error('Error parsing field_options:', e, fieldData.field_options);
+                if (optionsList) {
+                    optionsList.innerHTML = '<li class="text-muted">Invalid options format</li>';
+                }
+                cleanedOptions = ['select', 'radio', 'checkbox'].includes(fieldData.field_type) ? 'Option 1\nOption 2' : '';
+            }
+        } else if (optionsList && ['select', 'radio', 'checkbox'].includes(fieldData.field_type)) {
+            optionsList.innerHTML = '<li>Option 1</li><li>Option 2</li>';
+            cleanedOptions = 'Option 1\nOption 2';
+        } else if (optionsList) {
+            optionsList.innerHTML = '<li class="text-muted">No options defined</li>';
+        }
+
+        const selectors = {
+            '.field-id': fieldData.field_id || fieldData.id || '',
+            '.field-label': fieldData.field_label || `Field ${this.fieldIndex + 1}`,
+            '.field-type': fieldData.field_type || 'text',
+            '.field-order': fieldData.sort_order !== undefined ? fieldData.sort_order : (this.fieldIndex + 1),
+            '.field-options': cleanedOptions,
+            '.field-placeholder': fieldData.placeholder || fieldData.field_placeholder || '',
+            '.field-help-text': fieldData.help_text || ''
+        };
+
+        Object.entries(selectors).forEach(([selector, value]) => {
+            const element = fieldCard.querySelector(selector);
+            if (element) {
+                element.value = value;
+            }
+        });
+
+        const requiredCheckbox = fieldCard.querySelector('.field-required');
+        if (requiredCheckbox && fieldData.is_required) {
+            requiredCheckbox.checked = true;
+        }
+
+        const titleElement = fieldCard.querySelector('.field-title');
+        if (titleElement) {
+            titleElement.textContent = fieldData.field_label || `Field ${this.fieldIndex + 1}`;
+        }
+
+        this.handleFieldTypeChange(fieldCard.querySelector('.field-type'));
+    }
+
+    attachFieldListeners(fieldCard) {
+        const removeBtn = fieldCard.querySelector('.remove-field');
+        removeBtn?.addEventListener('click', () => this.removeField(fieldCard));
+
+        const duplicateBtn = fieldCard.querySelector('.duplicate-field');
+        duplicateBtn?.addEventListener('click', () => this.duplicateField(fieldCard));
+
+        const toggleBtn = fieldCard.querySelector('.toggle-collapse');
+        toggleBtn?.addEventListener('click', () => this.toggleFieldCollapse(fieldCard));
+
+        const labelInput = fieldCard.querySelector('.field-label');
+        labelInput?.addEventListener('input', (e) => {
+            const title = fieldCard.querySelector('.field-title');
+            if (title) {
+                title.textContent = e.target.value || `Field ${this.fieldIndex + 1}`;
+            }
+            this.updatePreview();
+        });
+
+        const typeSelect = fieldCard.querySelector('.field-type');
+        typeSelect?.addEventListener('change', (e) => this.handleFieldTypeChange(e.target));
+
+        const inputs = fieldCard.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => this.updatePreview());
+        });
+
+        const requiredCheckbox = fieldCard.querySelector('.field-required');
+        requiredCheckbox?.addEventListener('change', () => {
+            this.updateStatistics();
+            this.updatePreview();
+        });
+
+        const optionsTextarea = fieldCard.querySelector('.field-options');
+        if (optionsTextarea) {
+            optionsTextarea.addEventListener('input', () => {
+                const options = optionsTextarea.value.split('\n').map(opt => opt.trim()).filter(opt => opt);
+                const optionsList = fieldCard.querySelector('.field-options-list');
+                if (optionsList) {
+                    optionsList.innerHTML = options.length > 0
+                        ? options.map(opt => `<li>${opt}</li>`).join('')
+                        : '<li class="text-muted">No options defined</li>';
+                }
+                if (['select', 'radio', 'checkbox'].includes(fieldCard.querySelector('.field-type')?.value) && options.length < 2) {
+                    optionsTextarea.value = 'Option 1\nOption 2';
+                    if (optionsList) {
+                        optionsList.innerHTML = '<li>Option 1</li><li>Option 2</li>';
+                    }
+                    this.showToast('At least 2 options are required', 'warning');
+                }
+                this.updatePreview();
+            });
+        }
+    }
+
+    handleFieldTypeChange(selectElement) {
+        const fieldCard = selectElement.closest('.field-item');
+        const optionsContainer = fieldCard.querySelector('.field-options-group');
+        const typeBadge = fieldCard.querySelector('.field-type-badge');
+        const typeIcon = fieldCard.querySelector('.field-type-icon');
+
+        const fieldType = selectElement.value;
+        const needsOptions = ['select', 'radio', 'checkbox'].includes(fieldType);
+
+        if (optionsContainer) {
+            optionsContainer.style.display = needsOptions ? 'block' : 'none';
+            const optionsTextarea = optionsContainer.querySelector('.field-options');
+            if (optionsTextarea) {
+                optionsTextarea.required = needsOptions;
+                if (needsOptions && !optionsTextarea.value.trim()) {
+                    optionsTextarea.value = 'Option 1\nOption 2';
+                    const optionsList = fieldCard.querySelector('.field-options-list');
+                    if (optionsList) {
+                        optionsList.innerHTML = '<li>Option 1</li><li>Option 2</li>';
+                    }
+                }
+            }
+        }
+
+        if (typeBadge) {
+            typeBadge.textContent = this.getFieldTypeLabel(fieldType);
+        }
+
+        if (typeIcon) {
+            typeIcon.textContent = this.getFieldTypeIcon(fieldType);
+        }
+
+        this.updatePreview();
+    }
+
+    getFieldTypeLabel(type) {
+        const labels = {
+            'text': 'Text',
+            'email': 'Email',
+            'number': 'Number',
+            'tel': 'Phone',
+            'url': 'URL',
+            'textarea': 'Textarea',
+            'select': 'Select',
+            'radio': 'Radio',
+            'checkbox': 'Checkbox',
+            'file': 'File',
+            'date': 'Date',
+            'time': 'Time',
+            'datetime-local': 'DateTime'
+        };
+        return labels[type] || 'Text';
+    }
+
+    getFieldTypeIcon(type) {
+        const icons = {
+            'text': '📝',
+            'email': '📧',
+            'number': '🔢',
+            'tel': '📞',
+            'url': '🔗',
+            'textarea': '📄',
+            'select': '📋',
+            'radio': '🔘',
+            'checkbox': '☑️',
+            'file': '📎',
+            'date': '📅',
+            'time': '🕐',
+            'datetime-local': '📅'
+        };
+        return icons[type] || '📝';
+    }
+
+    removeField(fieldCard) {
+        if (confirm('Are you sure you want to remove this field?')) {
+            fieldCard.remove();
+            this.reorderFields();
+            this.updateStatistics();
+            this.updatePreview();
+            if (this.elements.fieldsContainer.querySelectorAll('.field-item').length === 0) {
+                this.elements.emptyState.style.display = 'block';
+            }
+            this.showToast('Field removed successfully!', 'warning');
+        }
+    }
+
+    duplicateField(fieldCard) {
+        const fieldData = this.extractFieldData(fieldCard);
+        fieldData.field_label = fieldData.field_label + ' (Copy)';
+        fieldData.field_id = ''; // Clear field_id for new field
+        fieldData.sort_order = this.fieldIndex + 1; // Ensure unique sort_order
+        if (['select', 'radio', 'checkbox'].includes(fieldData.field_type) && (!fieldData.field_options || fieldData.field_options.length < 2)) {
+            fieldData.field_options = ['Option 1', 'Option 2'];
+        }
+        this.addField(fieldData.field_type, fieldData);
+    }
+
+    toggleFieldCollapse(fieldCard) {
+        const content = fieldCard.querySelector('.collapse-content');
+        const icon = fieldCard.querySelector('.toggle-collapse i');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+            fieldCard.classList.remove('field-collapsed');
+        } else {
+            content.style.display = 'none';
+            icon.className = 'fas fa-chevron-down';
+            fieldCard.classList.add('field-collapsed');
+        }
+    }
+
+    extractFieldData(fieldCard) {
+        const optionsTextarea = fieldCard.querySelector('.field-options');
+        const fieldType = fieldCard.querySelector('.field-type')?.value || 'text';
+        let options = optionsTextarea ? optionsTextarea.value.split('\n').map(opt => opt.trim()).filter(opt => opt) : [];
+        return {
+            field_id: fieldCard.querySelector('.field-id')?.value || '',
+            field_label: fieldCard.querySelector('.field-label')?.value || `Field ${this.fieldIndex + 1}`,
+            field_type: fieldType,
+            is_required: fieldCard.querySelector('.field-required')?.checked || false,
+            sort_order: parseInt(fieldCard.querySelector('.field-order')?.value) || this.fieldIndex + 1,
+            field_options: options,
+            placeholder: fieldCard.querySelector('.field-placeholder')?.value || '',
+            help_text: fieldCard.querySelector('.field-help-text')?.value || ''
+        };
+    }
+
+    updateStatistics() {
+        const fields = this.elements.fieldsContainer.querySelectorAll('.field-item');
+        const total = fields.length;
+        let required = 0;
+
+        fields.forEach(field => {
+            if (field.querySelector('.field-required')?.checked) {
+                required++;
+            }
+        });
+
+        const optional = total - required;
+        const estimatedTime = Math.ceil(total * 0.5);
+
+        if (this.elements.fieldCount) {
+            this.elements.fieldCount.textContent = `${total} field${total !== 1 ? 's' : ''}`;
+        }
+        if (this.elements.totalFields) {
+            this.elements.totalFields.textContent = total;
+        }
+        if (this.elements.requiredFields) {
+            this.elements.requiredFields.textContent = required;
+        }
+        if (this.elements.optionalFields) {
+            this.elements.optionalFields.textContent = optional;
+        }
+
+        if (document.getElementById('previewTotalFields')) {
+            document.getElementById('previewTotalFields').textContent = total;
+        }
+        if (document.getElementById('previewRequiredFields')) {
+            document.getElementById('previewRequiredFields').textContent = required;
+        }
+        if (document.getElementById('previewOptionalFields')) {
+            document.getElementById('previewOptionalFields').textContent = optional;
+        }
+        if (document.getElementById('previewEstimatedTime')) {
+            document.getElementById('previewEstimatedTime').textContent = estimatedTime;
+        }
+
+        if (this.elements.progressBar) {
+            const progress = total > 0 ? Math.min(33 + (total * 10), 100) : 33;
+            this.elements.progressBar.style.width = progress + '%';
+        }
+
+        if (this.elements.emptyState) {
+            this.elements.emptyState.style.display = total === 0 ? 'block' : 'none';
+        }
+    }
+
+    reorderFields() {
+        const fields = this.elements.fieldsContainer.querySelectorAll('.field-item');
+        fields.forEach((field, index) => {
+            const orderInput = field.querySelector('.field-order');
+            if (orderInput) {
+                orderInput.value = index + 1;
+            }
+            const inputs = field.querySelectorAll('[name]');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    input.setAttribute('name', name.replace(/fields\[\d+\]/, `fields[${index}]`));
                 }
             });
+        });
+    }
 
-            // Title update functionality based on field label
-            const labelInput = fieldCard.querySelector('.field-label');
-            const titleSpan = fieldCard.querySelector('.field-title');
-            if (labelInput && titleSpan) { // Check for existence
-                labelInput.addEventListener('input', function() {
-                    titleSpan.textContent = this.value || 'New Field';
+    updatePreview() {
+        const formName = document.getElementById('name')?.value || 'Form Preview';
+        const formDescription = document.getElementById('description')?.value || 'Add a description to see it here';
+
+        if (this.elements.previewTitle) {
+            this.elements.previewTitle.textContent = formName;
+        }
+
+        if (this.elements.previewDescription) {
+            this.elements.previewDescription.textContent = formDescription;
+            this.elements.previewDescription.style.display = formDescription.trim() ? 'block' : 'none';
+        }
+
+        if (this.elements.fullscreenPreviewTitle) {
+            this.elements.fullscreenPreviewTitle.textContent = formName;
+        }
+
+        if (this.elements.fullscreenPreviewDescription) {
+            this.elements.fullscreenPreviewDescription.textContent = formDescription;
+        }
+
+        const fields = this.elements.fieldsContainer.querySelectorAll('.field-item');
+        let previewHTML = '';
+
+        if (fields.length === 0) {
+            previewHTML = `
+                <div class="preview-empty">
+                    <i class="fas fa-eye"></i>
+                    <h5>No preview available</h5>
+                    <p>Add some fields to see the live preview</p>
+                    <button type="button" class="btn btn-primary btn-sm mt-2" onclick="document.getElementById('addField').click()">
+                        <i class="fas fa-plus me-1"></i>Add Your First Field
+                    </button>
+                </div>
+            `;
+        } else {
+            previewHTML = '<form class="needs-validation" novalidate>';
+
+            const sortedFields = Array.from(fields).sort((a, b) => {
+                const orderA = parseInt(a.querySelector('.field-order')?.value || 0);
+                const orderB = parseInt(b.querySelector('.field-order')?.value || 0);
+                return orderA - orderB;
+            });
+
+            sortedFields.forEach(field => {
+                const fieldData = this.extractFieldData(field);
+                previewHTML += this.generateFieldHTML(fieldData);
+            });
+
+            previewHTML += `
+                <div class="d-grid gap-2 mt-4">
+                    <button type="button" class="btn preview-submit-btn btn-lg" disabled aria-disabled="true">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Form (Preview)
+                    </button>
+                </div>
+            </form>`;
+        }
+
+        if (this.elements.previewContent) {
+            this.elements.previewContent.innerHTML = previewHTML;
+        }
+
+        if (this.elements.fullscreenPreviewContent) {
+            this.elements.fullscreenPreviewContent.innerHTML = previewHTML;
+        }
+    }
+
+    generateFieldHTML(fieldData) {
+        const { field_label, field_type, is_required, placeholder, help_text, field_options } = fieldData;
+        const requiredAttr = is_required ? 'required' : '';
+        const requiredMark = is_required ? '<span class="preview-field-required">*</span>' : '';
+
+        let fieldHTML = `
+            <div class="preview-field">
+                <label class="preview-field-label">${field_label || 'Untitled Field'} ${requiredMark}</label>
+        `;
+
+        switch (field_type) {
+            case 'textarea':
+                fieldHTML += `<textarea class="form-control" placeholder="${placeholder || ''}" ${requiredAttr} rows="4"></textarea>`;
+                break;
+            case 'select':
+                const selectOptions = Array.isArray(field_options) ? field_options : (field_options ? field_options.split('\n').filter(opt => opt.trim()) : ['Option 1', 'Option 2']);
+                fieldHTML += `<select class="form-select" ${requiredAttr}>
+                    <option value="">${placeholder || 'Choose...'}</option>
+                    ${selectOptions.map(opt => `<option value="${opt.trim()}">${opt.trim()}</option>`).join('')}
+                </select>`;
+                break;
+            case 'radio':
+                const radioOptions = Array.isArray(field_options) ? field_options : (field_options ? field_options.split('\n').filter(opt => opt.trim()) : ['Option 1', 'Option 2']);
+                const radioName = (field_label || 'field').toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+                radioOptions.forEach((opt, index) => {
+                    fieldHTML += `
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="${radioName}" id="radio_${radioName}_${index}" ${requiredAttr}>
+                            <label class="form-check-label" for="radio_${radioName}_${index}">${opt.trim()}</label>
+                        </div>
+                    `;
                 });
-            }
+                break;
+            case 'checkbox':
+                const checkboxOptions = Array.isArray(field_options) ? field_options : (field_options ? field_options.split('\n').filter(opt => opt.trim()) : ['Option 1', 'Option 2']);
+                checkboxOptions.forEach((opt, index) => {
+                    const checkboxId = `checkbox_${(field_label || 'field').toLowerCase().replace(/\s+/g, '_')}_${index}_${Date.now()}`;
+                    fieldHTML += `
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="${checkboxId}">
+                            <label class="form-check-label" for="${checkboxId}">${opt.trim()}</label>
+                        </div>
+                    `;
+                });
+                break;
+            default:
+                fieldHTML += `<input type="${field_type}" class="form-control" placeholder="${placeholder || ''}" ${requiredAttr}>`;
         }
 
-        // Add Field button click handler
-        addFieldBtn.addEventListener('click', function() {
-            addField();
+        if (help_text) {
+            fieldHTML += `<div class="preview-field-help">${help_text}</div>`;
+        }
+
+        fieldHTML += '</div>';
+        return fieldHTML;
+    }
+
+    showFullscreenPreview() {
+        this.updatePreview();
+        this.elements.fullscreenPreview.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    hideFullscreenPreview() {
+        this.elements.fullscreenPreview.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    validateForm() {
+        const errors = {};
+        const nameInput = document.getElementById('name');
+        if (!nameInput.value.trim()) {
+            errors.name = 'Form name is required';
+            nameInput.classList.add('is-invalid');
+            this.showToast('Form name is required', 'error');
+        } else {
+            nameInput.classList.remove('is-invalid');
+        }
+
+        const fields = this.elements.fieldsContainer.querySelectorAll('.field-item');
+        if (fields.length === 0) {
+            errors.fields = 'At least one field is required';
+            this.showToast('Please add at least one field', 'error');
+        }
+
+        fields.forEach((field, index) => {
+            const labelInput = field.querySelector('.field-label');
+            const typeSelect = field.querySelector('.field-type');
+            const orderInput = field.querySelector('.field-order');
+            const optionsTextarea = field.querySelector('.field-options');
+
+            if (!labelInput || !labelInput.value.trim()) {
+                errors[`field_${index}_label`] = `Field ${index + 1} label is required`;
+                if (labelInput) labelInput.classList.add('is-invalid');
+                this.showToast(`Field ${index + 1} is missing a label`, 'error');
+            } else if (labelInput) {
+                labelInput.classList.remove('is-invalid');
+            }
+
+            if (!typeSelect || !typeSelect.value) {
+                errors[`field_${index}_type`] = `Field ${index + 1} type is required`;
+                if (typeSelect) typeSelect.classList.add('is-invalid');
+                this.showToast(`Field ${index + 1} is missing a type`, 'error');
+            } else if (typeSelect) {
+                typeSelect.classList.remove('is-invalid');
+            }
+
+            if (!orderInput || !orderInput.value || isNaN(orderInput.value) || parseInt(orderInput.value) < 0) {
+                errors[`field_${index}_order`] = `Field ${index + 1} order must be a non-negative number`;
+                if (orderInput) orderInput.classList.add('is-invalid');
+                this.showToast(`Field ${index + 1} has an invalid order`, 'error');
+            } else if (orderInput) {
+                orderInput.classList.remove('is-invalid');
+            }
+
+            const needsOptions = ['select', 'radio', 'checkbox'].includes(typeSelect?.value || '');
+            if (needsOptions && (!optionsTextarea || !optionsTextarea.value.trim() || optionsTextarea.value.split('\n').filter(opt => opt.trim()).length < 2)) {
+                errors[`field_${index}_options`] = `Field ${index + 1} requires at least 2 options`;
+                if (optionsTextarea) optionsTextarea.classList.add('is-invalid');
+                this.showToast(`Field ${index + 1} needs at least 2 options`, 'error');
+            } else if (optionsTextarea) {
+                optionsTextarea.classList.remove('is-invalid');
+            }
         });
 
-        // Attach listeners to fields that were initially loaded (either from $form->fields or old() input)
-        fieldsContainer.querySelectorAll('.field-item').forEach(fieldCard => {
-            attachFieldListeners(fieldCard);
-        });
+        console.log('Client-side validation:', { isValid: Object.keys(errors).length === 0, errors });
 
-        // Form validation
-        const form = document.getElementById('dynamicFormEdit');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                // Ensure at least one field is present
-                if (fieldsContainer.children.length === 0) {
-                    e.preventDefault();
-                    alert('Please add at least one field to the form before submitting.');
-                    fieldsContainer.scrollIntoView({ behavior: 'smooth' });
-                    return;
+        return { isValid: Object.keys(errors).length === 0, errors };
+    }
+
+    showErrors(errors) {
+        const errorList = document.getElementById('errorList');
+        const errorAlert = this.elements.errorAlert;
+
+        if (errorList && errorAlert) {
+            errorList.innerHTML = '';
+            Object.entries(errors).forEach(([key, error]) => {
+                const li = document.createElement('li');
+                li.textContent = error instanceof Array ? error[0] : error;
+                errorList.appendChild(li);
+            });
+
+            errorAlert.classList.add('show');
+            errorAlert.style.display = 'block';
+            errorAlert.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    hideErrors() {
+        const errorAlert = this.elements.errorAlert;
+        if (errorAlert) {
+            errorAlert.classList.remove('show');
+            errorAlert.style.display = 'none';
+        }
+    }
+
+    showSuccess(message) {
+        const successAlert = this.elements.successAlert;
+        const successMessage = document.getElementById('successMessage');
+
+        if (successAlert && successMessage) {
+            successMessage.textContent = message;
+            successAlert.classList.add('show');
+            successAlert.style.display = 'block';
+            successAlert.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) return;
+
+        const toastId = 'toast_' + Date.now();
+        const bgClass = {
+            'success': 'bg-success',
+            'error': 'bg-danger',
+            'warning': 'bg-warning',
+            'info': 'bg-info'
+        }[type] || 'bg-info';
+
+        const toastHTML = `
+            <div class="toast ${bgClass} text-white" id="${toastId}" role="alert">
+                <div class="toast-body d-flex justify-content-between align-items-center">
+                    <span>${message}</span>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+        toast.show();
+
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+
+    showLoading() {
+        if (this.elements.loadingOverlay) {
+            this.elements.loadingOverlay.style.display = 'flex';
+        }
+    }
+
+    hideLoading() {
+        if (this.elements.loadingOverlay) {
+            this.elements.loadingOverlay.style.display = 'none';
+        }
+    }
+
+    async handleSubmit(e) {
+        e.preventDefault();
+
+        const validation = this.validateForm();
+        if (!validation.isValid) {
+            this.showErrors(validation.errors);
+            return;
+        }
+
+        this.hideErrors();
+        this.showLoading();
+
+        try {
+            const formData = new FormData(this.elements.form);
+            const fields = this.elements.fieldsContainer.querySelectorAll('.field-item');
+            const fieldDataArray = [];
+
+            fields.forEach((field, index) => {
+                const fieldData = this.extractFieldData(field);
+                if (!fieldData.field_label) fieldData.field_label = `Field ${index + 1}`;
+                if (!fieldData.field_type) fieldData.field_type = 'text';
+                if (!fieldData.sort_order || isNaN(fieldData.sort_order) || fieldData.sort_order < 0) fieldData.sort_order = index + 1;
+
+                if (['select', 'radio', 'checkbox'].includes(fieldData.field_type)) {
+                    let options = fieldData.field_options || [];
+                    if (!Array.isArray(options)) {
+                        options = optionsTextarea.value.split('\n').map(opt => opt.trim()).filter(opt => opt);
+                    }
+                    if (options.length < 2) {
+                        options = ['Option 1', 'Option 2'];
+                        console.warn(`Defaulting field_options for index ${index} to ${JSON.stringify(options)}`);
+                    }
+                    fieldData.field_options = JSON.stringify(options);
+                } else {
+                    fieldData.field_options = fieldData.field_options.length > 0 ? JSON.stringify(fieldData.field_options) : null;
                 }
 
-                // Optional: Client-side validation for field names (e.g., unique within form)
+                fieldDataArray.push(fieldData);
+
+                formData.set(`fields[${index}][field_id]`, fieldData.field_id || '');
+                formData.set(`fields[${index}][field_label]`, fieldData.field_label);
+                formData.set(`fields[${index}][field_type]`, fieldData.field_type);
+                formData.set(`fields[${index}][is_required]`, fieldData.is_required ? '1' : '0');
+                formData.set(`fields[${index}][sort_order]`, fieldData.sort_order.toString());
+                formData.set(`fields[${index}][field_options]`, fieldData.field_options);
+                formData.set(`fields[${index}][placeholder]`, fieldData.placeholder || '');
+                formData.set(`fields[${index}][help_text]`, fieldData.help_text || '');
             });
+
+            const formDataObj = Object.fromEntries(formData);
+            console.log('Form data being sent:', JSON.stringify(formDataObj, null, 2));
+            console.log('Extracted field data:', JSON.stringify(fieldDataArray, null, 2));
+
+            const response = await axios.post('{{ route("dynamic-forms.update", $form->id) }}', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'X-HTTP-Method-Override': 'PATCH'
+                }
+            });
+
+            this.hideLoading();
+
+            if (response.data.success) {
+                this.showSuccess('Form updated successfully!');
+                setTimeout(() => {
+                    window.location.href = response.data.redirect || '{{ route("dynamic-forms.index") }}';
+                }, 2000);
+            } else {
+                console.log('Server validation errors:', response.data.errors);
+                this.showErrors(response.data.errors || { general: 'An error occurred while updating the form' });
+            }
+
+        } catch (error) {
+            this.hideLoading();
+            console.error('Form update error:', error);
+            let errorMessage = 'An unexpected error occurred. Please try again.';
+            if (error.response?.status === 422) {
+                errorMessage = 'Validation failed. Please check your inputs.';
+                console.log('Server validation errors:', error.response.data.errors);
+                this.showErrors(error.response.data.errors || { general: errorMessage });
+            } else if (error.code === 'ERR_NETWORK') {
+                errorMessage = 'Network error. Please check your connection.';
+                this.showErrors({ general: errorMessage });
+            } else {
+                this.showErrors({ general: errorMessage });
+            }
         }
-    });
+    }
+
+    async saveAsDraft() {
+        const validation = this.validateForm();
+        if (!validation.isValid) {
+            this.showErrors(validation.errors);
+            return;
+        }
+
+        this.showLoading();
+
+        try {
+            const formData = new FormData(this.elements.form);
+            formData.append('is_draft', '1');
+            const fields = this.elements.fieldsContainer.querySelectorAll('.field-item');
+            const fieldDataArray = [];
+
+            fields.forEach((field, index) => {
+                const fieldData = this.extractFieldData(field);
+                if (!fieldData.field_label) fieldData.field_label = `Field ${index + 1}`;
+                if (!fieldData.field_type) fieldData.field_type = 'text';
+                if (!fieldData.sort_order || isNaN(fieldData.sort_order) || fieldData.sort_order < 0) fieldData.sort_order = index + 1;
+
+                if (['select', 'radio', 'checkbox'].includes(fieldData.field_type)) {
+                    let options = fieldData.field_options || [];
+                    if (!Array.isArray(options)) {
+                        options = optionsTextarea.value.split('\n').map(opt => opt.trim()).filter(opt => opt);
+                    }
+                    if (options.length < 2) {
+                        options = ['Option 1', 'Option 2'];
+                        console.warn(`Defaulting field_options for index ${index} to ${JSON.stringify(options)}`);
+                    }
+                    fieldData.field_options = JSON.stringify(options);
+                } else {
+                    fieldData.field_options = fieldData.field_options.length > 0 ? JSON.stringify(fieldData.field_options) : null;
+                }
+
+                fieldDataArray.push(fieldData);
+
+                formData.set(`fields[${index}][field_id]`, fieldData.field_id || '');
+                formData.set(`fields[${index}][field_label]`, fieldData.field_label);
+                formData.set(`fields[${index}][field_type]`, fieldData.field_type);
+                formData.set(`fields[${index}][is_required]`, fieldData.is_required ? '1' : '0');
+                formData.set(`fields[${index}][sort_order]`, fieldData.sort_order.toString());
+                formData.set(`fields[${index}][field_options]`, fieldData.field_options);
+                formData.set(`fields[${index}][placeholder]`, fieldData.placeholder || '');
+                formData.set(`fields[${index}][help_text]`, fieldData.help_text || '');
+            });
+
+            const formDataObj = Object.fromEntries(formData);
+            console.log('Draft form data being sent:', JSON.stringify(formDataObj, null, 2));
+            console.log('Extracted field data:', JSON.stringify(fieldDataArray, null, 2));
+
+            const response = await axios.post('{{ route("dynamic-forms.update", $form->id) }}', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'X-HTTP-Method-Override': 'PATCH'
+                }
+            });
+
+            this.hideLoading();
+
+            if (response.data.success) {
+                this.showToast('Form saved as draft!', 'success');
+            } else {
+                console.log('Server validation errors:', response.data.errors);
+                this.showErrors(response.data.errors || { general: 'An error occurred while saving the draft' });
+            }
+
+        } catch (error) {
+            this.hideLoading();
+            console.error('Draft save error:', error);
+            this.showToast('Failed to save draft', 'error');
+        }
+    }
+
+    loadOldFields() {
+        let initialFieldCount = 0;
+        console.log('Loading existing fields...');
+        @if (old('fields'))
+            const oldFields = @json(old('fields'));
+            initialFieldCount = oldFields.length;
+            console.log('Old fields from input:', oldFields);
+            oldFields.forEach((fieldData, index) => {
+                console.log(`Populating field ${index}:`, fieldData);
+                fieldData.field_label = fieldData.field_label?.trim() || `Field ${index + 1}`;
+                fieldData.field_type = fieldData.field_type || 'text';
+                fieldData.sort_order = fieldData.sort_order !== undefined && !isNaN(fieldData.sort_order) && fieldData.sort_order >= 0 ? fieldData.sort_order : index + 1;
+                if (['select', 'radio', 'checkbox'].includes(fieldData.field_type)) {
+                    let options = fieldData.field_options;
+                    if (typeof options === 'string') {
+                        try {
+                            options = JSON.parse(options);
+                        } catch (e) {
+                            console.error(`Error parsing field_options for field ${index}:`, e, options);
+                            options = ['Option 1', 'Option 2'];
+                        }
+                    }
+                    if (!Array.isArray(options) || options.length < 2) {
+                        options = ['Option 1', 'Option 2'];
+                    }
+                    fieldData.field_options = options;
+                }
+                this.addField(fieldData.field_type, fieldData);
+            });
+        @else
+            const existingFields = @json($form->fields->toArray());
+            initialFieldCount = existingFields.length;
+            console.log('Existing fields from database:', existingFields);
+            existingFields.forEach((fieldData, index) => {
+                console.log(`Populating field ${index}:`, fieldData);
+                fieldData.field_label = fieldData.field_label?.trim() || `Field ${index + 1}`;
+                fieldData.field_type = fieldData.field_type || 'text';
+                fieldData.sort_order = fieldData.sort_order !== undefined && !isNaN(fieldData.sort_order) && fieldData.sort_order >= 0 ? fieldData.sort_order : index + 1;
+                if (['select', 'radio', 'checkbox'].includes(fieldData.field_type)) {
+                    let options = fieldData.field_options;
+                    if (typeof options === 'string') {
+                        try {
+                            options = JSON.parse(options);
+                        } catch (e) {
+                            console.error(`Error parsing field_options for field ${index}:`, e, options);
+                            options = ['Option 1', 'Option 2'];
+                        }
+                    }
+                    if (!Array.isArray(options) || options.length < 2) {
+                        options = ['Option 1', 'Option 2'];
+                    }
+                    fieldData.field_options = options;
+                }
+                this.addField(fieldData.field_type, fieldData);
+            });
+        @endif
+
+        this.fieldIndex = Math.max(initialFieldCount, this.fieldIndex);
+        if (this.elements.emptyState) {
+            this.elements.emptyState.style.display = initialFieldCount === 0 ? 'block' : 'none';
+        }
+        this.updateStatistics();
+        this.updatePreview();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    window.formBuilder = new DynamicFormBuilder();
+});
 </script>
 @endpush

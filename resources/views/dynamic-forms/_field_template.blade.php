@@ -44,12 +44,13 @@
                 <input type="number" class="form-control field-order" name="fields[{{ $index }}][sort_order]"
                        value="{{ $field->sort_order ?? ($index !== '__INDEX__' ? (int)$index + 1 : 1) }}" min="1" autocomplete="off">
             </div>
-            <div class="col-md-12">
-                <label class="form-label">Field Options (for select, checkbox, radio - one per line)</label>
+            <div class="col-md-12 mb-3 field-options-group" style="@if(!in_array(($field->field_type ?? ''), ['select', 'checkbox', 'radio'])) display: none; @endif">
+                <label for="fields[{{ $index }}][field_options]" class="form-label">Field Options (one per line)</label>
                 <textarea class="form-control field-options" name="fields[{{ $index }}][field_options]" rows="3"
                           placeholder="Option 1
 Option 2
 Option 3" autocomplete="off">{{ ($field && $field->field_options && is_array($field->field_options)) ? implode("\n", $field->field_options) : '' }}</textarea>
+                <small class="form-text text-muted">Enter each option on a new line (e.g., Option 1, Option 2)</small>
             </div>
             <div class="col-md-6">
                 <label class="form-label">Placeholder (optional)</label>
@@ -65,3 +66,43 @@ Option 3" autocomplete="off">{{ ($field && $field->field_options && is_array($fi
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // This part ensures that when the partial is directly rendered by Blade (e.g., on page load for old data or edit),
+        // the field options visibility is correctly set based on the pre-selected field type.
+
+        // Find all field items within this partial (or the main form)
+        document.querySelectorAll('.field-item').forEach(fieldItem => {
+            const fieldTypeSelect = fieldItem.querySelector('.field-type');
+            const fieldOptionsContainer = fieldItem.querySelector('.field-options-group'); // Use the correct class
+
+            if (fieldTypeSelect && fieldOptionsContainer) {
+                const selectedType = fieldTypeSelect.value;
+                if (['select', 'checkbox', 'radio'].includes(selectedType)) {
+                    fieldOptionsContainer.style.display = 'block';
+                } else {
+                    fieldOptionsContainer.style.display = 'none';
+                }
+            }
+        });
+
+        // Also, attach an event listener to dynamically added fields' type selects
+        // This is typically handled by a delegated event listener in your main create.blade.php
+        // but having it here ensures it works even if this partial is loaded in different contexts.
+        document.querySelectorAll('.field-type').forEach(selectElement => {
+            selectElement.addEventListener('change', function() {
+                const fieldItem = this.closest('.field-item');
+                const fieldOptionsContainer = fieldItem.querySelector('.field-options-group'); // Use the correct class
+                const selectedType = this.value;
+
+                if (['select', 'checkbox', 'radio'].includes(selectedType)) {
+                    fieldOptionsContainer.style.display = 'block';
+                } else {
+                    fieldOptionsContainer.style.display = 'none';
+                    // Optional: Clear the textarea content when hidden
+                    fieldOptionsContainer.querySelector('textarea.field-options').value = '';
+                }
+            });
+        });
+    });
+    </script>

@@ -109,7 +109,7 @@
         <!-- Filters -->
         <div class="card mb-4">
             <div class="card-body">
-                <form method="GET" action="{{ route('client.documents.index') }}">
+                <form method="GET" action="{{ route('clients.documents.index') }}">
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Category</label>
@@ -151,7 +151,7 @@
                     <div class="row mt-3">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary me-2">Filter</button>
-                            <a href="{{ route('client.documents.index') }}" class="btn btn-secondary">Clear</a>
+                            <a href="{{ route('clients.documents.index') }}" class="btn btn-secondary">Clear</a>
                         </div>
                     </div>
                 </form>
@@ -212,7 +212,7 @@
 
                         <!-- Actions -->
                         <div class="btn-group w-100" role="group">
-                            <a href="{{ route('client.documents.show', $document) }}" class="btn btn-sm btn-outline-primary" title="View Document">
+                            <a href="{{ route('clients.documents.show', $document) }}" class="btn btn-sm btn-outline-primary" title="View Document">
                                 <i class="fas fa-eye"></i>
                             </a>
                             <a href="{{ route('documents.download', $document) }}" class="btn btn-sm btn-outline-success" title="Download Document">

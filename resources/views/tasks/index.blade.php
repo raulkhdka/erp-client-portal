@@ -20,13 +20,13 @@
                         </a>
                     </div>
                 </div>
-                <div class="card-body">
+                {{-- <div class="card-body">
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                    @endif
+                    @endif --}}
 
                     <!-- Filters -->
                     <form method="GET" action="{{ route('tasks.index') }}" class="mb-4">
@@ -133,7 +133,13 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $task->assignedTo->user->name }}</td>
+                                            <td>
+                                                @if($task->assignedTo && $task->assignedTo->user)
+                                                    {{ $task->assignedTo->user->name }}
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 @if($task->callLog)
                                                     <a href="{{ route('call-logs.show', $task->callLog) }}"
@@ -145,11 +151,38 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('tasks.show', $task) }}"
-                                                   class="btn btn-sm btn-outline-primary"
-                                                   data-bs-toggle="tooltip" title="View">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
+                                                <div class="btn-group" role="group">
+                                                    <!-- View Button -->
+                                                    <a href="{{ route('tasks.show', $task) }}"
+                                                       class="btn btn-sm btn-outline-info"
+                                                       data-bs-toggle="tooltip" title="View Task">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+
+                                                    @if(Auth::user()->isAdmin())
+                                                        <!-- Edit Button -->
+                                                        <a href="{{ route('tasks.edit', $task) }}"
+                                                           class="btn btn-sm btn-outline-warning"
+                                                           data-bs-toggle="tooltip" title="Edit Task">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+
+                                                        <!-- Delete Button -->
+                                                        <form action="{{ route('tasks.destroy', $task) }}"
+                                                              method="POST"
+                                                              class="d-inline delete-form">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                    class="btn btn-sm btn-outline-danger delete-btn"
+                                                                    data-bs-toggle="tooltip"
+                                                                    title="Delete Task"
+                                                                    data-task-title="{{ $task->title }}">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -182,6 +215,35 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the task:</p>
+                <p><strong id="taskTitle"></strong></p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">
+                    <i class="fas fa-trash me-1"></i>Delete Task
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -198,7 +260,31 @@ document.addEventListener('DOMContentLoaded', function() {
         allowClear: true,
         width: '100%'
     });
+
+    // Delete confirmation functionality
+    let currentForm = null;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    // Handle delete button clicks
+    document.querySelectorAll('.delete-btn').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            currentForm = this.closest('.delete-form');
+            const taskTitle = this.getAttribute('data-task-title');
+
+            document.getElementById('taskTitle').textContent = taskTitle;
+            deleteModal.show();
+        });
+    });
+
+    // Handle confirm delete
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+        if (currentForm) {
+            currentForm.submit();
+        }
+        deleteModal.hide();
+    });
 });
 </script>
 @endpush
-@endsection

@@ -49,7 +49,7 @@
                                         <option value="">Select a client</option>
                                         @foreach($clients as $client)
                                             <option value="{{ $client->id }}" {{ old('client_id', $task->client_id) == $client->id ? 'selected' : '' }}>
-                                                {{ $client->company_name }}
+                                                {{ $client->name }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -91,6 +91,25 @@
                                         <option value="9" {{ old('status', $task->status) == 9 ? 'selected' : '' }}>Backlog</option>
                                     </select>
                                 </div>
+                                <div class="form-group">
+                                    <label for="due_date">Due Date</label>
+                                    <input type="date" name="due_date" id="due_date" class="form-control"
+                                        value="{{ old('due_date') }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="call_log_id">Related Call Log (optional)</label>
+                                    <select name="call_log_id" id="call_log_id" class="form-control">
+                                        <option value="">-- No Call Log --</option>
+                                        @foreach ($callLogs as $log)
+                                            <option value="{{ $log->id }}"
+                                                {{ old('call_log_id') == $log->id ? 'selected' : '' }}>
+                                                {{ $log->id }} - {{ Str::limit($log->notes, 50) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                             </div>
 
                             <!-- Right Column -->

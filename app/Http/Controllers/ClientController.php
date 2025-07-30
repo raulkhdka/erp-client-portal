@@ -40,7 +40,8 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'user_name' => 'required|string|max:255',
+            'client_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:8',
             'company_name' => 'required|string|max:255',
@@ -64,7 +65,7 @@ class ClientController extends Controller
 
             // Create user
             $user = User::create([
-                'name' => $request->name,
+                'name' => $request->user_name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => User::ROLE_CLIENT,
@@ -73,6 +74,7 @@ class ClientController extends Controller
             // Create client
             $client = Client::create([
                 'user_id' => $user->id,
+                'name' => $request->client_name,
                 'company_name' => $request->company_name,
                 'address' => $request->address,
                 'tax_id' => $request->tax_id,

@@ -17,8 +17,8 @@ class ClientCacheService
     public static function getClientsForSelect(): array
     {
         return Cache::remember(self::CACHE_KEY, self::CACHE_DURATION, function () {
-            return Client::orderBy('company_name')
-                ->pluck('company_name', 'id')
+            return Client::orderBy('name')
+                ->pluck('name', 'id')
                 ->toArray();
         });
     }
@@ -29,8 +29,8 @@ class ClientCacheService
     public static function getClientsCollection()
     {
         return Cache::remember(self::CACHE_KEY . '_collection', self::CACHE_DURATION, function () {
-            return Client::select('id', 'company_name', 'contact_person')
-                ->orderBy('company_name')
+            return Client::select('id', 'name', 'contact_person')
+                ->orderBy('name')
                 ->get();
         });
     }
@@ -42,8 +42,8 @@ class ClientCacheService
     {
         return Cache::remember(self::CACHE_KEY . '_with_user', self::CACHE_DURATION, function () {
             return Client::with('user:id,name')
-                ->select('id', 'company_name', 'contact_person', 'user_id')
-                ->orderBy('company_name')
+                ->select('id', 'name', 'contact_person', 'user_id')
+                ->orderBy('name')
                 ->get();
         });
     }

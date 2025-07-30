@@ -35,7 +35,7 @@ class ClientDocumentController extends Controller
         $categories = DocumentCategory::all(); // Load categories
         //$clients = Client::count();
 
-        return view('client.documents.index', compact('documents', 'categories'));
+        return view('clients.documents.index', compact('documents', 'categories'));
     }
 
     /**
@@ -97,7 +97,7 @@ class ClientDocumentController extends Controller
                 'is_approved' => false, // Default to false, i.e. not approved
             ]);
 
-            return redirect()->route('client.documents.index')->with('success', 'Document uploaded successfully!');
+            return redirect()->route('clients.documents.index')->with('success', 'Document uploaded successfully!');
         } catch (\Exception $e) {
             Log::error('Client document upload failed: ' . $e->getMessage(), ['exception' => $e]);
             // If file was uploaded, attempt to delete it to prevent orphaned files
@@ -116,7 +116,7 @@ class ClientDocumentController extends Controller
         $user = Auth::user();
 
         if ($user->isClient() && optional($user->client)->id === $document->client_id) {
-            return view('client.documents.show', compact('document'));
+            return view('clients.documents.show', compact('document'));
         }
 
         abort(403, 'Unauthorized to view this document.');

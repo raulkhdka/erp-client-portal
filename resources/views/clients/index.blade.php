@@ -19,8 +19,9 @@
             <table class="table table-bordered table-hover">
                 <thead class="table-dark">
                     <tr>
+                        <th>Client Name </th>
                         <th>Company Name</th>
-                        <th>Contact Person</th>
+                        <th>User Name</th>
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Status</th>
@@ -31,6 +32,7 @@
                 <tbody>
                     @foreach($clients as $client)
                     <tr>
+                        <td>{{ $client->name }}</td>
                         <td>
                             <strong>{{ $client->company_name }}</strong>
                             @if(isset($client->services) && $client->services instanceof \Illuminate\Database\Eloquent\Collection && $client->services->count() > 0)
@@ -45,6 +47,7 @@
                             @endif
                         </td>
                         <td>{{ $client->user->name }}</td>
+
                         <td>
                             {{ $client->user->email }}
                             @if($client->emails->count() > 0)
@@ -65,6 +68,7 @@
                                 <span class="text-muted">No phone</span>
                             @endif
                         </td>
+
                         <td>
                             <span class="badge bg-{{ $client->status === 'active' ? 'success' : ($client->status === 'inactive' ? 'secondary' : 'warning') }}">
                                 {{ ucfirst($client->status) }}

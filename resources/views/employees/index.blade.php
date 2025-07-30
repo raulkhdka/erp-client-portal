@@ -35,7 +35,7 @@
                         <td>
                             <strong>{{ $employee->employee_id }}</strong>
                         </td>
-                        <td>{{ $employee->user->name }}</td>
+                        <td>{{ $employee->name }}</td>
                         <td>{{ $employee->user->email }}</td>
                         <td>
                             {{ $employee->department ?? 'Not specified' }}

@@ -51,6 +51,11 @@ class CallLog extends Model
     const PRIORITY_URGENT = 'urgent';
 
     // Relationships
+    public function callLog()
+    {
+        return $this->belongsTo(CallLog::class);
+    }
+
     public function client()
     {
         return $this->belongsTo(Client::class);
@@ -59,6 +64,16 @@ class CallLog extends Model
     public function employee()
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function createdByUser()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function tasks()

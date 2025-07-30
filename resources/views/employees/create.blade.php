@@ -22,20 +22,20 @@
                         <!-- User Information -->
                         <div class="row mb-4">
                             <div class="col-12">
-                                <h5 class="border-bottom pb-2 mb-3">Personal Information</h5>
+                                <h5 class="border-bottom pb-2 mb-3">Employee User Creation</h5>
                             </div>
                             <div class="col-md-6">
-                                <label for="name" class="form-label">Full Name *</label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                    id="name" name="name" value="{{ old('name') }}" required>
-                                @error('name')
+                                <label for="user_name" class="form-label">User Name *</label>
+                                <input type="text" class="form-control @error('user_name') is-invalid @enderror"
+                                    id="user_name" name="user_name" value="{{ old('user_name') }}" placeholder="User name" required>
+                                @error('user_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">Email Address *</label>
                                 <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                    id="email" name="email" value="{{ old('email') }}" required>
+                                    id="email" name="email" value="{{ old('email') }}" placeholder="Enter your Email" required>
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -43,7 +43,7 @@
                             <div class="col-md-6">
                                 <label for="password" class="form-label">Password *</label>
                                 <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                    id="password" name="password" required>
+                                    id="password" name="password" placeholder="Enter Password" required>
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -54,6 +54,14 @@
                         <div class="row mb-4">
                             <div class="col-12">
                                 <h5 class="border-bottom pb-2 mb-3">Employee Information</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="employee_name" class="form-label">Employee Name *</label>
+                                <input type="text" class="form-control @error('employee_name') is-invalid @enderror"
+                                    id="employee_name" name="employee_name" value="{{ old('employee_name') }}" placeholder="Full Name">
+                                @error('employee_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="col-md-6">
                                 <label for="employee_id" class="form-label">Employee ID *</label>
@@ -95,7 +103,6 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <!-- Nepali Date -->
                             <div class="col-md-6">
                                 <label for="hire_date" class="form-label">Hire Date *</label>
                                 <div class="input-group">
@@ -196,7 +203,7 @@
                     <h6>Creating a New Employee</h6>
                     <p class="small text-muted mb-3">
                         Fill out this form to add a new employee to the system. The employee will receive login credentials
-                        and can access assigned client data based on their permissions.
+                        and can access assigned client data based on their permissions. Only admins can create employees.
                     </p>
 
                     <h6>Required Fields</h6>

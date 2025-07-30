@@ -170,14 +170,14 @@
                                 {{-- NEW: Services link for clients --}}
                                 <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('client.services.*') ? 'active' : '' }}"
-                                        href="{{ route('client.services.index') }}">
+                                        href="{{ route('clients.services.index') }}">
                                         <i class="fas fa-handshake me-2"></i>Services
                                     </a>
                                 </li>
                                 {{-- NEW: Employees link for clients --}}
                                 <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('client.employees.*') ? 'active' : '' }}"
-                                        href="{{ route('client.employees.index') }}">
+                                        href="{{ route('clients.employees.index') }}">
                                         <i class="fas fa-users me-2"></i>Employees
                                     </a>
                                 </li>
@@ -185,14 +185,14 @@
                                 <li class="nav-item">
                                     {{-- IMPORTANT: Replace '#' with the actual route for My Documents --}}
                                     <a class="nav-link {{ request()->routeIs('client.documents.*') ? 'active' : '' }}"
-                                        href="{{ route('client.documents.index') }}">
+                                        href="{{ route('clients.documents.index') }}">
                                         <i class="fas fa-file-alt me-2"></i>My Documents
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     {{-- IMPORTANT: Replace '#' with the actual route for Forms --}}
                                     <a class="nav-link {{ request()->routeIs('client.forms.*') ? 'active' : '' }}"
-                                        href="{{ route('client.forms.index') }}">
+                                        href="{{ route('clients.forms.index') }}">
                                         <i class="fas fa-clipboard-check me-2"></i>Forms
                                     </a>
                                 </li>
