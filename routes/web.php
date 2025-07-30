@@ -59,7 +59,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Public Dynamic Form Routes (for clients to fill without being logged in if needed)
 // Keep these outside the 'auth' middleware if anonymous submission is allowed
-Route::post('/dynamic-forms/store', [DynamicFormController::class, 'store'])->name('dynamic-forms.store');
+//Route::post('/dynamic-forms/store', [DynamicFormController::class, 'store'])->name('dynamic-forms.store');
 Route::get('/dynamic-forms/public/{form}', [DynamicFormController::class, 'showPublicForm'])->name('dynamic-forms.public-show');
 Route::post('/dynamic-forms/public/{form}/submit', [DynamicFormController::class, 'submitPublicForm'])->name('dynamic-forms.submit');
 
