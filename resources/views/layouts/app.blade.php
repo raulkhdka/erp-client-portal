@@ -13,43 +13,25 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
 
+    <!-- Custom Application Styles -->
+    <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/sidebar.css') }}" rel="stylesheet">
+
     <style>
-        .sidebar {
-            min-height: 100vh;
-            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-        }
-
-        .sidebar-sticky {
-            position: relative;
-            top: 0;
-            height: calc(100vh - 48px);
-            padding-top: .5rem;
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-
-        .nav-link {
-            white-space: nowrap;
-        }
-
-        .breadcrumb a {
-            text-decoration: none;
-            color: #007bff;
-        }
-
-        .breadcrumb a:not(:last-child)::after {
-            content: " / ";
-            margin: 0 5px;
-            color: #6c757d;
-        }
+        /* Additional inline styles if needed */
     </style>
     @yield('styles')
 </head>
 
 <body class="m-0 p-0">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
+            <!-- Mobile Sidebar Toggle -->
+            <button class="sidebar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+
             <a class="navbar-brand" href="{{ auth()->check() ? route('dashboard') : url('/') }}">
                 <i class="fas fa-building me-2"></i>ERP System
             </a>
@@ -81,138 +63,11 @@
 
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-                <div class="sidebar-sticky pt-3">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-                                href="{{ route('dashboard') }}">
-                                <i class="fas fa-home me-2"></i>Dashboard
-                            </a>
-                        </li>
-
-                        @if (Auth::user()->isAdmin())
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}"
-                                    href="{{ route('clients.index') }}">
-                                    <i class="fas fa-users me-2"></i>Clients
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
-                                    href="{{ route('employees.index') }}">
-                                    <i class="fas fa-user-tie me-2"></i>Employees
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('services.*') ? 'active' : '' }}"
-                                    href="{{ route('services.index') }}">
-                                    <i class="fas fa-concierge-bell me-2"></i>Services
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
-                                    href="{{ route('call-logs.index') }}">
-                                    <i class="fas fa-phone me-2"></i>Call Logs
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}"
-                                    href="{{ route('tasks.index') }}">
-                                    <i class="fas fa-tasks me-2"></i>Tasks
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
-                                    href="{{ route('documents.index') }}">
-                                    <i class="fas fa-folder me-2"></i>Documents
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('document-categories.*') ? 'active' : '' }}"
-                                    href="{{ route('document-categories.index') }}">
-                                    <i class="fas fa-folder me-2"></i>Documents Categories
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('dynamic-forms.*') ? 'active' : '' }}"
-                                    href="{{ route('dynamic-forms.index') }}">
-                                    <i class="fas fa-clipboard-list me-2"></i>Dynamic Forms
-                                </a>
-                            </li>
-                        @endif
-
-                        @if (Auth::user()->isEmployee())
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
-                                    href="{{ route('call-logs.index') }}">
-                                    <i class="fas fa-phone me-2"></i>My Call Logs
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('tasks.my-tasks') ? 'active' : '' }}"
-                                    href="{{ route('tasks.my-tasks') }}">
-                                    <i class="fas fa-tasks me-2"></i>My Tasks
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}"
-                                    href="{{ route('tasks.index') }}">
-                                    <i class="fas fa-list me-2"></i>All Tasks
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
-                                    href="{{ route('documents.index') }}">
-                                    <i class="fas fa-folder me-2"></i>Documents
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-briefcase me-2"></i>My Clients
-                                </a>
-                            </li>
-                        @endif
-
-                        @if (Auth::user()->isClient())
-                            {{-- NEW: Services link for clients --}}
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('client.services.*') ? 'active' : '' }}"
-                                    href="{{ route('clients.services.index') }}">
-                                    <i class="fas fa-handshake me-2"></i>Services
-                                </a>
-                            </li>
-                            {{-- NEW: Employees link for clients --}}
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('client.employees.*') ? 'active' : '' }}"
-                                    href="{{ route('clients.employees.index') }}">
-                                    <i class="fas fa-users me-2"></i>Employees
-                                </a>
-                            </li>
-                            {{-- Existing My Documents link, now below Services and Employees --}}
-                            <li class="nav-item">
-                                {{-- IMPORTANT: Replace '#' with the actual route for My Documents --}}
-                                <a class="nav-link {{ request()->routeIs('client.documents.*') ? 'active' : '' }}"
-                                    href="{{ route('clients.documents.index') }}">
-                                    <i class="fas fa-file-alt me-2"></i>My Documents
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                {{-- IMPORTANT: Replace '#' with the actual route for Forms --}}
-                                <a class="nav-link {{ request()->routeIs('clients.forms.*') ? 'active' : '' }}"
-                                    href="{{ route('clients.forms.index') }}">
-                                    <i class="fas fa-clipboard-check me-2"></i>Forms
-                                </a>
-                            </li>
-                        @endif
-                    </ul>
-                </div>
-            </nav>
+            <!-- Include Sidebar Component -->
+            @include('components.sidebar')
 
             <!-- Main content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 p-0">
+            <main class="col-md-9 ms-sm-auto col-lg-10 p-0 main-content">
 
                 <!-- Flash Messages -->
                 @if (session('success'))
@@ -262,6 +117,10 @@
 
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Custom Application Scripts -->
+    <script src="{{ asset('assets/js/utils.js') }}"></script>
+    <script src="{{ asset('assets/js/sidebar.js') }}"></script>
 
     @auth
         <!-- Session Management -->
