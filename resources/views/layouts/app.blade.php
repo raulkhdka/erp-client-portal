@@ -13,7 +13,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
 
-        <style>
+    <style>
         .sidebar {
             min-height: 100vh;
             box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
@@ -30,6 +30,17 @@
 
         .nav-link {
             white-space: nowrap;
+        }
+
+        .breadcrumb a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .breadcrumb a:not(:last-child)::after {
+            content: " / ";
+            margin: 0 5px;
+            color: #6c757d;
         }
     </style>
     @yield('styles')
@@ -70,170 +81,178 @@
 
     <div class="container-fluid">
         <div class="row">
-            @auth
-                <!-- Sidebar -->
-                <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-                    <div class="sidebar-sticky pt-3">
-                        <ul class="nav flex-column">
+            <!-- Sidebar -->
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="sidebar-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+                                href="{{ route('dashboard') }}">
+                                <i class="fas fa-home me-2"></i>Dashboard
+                            </a>
+                        </li>
+
+                        @if (Auth::user()->isAdmin())
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-                                    href="{{ route('dashboard') }}">
-                                    <i class="fas fa-home me-2"></i>Dashboard
+                                <a class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}"
+                                    href="{{ route('clients.index') }}">
+                                    <i class="fas fa-users me-2"></i>Clients
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
+                                    href="{{ route('employees.index') }}">
+                                    <i class="fas fa-user-tie me-2"></i>Employees
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('services.*') ? 'active' : '' }}"
+                                    href="{{ route('services.index') }}">
+                                    <i class="fas fa-concierge-bell me-2"></i>Services
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
+                                    href="{{ route('call-logs.index') }}">
+                                    <i class="fas fa-phone me-2"></i>Call Logs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}"
+                                    href="{{ route('tasks.index') }}">
+                                    <i class="fas fa-tasks me-2"></i>Tasks
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
+                                    href="{{ route('documents.index') }}">
+                                    <i class="fas fa-folder me-2"></i>Documents
                                 </a>
                             </li>
 
-                            @if (Auth::user()->isAdmin())
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}"
-                                        href="{{ route('clients.index') }}">
-                                        <i class="fas fa-users me-2"></i>Clients
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
-                                        href="{{ route('employees.index') }}">
-                                        <i class="fas fa-user-tie me-2"></i>Employees
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('services.*') ? 'active' : '' }}"
-                                        href="{{ route('services.index') }}">
-                                        <i class="fas fa-concierge-bell me-2"></i>Services
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
-                                        href="{{ route('call-logs.index') }}">
-                                        <i class="fas fa-phone me-2"></i>Call Logs
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}"
-                                        href="{{ route('tasks.index') }}">
-                                        <i class="fas fa-tasks me-2"></i>Tasks
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
-                                        href="{{ route('documents.index') }}">
-                                        <i class="fas fa-folder me-2"></i>Documents
-                                    </a>
-                                </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('document-categories.*') ? 'active' : '' }}"
+                                    href="{{ route('document-categories.index') }}">
+                                    <i class="fas fa-folder me-2"></i>Documents Categories
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('dynamic-forms.*') ? 'active' : '' }}"
+                                    href="{{ route('dynamic-forms.index') }}">
+                                    <i class="fas fa-clipboard-list me-2"></i>Dynamic Forms
+                                </a>
+                            </li>
+                        @endif
 
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('document-categories.*') ? 'active' : '' }}"
-                                        href="{{ route('document-categories.index') }}">
-                                        <i class="fas fa-folder me-2"></i>Documents Categories
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('dynamic-forms.*') ? 'active' : '' }}"
-                                        href="{{ route('dynamic-forms.index') }}">
-                                        <i class="fas fa-clipboard-list me-2"></i>Dynamic Forms
-                                    </a>
-                                </li>
-                            @endif
+                        @if (Auth::user()->isEmployee())
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
+                                    href="{{ route('call-logs.index') }}">
+                                    <i class="fas fa-phone me-2"></i>My Call Logs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('tasks.my-tasks') ? 'active' : '' }}"
+                                    href="{{ route('tasks.my-tasks') }}">
+                                    <i class="fas fa-tasks me-2"></i>My Tasks
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}"
+                                    href="{{ route('tasks.index') }}">
+                                    <i class="fas fa-list me-2"></i>All Tasks
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
+                                    href="{{ route('documents.index') }}">
+                                    <i class="fas fa-folder me-2"></i>Documents
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-briefcase me-2"></i>My Clients
+                                </a>
+                            </li>
+                        @endif
 
-                            @if (Auth::user()->isEmployee())
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
-                                        href="{{ route('call-logs.index') }}">
-                                        <i class="fas fa-phone me-2"></i>My Call Logs
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('tasks.my-tasks') ? 'active' : '' }}"
-                                        href="{{ route('tasks.my-tasks') }}">
-                                        <i class="fas fa-tasks me-2"></i>My Tasks
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}"
-                                        href="{{ route('tasks.index') }}">
-                                        <i class="fas fa-list me-2"></i>All Tasks
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
-                                        href="{{ route('documents.index') }}">
-                                        <i class="fas fa-folder me-2"></i>Documents
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="#">
-                                        <i class="fas fa-briefcase me-2"></i>My Clients
-                                    </a>
-                                </li>
-                            @endif
+                        @if (Auth::user()->isClient())
+                            {{-- NEW: Services link for clients --}}
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('client.services.*') ? 'active' : '' }}"
+                                    href="{{ route('clients.services.index') }}">
+                                    <i class="fas fa-handshake me-2"></i>Services
+                                </a>
+                            </li>
+                            {{-- NEW: Employees link for clients --}}
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('client.employees.*') ? 'active' : '' }}"
+                                    href="{{ route('clients.employees.index') }}">
+                                    <i class="fas fa-users me-2"></i>Employees
+                                </a>
+                            </li>
+                            {{-- Existing My Documents link, now below Services and Employees --}}
+                            <li class="nav-item">
+                                {{-- IMPORTANT: Replace '#' with the actual route for My Documents --}}
+                                <a class="nav-link {{ request()->routeIs('client.documents.*') ? 'active' : '' }}"
+                                    href="{{ route('clients.documents.index') }}">
+                                    <i class="fas fa-file-alt me-2"></i>My Documents
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                {{-- IMPORTANT: Replace '#' with the actual route for Forms --}}
+                                <a class="nav-link {{ request()->routeIs('clients.forms.*') ? 'active' : '' }}"
+                                    href="{{ route('clients.forms.index') }}">
+                                    <i class="fas fa-clipboard-check me-2"></i>Forms
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
+                </div>
+            </nav>
 
-                            @if (Auth::user()->isClient())
-                                {{-- NEW: Services link for clients --}}
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('client.services.*') ? 'active' : '' }}"
-                                        href="{{ route('clients.services.index') }}">
-                                        <i class="fas fa-handshake me-2"></i>Services
-                                    </a>
-                                </li>
-                                {{-- NEW: Employees link for clients --}}
-                                <li class="nav-item">
-                                    <a class="nav-link {{ request()->routeIs('client.employees.*') ? 'active' : '' }}"
-                                        href="{{ route('clients.employees.index') }}">
-                                        <i class="fas fa-users me-2"></i>Employees
-                                    </a>
-                                </li>
-                                {{-- Existing My Documents link, now below Services and Employees --}}
-                                <li class="nav-item">
-                                    {{-- IMPORTANT: Replace '#' with the actual route for My Documents --}}
-                                    <a class="nav-link {{ request()->routeIs('client.documents.*') ? 'active' : '' }}"
-                                        href="{{ route('clients.documents.index') }}">
-                                        <i class="fas fa-file-alt me-2"></i>My Documents
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    {{-- IMPORTANT: Replace '#' with the actual route for Forms --}}
-                                    <a class="nav-link {{ request()->routeIs('clients.forms.*') ? 'active' : '' }}"
-                                        href="{{ route('clients.forms.index') }}">
-                                        <i class="fas fa-clipboard-check me-2"></i>Forms
-                                    </a>
-                                </li>
-                            @endif
-                        </ul>
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 p-0">
+
+                <!-- Flash Messages -->
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
-                </nav>
+                @endif
 
-                <!-- Main content -->
-                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                @else
-                    <main class="col-12">
-                    @endauth
-                    <!-- Flash Messages -->
-                    @if (session('success'))
-                        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
 
-                    @if (session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                            {{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
 
-                    @if ($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
+                <div class="d-flex align-items-between p-3">
+                    <div class="breadcrumb">
+                        <a href="{{ route('admin.dashboard') }}">Admin</a> @yield('breadcrumb')
+                    </div>
+                    <div class="actions">
+                        @yield('actions')
+                    </div>
+                </div>
+                <div class="px-4">
                     @yield('content')
-                </main>
+                </div>
+
+            </main>
         </div>
     </div>
 
