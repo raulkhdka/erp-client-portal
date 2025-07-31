@@ -51,10 +51,6 @@ class CallLog extends Model
     const PRIORITY_URGENT = 'urgent';
 
     // Relationships
-    public function callLog()
-    {
-        return $this->belongsTo(CallLog::class);
-    }
 
     public function client()
     {
@@ -76,6 +72,9 @@ class CallLog extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * Get the tasks associated with the call log.
+     */
     public function tasks()
     {
         return $this->hasMany(Task::class, 'call_log_id');
@@ -171,7 +170,7 @@ class CallLog extends Model
             self::PRIORITY_LOW => 'Low',
             self::PRIORITY_MEDIUM => 'Medium',
             self::PRIORITY_HIGH => 'High',
-            self::PRIORITY_URGENT => 'Urgent'
+            self::PRIORITY_URGENT => 'Urgent',
         ];
     }
 }

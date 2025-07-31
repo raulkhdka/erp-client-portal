@@ -45,31 +45,31 @@
 
                                 <div class="form-group">
                                     <label for="client_id">Client *</label>
-                                    <select name="client_id" id="client_id" class="form-control client-select" required>
-                                        <option value="">Select a client</option>
-                                        @foreach($clients as $client)
+                                    <select class="form-select client-select @error('client_id') is-invalid @enderror"
+                                        id="client_id" name="client_id" required>
+                                        <option value="">Select client...</option>
+                                        @foreach ($clients as $client)
                                             <option value="{{ $client->id }}"
-                                                    data-contact-name="{{ $client->user ? $client->user->name : ($client->contact_person ?? 'N/A') }}"
-                                                    {{ old('client_id', $callLog->client_id) == $client->id ? 'selected' : '' }}>
-                                                {{ $client->company_name }}
+                                                data-contact-name="{{ $client->name }}"
+                                                {{ old('client_id', $callLog->client_id) == $client->id ? 'selected' : '' }}>
+                                                {{ $client->name }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
 
-                                @if(Auth::user()->role === 'admin')
                                 <div class="form-group">
                                     <label for="employee_id">Assigned Employee</label>
-                                    <select name="employee_id" id="employee_id" class="form-control">
-                                        <option value="">Select an employee</option>
+                                    <select class="form-select @error('employee_id') is-invalid @enderror"
+                                        id="employee_id" name="employee_id">
+                                        <option value="">Select employee...</option>
                                         @foreach($employees as $employee)
                                             <option value="{{ $employee->id }}" {{ old('employee_id', $callLog->employee_id) == $employee->id ? 'selected' : '' }}>
-                                                {{ $employee->user->name }}
+                                                {{ $employee->name }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
-                                @endif
 
                                 <div class="form-group">
                                     <label for="caller_name">Caller Name</label>
@@ -79,11 +79,15 @@
 
                                 <div class="form-group">
                                     <label for="caller_phone">Caller Phone</label>
-                                    <select class="form-control" id="caller_phone_select" name="caller_phone_select" style="display: none;">
+                                    <select class="form-select @error('caller_phone_select') is-invalid @enderror"
+                                        id="caller_phone_select" name="caller_phone_select" style="display: none;">
                                         <option value="">Select phone number...</option>
                                     </select>
-                                    <input type="text" name="caller_phone" id="caller_phone" class="form-control"
-                                           value="{{ old('caller_phone', $callLog->caller_phone) }}" placeholder="Phone number">
+                                    <input type="text"
+                                        class="form-control @error('caller_phone') is-invalid @enderror"
+                                        id="caller_phone" name="caller_phone"
+                                        value="{{ old('caller_phone', $callLog->caller_phone) }}" maxlength="20"
+                                        placeholder="Phone number">
                                     <small class="form-text text-muted">Will show client phone options when available</small>
                                 </div>
 
@@ -210,120 +214,106 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Select2 for client selection
+$(document).ready(function() {
     $('#client_id').select2({
         theme: 'bootstrap-5',
         placeholder: 'Search and select client...',
         allowClear: true,
         width: '100%'
     });
+    $('#employee_id').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Select employee...',
+        allowClear: true,
+        width: '100%'
+    });
 
-    // Auto-populate caller information when client is selected
-    const clientSelect = document.getElementById('client_id');
-    const callerNameField = document.getElementById('caller_name');
-    const callerPhoneField = document.getElementById('caller_phone');
-    const callerPhoneSelect = document.getElementById('caller_phone_select');
+    function fetchClientContacts(clientId, initialLoad = false) {
+        const callerNameField = document.getElementById('caller_name');
+        const callerPhoneField = document.getElementById('caller_phone');
+        const callerPhoneSelect = document.getElementById('caller_phone_select');
+        callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
 
-    if (clientSelect) {
-        clientSelect.addEventListener('change', function() {
-            const clientId = this.value;
+        const currentName = initialLoad ? '{{ old('caller_name', $callLog->caller_name) }}' : callerNameField.value;
+        const currentPhone = initialLoad ? '{{ old('caller_phone', $callLog->caller_phone) }}' : callerPhoneField.value;
 
-            if (clientId) {
-                // Show loading state
-                const originalName = callerNameField.value;
-                const originalPhone = callerPhoneField.value;
-                callerNameField.placeholder = 'Loading...';
-
-                // Fetch client contact information
-                fetch(`/call-logs/client/${clientId}/contacts`)
-                    .then(response => response.json())
-                    .then(data => {
-                        callerNameField.placeholder = 'Enter caller\'s name';
-
-                        // Handle phone numbers
-                        if (data.phones && data.phones.length > 0) {
-                            // Clear existing options
-                            callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
-
-                            // If multiple phone numbers, show select dropdown
-                            if (data.phones.length > 1) {
-                                data.phones.forEach(phone => {
-                                    const option = document.createElement('option');
-                                    option.value = phone.phone;
-                                    option.textContent = `${phone.phone} (${phone.type}${phone.is_primary ? ' - Primary' : ''})`;
-
-                                    // Select current phone if it matches
-                                    if (phone.phone === originalPhone) {
-                                        option.selected = true;
-                                    } else if (!originalPhone && phone.is_primary) {
-                                        option.selected = true;
-                                    }
-
-                                    callerPhoneSelect.appendChild(option);
-                                });
-
-                                // Show select dropdown and hide input
-                                callerPhoneSelect.style.display = 'block';
-                                callerPhoneField.style.display = 'none';
-
-                                // Set the phone field value
-                                if (callerPhoneSelect.value) {
-                                    callerPhoneField.value = callerPhoneSelect.value;
-                                }
-
-                                // Listen for phone selection changes
-                                callerPhoneSelect.addEventListener('change', function() {
-                                    callerPhoneField.value = this.value;
-                                });
-
-                            } else {
-                                // Only one phone number, keep current value or auto-fill
-                                if (!originalPhone) {
-                                    callerPhoneField.value = data.phones[0].phone;
-                                }
-                                callerPhoneSelect.style.display = 'none';
-                                callerPhoneField.style.display = 'block';
+        if (clientId) {
+            const selectedOption = $('#client_id').find('option:selected');
+            const clientName = selectedOption.data('contact-name');
+            if (clientName && (!currentName || !initialLoad)) {
+                callerNameField.value = clientName;
+            } else {
+                callerNameField.placeholder = 'Enter caller\'s name';
+            }
+            fetch(`/call-logs/client/${clientId}/contacts`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.primary_contact && (!currentName || !initialLoad)) {
+                        callerNameField.value = data.primary_contact;
+                    }
+                    if (data.phones && data.phones.length > 0) {
+                        let selectedPhone = null;
+                        data.phones.forEach(phone => {
+                            const option = document.createElement('option');
+                            option.value = phone.phone;
+                            option.textContent = `${phone.phone} (${phone.type}${phone.is_primary ? ' - Primary' : ''})`;
+                            if ((initialLoad && phone.phone === currentPhone) || (!initialLoad && phone.is_primary)) {
+                                option.selected = true;
+                                selectedPhone = phone.phone;
                             }
+                            callerPhoneSelect.appendChild(option);
+                        });
+                        if (data.phones.length > 1) {
+                            callerPhoneSelect.style.display = 'block';
+                            callerPhoneField.style.display = 'none';
+                            callerPhoneField.value = selectedPhone || callerPhoneSelect.value || currentPhone || '';
                         } else {
-                            // No phone numbers found
                             callerPhoneSelect.style.display = 'none';
                             callerPhoneField.style.display = 'block';
+                            callerPhoneField.value = selectedPhone || data.phones[0].phone || currentPhone || '';
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching client contacts:', error);
-                        callerNameField.placeholder = 'Enter caller\'s name';
-
-                        // Hide select and show input on error
+                    } else {
                         callerPhoneSelect.style.display = 'none';
                         callerPhoneField.style.display = 'block';
-                    });
-            }
-        });
+                        callerPhoneField.value = currentPhone || '';
+                        callerPhoneField.placeholder = 'Enter phone number manually';
+                    }
+                })
+                .catch(() => {
+                    callerNameField.placeholder = 'Enter caller\'s name';
+                    callerPhoneField.placeholder = 'Enter phone number';
+                    callerPhoneSelect.style.display = 'none';
+                    callerPhoneField.style.display = 'block';
+                    callerPhoneField.value = currentPhone || '';
+                });
+        } else {
+            callerNameField.value = '';
+            callerNameField.placeholder = 'Enter caller\'s name';
+            callerPhoneField.value = '';
+            callerPhoneField.placeholder = 'Enter phone number';
+            callerPhoneSelect.innerHTML = '<option value="">Select phone number...</option>';
+            callerPhoneSelect.style.display = 'none';
+            callerPhoneField.style.display = 'block';
+        }
     }
-});
 
-function toggleFollowUpDate() {
-    const checkbox = document.getElementById('follow_up_required');
-    const dateGroup = document.getElementById('follow_up_date_group');
-
-    if (checkbox.checked) {
-        dateGroup.style.display = 'block';
+    const preSelectedClientId = '{{ old('client_id', $callLog->client_id) }}';
+    if (preSelectedClientId && $('#client_id').find(`option[value="${preSelectedClientId}"]`).length > 0) {
+        $('#client_id').val(preSelectedClientId).trigger('change.select2');
+        fetchClientContacts(preSelectedClientId, true);
     } else {
-        dateGroup.style.display = 'none';
-        document.getElementById('follow_up_date').value = '';
+        document.getElementById('caller_phone_select').style.display = 'none';
+        document.getElementById('caller_phone').style.display = 'block';
     }
-}
 
-// Auto-populate caller info if client is selected
-document.getElementById('client_id').addEventListener('change', function() {
-    const clientId = this.value;
+    $('#client_id').on('change', function() {
+        const clientId = $(this).val();
+        fetchClientContacts(clientId, false);
+    });
 
-    if (clientId && !document.getElementById('caller_name').value) {
-        // You could make an AJAX call here to get client contact info
-        // For now, we'll just clear the fields to let user enter manually
-    }
+    document.getElementById('caller_phone_select').addEventListener('change', function() {
+        document.getElementById('caller_phone').value = this.value;
+    });
 });
 </script>
 @endpush

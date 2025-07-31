@@ -17,6 +17,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\DocumentController; // For admin/employee general document management
 use App\Http\Controllers\DocumentCategoryController;
 use App\Http\Controllers\ClientServiceController; // For managing client-service assignments by admin/employee
+use Illuminate\Support\Facades\Log;
 
 // Client-specific Controllers (Make sure these exist!)
 use App\Http\Controllers\ClientServicesController;
@@ -80,6 +81,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('clients', ClientController::class);
         Route::resource('employees', EmployeeController::class);
         Route::resource('dynamic-forms', DynamicFormController::class);
+        Route::get('/dynamic-forms/{id}/share', [DynamicFormController::class, 'share'])->name('dynamic-forms.share');
+        Route::post('/dynamic-forms/{id}/send', [DynamicFormController::class, 'send'])->name('dynamic-forms.send');
         Route::resource('services', ServiceController::class);
         Route::resource('call-logs', CallLogController::class);
         Route::resource('tasks', TaskController::class);
@@ -124,7 +127,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/client/services', [ClientServicesController::class, 'index'])->name('clients.services.index');
         Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('clients.employees.index');
         //Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('documents.index');
-        Route::get('/client/forms', [ClientFormController::class, 'index'])->name('clients.forms.index');
+        Route::get('/clients/forms', [ClientFormController::class, 'index'])->name('clients.forms.index');
 
         // Optional: Client-specific document actions (if allowed to upload/download their own)
         // Route::get('/client/documents/upload', [ClientDocumentController::class, 'create'])->name('documents.create');
@@ -135,6 +138,26 @@ Route::middleware(['auth'])->group(function () {
 
         // Optional: Client-specific form response viewing
         Route::get('/client/form-responses/{dynamicFormResponse}', [ClientFormController::class, 'show'])->name('clients.form-responses.show');
+
+        // Temporary debug route
+        Route::get('/debug-client-forms', function() {
+            Log::info('Debug route accessed', [
+                'user_authenticated' => Auth::check(),
+                'user_role' => Auth::check() ? Auth::user()->role : 'not-authenticated'
+            ]);
+
+            if (!Auth::check()) {
+                return 'Not authenticated';
+            }
+
+            $user = Auth::user();
+            return response()->json([
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'has_client_profile' => $user->client ? true : false,
+                'client_id' => $user->client ? $user->client->id : null
+            ]);
+        });
     });
 
     // --- Shared Document Routes (Admin, Employee, Client) ---
@@ -155,4 +178,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/documents/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('documents.approve');
     Route::post('/documents/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('documents.reject');
+});
+
+// Simple test route outside of any middleware
+Route::get('/test-route', function() {
+    return 'Test route working';
 });

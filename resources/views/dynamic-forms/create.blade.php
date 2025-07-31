@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Create Dynamic Form')
 
-@push('styles')
+@section('styles')
 <style>
 /* Enhanced Preview Styles */
 .preview-container {
@@ -141,7 +141,9 @@
 .preview-device-frame.desktop {
     max-width: 100%;
 }
-
+#previewColumn {
+    display: none;
+}
 /* Preview Stats */
 .preview-stats {
     display: flex;
@@ -312,19 +314,19 @@
     }
 }
 </style>
-@endpush
+@endsection
 
 @section('content')
 <!-- Existing content unchanged -->
 <!-- Loading Overlay -->
-<div class="loading-overlay" id="loadingOverlay">
+{{-- <div class="loading-overlay" id="loadingOverlay">
     <div class="text-center text-white">
         <div class="spinner-border mb-3" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <div>Processing...</div>
     </div>
-</div>
+</div> --}}
 
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>

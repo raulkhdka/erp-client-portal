@@ -32,7 +32,7 @@
             white-space: nowrap;
         }
     </style>
-    @stack('styles')
+    @yield('styles')
 </head>
 
 <body class="m-0 p-0">
@@ -191,7 +191,7 @@
                                 </li>
                                 <li class="nav-item">
                                     {{-- IMPORTANT: Replace '#' with the actual route for Forms --}}
-                                    <a class="nav-link {{ request()->routeIs('client.forms.*') ? 'active' : '' }}"
+                                    <a class="nav-link {{ request()->routeIs('clients.forms.*') ? 'active' : '' }}"
                                         href="{{ route('clients.forms.index') }}">
                                         <i class="fas fa-clipboard-check me-2"></i>Forms
                                     </a>

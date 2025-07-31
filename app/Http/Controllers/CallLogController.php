@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class CallLogController extends Controller
 {
@@ -19,7 +20,7 @@ class CallLogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = CallLog::with(['client', 'employee', 'tasks'])
+        $query = CallLog::with(['client', 'employee', 'tasks.assignedTo'])
             ->orderBy('call_date', 'desc');
 
         // Filter by status
@@ -89,7 +90,7 @@ class CallLogController extends Controller
             'caller_phone' => 'nullable|string|max:20',
             'duration_minutes' => 'nullable|integer|min:0',
             'subject' => 'required|string|max:255',
-            'priority' => 'required|string|in:low,medium,high',
+            'priority' => 'required|string|in:low,medium,high,urgent',
             'status' => 'required|integer', // Assuming status is integer (1 for Active, etc.)
             'description' => 'required|string',
             'notes' => 'nullable|string',
@@ -183,8 +184,9 @@ class CallLogController extends Controller
      */
     public function edit(CallLog $callLog)
     {
-        $clients = ClientCacheService::getClientsWithUser();
-        $employees = Employee::with('user')->orderBy('id')->get();
+        $callLog->load('tasks');
+        $clients = \App\Services\ClientCacheService::getClientsCollection();
+        $employees = \App\Models\Employee::orderBy('id')->get();
         return view('call-logs.edit', compact('callLog', 'clients', 'employees'));
     }
 
@@ -195,42 +197,109 @@ class CallLogController extends Controller
     {
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
+            'call_type' => 'required|string|in:incoming,outgoing',
+            'call_date' => 'required|date',
             'caller_name' => 'nullable|string|max:255',
             'caller_phone' => 'nullable|string|max:20',
-            'call_type' => 'required|in:incoming,outgoing',
+            'duration_minutes' => 'nullable|integer|min:0',
             'subject' => 'required|string|max:255',
+            'priority' => 'required|string|in:low,medium,high,urgent',
+            'status' => 'required|integer', // Assuming status is integer (1 for Active, etc.)
             'description' => 'required|string',
             'notes' => 'nullable|string',
-            'priority' => 'required|in:low,medium,high',
-            'status' => 'required|integer|min:1|max:9',
-            'call_date' => 'required|date',
-            'duration_minutes' => 'nullable|integer|min:0',
             'follow_up_required' => 'nullable|string',
-            'follow_up_date' => 'nullable|date|after:today'
+            'follow_up_date' => 'nullable|date|after_or_equal:today',
+            'create_task' => 'nullable|boolean', // If it's a checkbox, it might be 'on' or null
+            // employee_id is handled dynamically
+            'employee_id' => 'nullable|exists:employees,id', // Add validation for employee_id if it's explicitly passed
         ]);
+
+        // Determine the employee_id for the call log
+        $assignedEmployeeId = null;
+        $currentUser = Auth::user();
+
+        if ($currentUser->role === 'admin') {
+            if ($request->filled('employee_id')) {
+                $assignedEmployeeId = $request->employee_id;
+            } else {
+                $currentEmployee = $currentUser->employee;
+                if ($currentEmployee) {
+                    $assignedEmployeeId = $currentEmployee->id;
+                } else {
+                    return redirect()->back()->withInput()->withErrors([
+                        'employee_id' => 'As an admin, you must either select an employee or ensure your account is linked to an employee record.'
+                    ])->with('error', 'Failed to update call log: Admin user is not linked to an employee record.');
+                }
+            }
+        } else { // This is for 'employee' role users (and any others not 'admin')
+            $currentEmployee = $currentUser->employee;
+            if ($currentEmployee) {
+                $assignedEmployeeId = $currentEmployee->id;
+            } else {
+                return redirect()->back()->withInput()->withErrors([
+                    'employee_id' => 'Your user account is not linked to an employee record. Please contact support.'
+                ])->with('error', 'Failed to update call log: Current user is not linked to an employee record.');
+            }
+        }
+        $validated['employee_id'] = $assignedEmployeeId;
+
+
+        // Crucial: Determine the final caller_phone value from either select or input
+        $validated['caller_phone'] = $request->input('caller_phone_select', $request->input('caller_phone'));
+
 
         DB::beginTransaction();
         try {
+            // Update call log
             $callLog->update($validated);
 
-            // Update related task status if exists
-            if ($callLog->task) {
-                $callLog->task->update([
-                    'priority' => $callLog->priority,
-                    'status' => $callLog->status,
-                    'due_date' => $callLog->follow_up_date ?? $callLog->task->due_date
-                ]);
+            // Handle task creation/update/deletion
+            $shouldCreateOrUpdateTask = $request->has('create_task') && $callLog->status != CallLog::STATUS_RESOLVED;
+            $existingTask = $callLog->tasks()->first(); // Use the tasks and gets the first one
+
+            if ($shouldCreateOrUpdateTask) {
+                if ($existingTask) {
+                    // Update existing task
+                    $existingTask->update([
+                        'assigned_to' => $assignedEmployeeId, // May change if employee changes
+                        'title' => 'Follow-up on Call: ' . $callLog->subject,
+                        'description' => $callLog->follow_up_required ?? 'No specific follow-up description.',
+                        'due_date' => $callLog->follow_up_date,
+                        'status' => $callLog->status, // Sync task status with call log status
+                        'priority' => $callLog->priority,
+                        'client_id' => $callLog->client_id, // Ensure client_id is updated in task as well
+                    ]);
+
+                    Log::info('Task updated for call log ' . $callLog->id);
+                } else {
+                    // Create new task if it didn't exist but now requested
+                    Task::create([
+                        'call_log_id' => $callLog->id,
+                        'client_id' => $callLog->client_id,
+                        'assigned_to' => $assignedEmployeeId,
+                        'created_by' => Auth::user()->id,
+                        'title' => 'Follow-up on Call: ' . $callLog->subject,
+                        'description' => $callLog->follow_up_required ?? 'No specific follow-up description.',
+                        'due_date' => $callLog->follow_up_date,
+                        'status' => $callLog->status,
+                        'priority' => $callLog->priority,
+                    ]);
+                    Log::info('New task created for call log ' . $callLog->id);
+                }
+            } else {
+                // If 'create_task' checkbox is unchecked OR status is resolved, and a task exists, delete it.
+                if ($existingTask) {
+                    $existingTask->delete();
+                    Log::info('Task deleted for call log ' . $callLog->id . ' due to unchecked checkbox or resolved status.');
+                }
             }
 
             DB::commit();
-
-            return redirect()->route('call-logs.index')
-                ->with('success', 'Call log updated successfully.');
+            return redirect()->route('call-logs.index')->with('success', 'Call log updated successfully!');
         } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->back()
-                ->withErrors(['error' => 'Failed to update call log: ' . $e->getMessage()])
-                ->withInput();
+            DB::rollBack();
+            Log::error('Call log update failed: ' . $e->getMessage(), ['exception' => $e]);
+            return redirect()->back()->withInput()->with('error', 'Failed to update call log. Please try again. Error: ' . $e->getMessage());
         }
     }
 

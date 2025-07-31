@@ -51,9 +51,14 @@
                                 {{ $callLog->caller_phone ?? 'N/A' }}
                             </div>
 
+                            <!-- Call Type -->
                             <div class="mb-3">
                                 <strong>Call Type:</strong><br>
-                                <span class="badge badge-info">{{ ucfirst($callLog->call_type) }}</span>
+                                @if($callLog->call_type)
+                                    <span class="badge bg-info">{{ ucfirst($callLog->call_type) }}</span>
+                                @else
+                                    <span class="text-muted">N/A</span>
+                                @endif
                             </div>
 
                             <div class="mb-3">
@@ -73,33 +78,39 @@
 
                             <div class="mb-3">
                                 <strong>Status:</strong><br>
-                                <span class="badge bg-{{ $callLog->status_color }}">...</span>
-                                    {{ $callLog->status_label }}
-                                </span>
-                                <button class="btn btn-sm btn-outline-primary ml-2" onclick="updateStatus()">
-                                    Change Status
-                                </button>
+                                @if($callLog->status !== null && $callLog->status_label && $callLog->status_color)
+                                    <span class="badge bg-{{ $callLog->status_color }}">
+                                        {{ $callLog->status_label }}
+                                    </span>
+                                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="updateStatus()">
+                                        Change Status
+                                    </button>
+                                @else
+                                    <span class="text-muted">N/A</span>
+                                @endif
                             </div>
 
+                            <!-- Priority -->
                             <div class="mb-3">
                                 <strong>Priority:</strong><br>
-                                @php
-                                    $priorityColor = $callLog->priority === 'high' ? 'danger' : ($callLog->priority === 'medium' ? 'warning' : 'success');
-                                @endphp
-                                <span class="badge badge-{{ $priorityColor }}">
-                                    {{ ucfirst($callLog->priority) }}
-                                </span>
+                                @if($callLog->priority && $callLog->priority_color)
+                                    <span class="badge bg-{{ $callLog->priority_color }}">
+                                        {{ ucfirst($callLog->priority) }}
+                                    </span>
+                                @else
+                                    <span class="text-muted">N/A</span>
+                                @endif
                             </div>
 
                             <div class="mb-3">
                                 <strong>Follow-up Required:</strong><br>
                                 @if($callLog->follow_up_required)
-                                    <span class="badge badge-warning">Yes</span>
+                                    <span class="badge bg-warning">Yes</span>
                                     @if($callLog->follow_up_date)
                                         <br><small>Due: {{ $callLog->follow_up_date->format('M d, Y') }}</small>
                                     @endif
                                 @else
-                                    <span class="badge badge-success">No</span>
+                                    <span class="badge bg-success">No</span>
                                 @endif
                             </div>
 
@@ -162,24 +173,29 @@
                                     <tr>
                                         <td>{{ $task->title }}</td>
                                         <td>
-                                            @if($task->assignedEmployee)
-                                                {{ $task->assignedEmployee->name }}
+                                            @if($task->assignedTo && $task->assignedTo->name)
+                                                {{ $task->assignedTo->name }}
                                             @else
                                                 <span class="text-muted">Unassigned</span>
                                             @endif
                                         </td>
                                         <td>
-                                            @php
-                                                $priorityColor = $task->priority === 'high' ? 'danger' : ($task->priority === 'medium' ? 'warning' : 'success');
-                                            @endphp
-                                            <span class="badge badge-{{ $priorityColor }}">
-                                                {{ ucfirst($task->priority) }}
-                                            </span>
+                                            @if($task->priority && $task->priority_color)
+                                                <span class="badge bg-{{ $task->priority_color }}">
+                                                    {{ ucfirst($task->priority) }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
                                         </td>
                                         <td>
-                                            <span class="badge badge-{{ $task->status_color }}">
-                                                {{ $task->status_label }}
-                                            </span>
+                                            @if($task->status_label && $task->status_color)
+                                                <span class="badge bg-{{ $task->status_color }}">
+                                                    {{ $task->status_label }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
                                         </td>
                                         <td>
                                             {{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}
@@ -204,12 +220,12 @@
 </div>
 
 <!-- Status Update Modal -->
-<div class="modal fade" id="statusModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Update Call Log Status</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <h5 class="modal-title" id="statusModalLabel">Update Call Log Status</h5>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -220,27 +236,22 @@
                     <div class="form-group">
                         <label for="status">Status</label>
                         <select name="status" id="status" class="form-control" required>
-                            <option value="1" {{ $callLog->status == 1 ? 'selected' : '' }}>Pending</option>
-                            <option value="2" {{ $callLog->status == 2 ? 'selected' : '' }}>In Progress</option>
-                            <option value="3" {{ $callLog->status == 3 ? 'selected' : '' }}>On Hold</option>
-                            <option value="4" {{ $callLog->status == 4 ? 'selected' : '' }}>Escalated</option>
-                            <option value="5" {{ $callLog->status == 5 ? 'selected' : '' }}>Waiting for Client</option>
-                            <option value="6" {{ $callLog->status == 6 ? 'selected' : '' }}>Testing</option>
-                            <option value="7" {{ $callLog->status == 7 ? 'selected' : '' }}>Completed</option>
-                            <option value="8" {{ $callLog->status == 8 ? 'selected' : '' }}>Resolved</option>
-                            <option value="9" {{ $callLog->status == 9 ? 'selected' : '' }}>Backlog</option>
+                            @foreach(\App\Models\CallLog::getStatusOptions() as $value => $label)
+                                <option value="{{ $value }}" {{ $callLog->status == $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="saveStatus()">Update Status</button>
             </div>
         </div>
     </div>
 </div>
-
 @endsection
 
 @section('scripts')

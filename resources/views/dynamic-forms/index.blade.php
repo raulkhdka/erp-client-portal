@@ -8,27 +8,26 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
+        padding: 1rem; /* Reduced padding from 2rem */
+        margin-bottom: 0;
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
     .page-header h1 {
         font-weight: 700;
         margin: 0;
-        font-size: 2.5rem;
+        font-size: 2rem; /* Reduced font size from 2.5rem */
     }
 
     .page-header .subtitle {
         opacity: 0.9;
         margin-top: 0.5rem;
-        font-size: 1.1rem;
+        font-size: 1rem; /* Reduced font size from 1.1rem */
     }
 
     .stats-card {
-        background: white;
         border-radius: 15px;
-        padding: 1.5rem;
+        /* padding: 1.5rem; */
         box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         border: none;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -79,17 +78,20 @@
 
     .table-container {
         padding: 0;
+        display: flex; /* Added to wrap table in flex */
+        flex-direction: column; /* Ensures rows stack vertically */
     }
 
     .table-modern {
         margin: 0;
         border-collapse: separate;
         border-spacing: 0;
+        border: 1px solid #dee2e6; /* Added border to the table */
     }
 
     .table-modern thead th {
         background: #f8f9fa;
-        border: none;
+        border: 1px solid #dee2e6; /* Added border to th */
         padding: 1rem 1.5rem;
         font-weight: 600;
         color: #495057;
@@ -133,7 +135,8 @@
 
     .table-modern tbody td {
         padding: 1.25rem 1.5rem;
-        border-top: 1px solid #f1f3f4;
+        border: 1px solid #dee2e6; /* Added border to td */
+        border-top: none; /* Avoid double border on top */
         vertical-align: middle;
     }
 
@@ -286,6 +289,7 @@
         border-radius: 15px;
         font-size: 0.8rem;
         font-weight: 600;
+        text-wrap: nowrap;
     }
 
     .sn-number {
@@ -382,14 +386,41 @@
         border-bottom: none;
     }
 
+    .btn-share {
+        background: linear-gradient(45deg, #00c4b4, #00e7eb);
+        color: white;
+    }
+
+    .btn-share:hover {
+        background: linear-gradient(45deg, #00a896, #00ced1);
+        color: white;
+    }
+
+    .copied-tooltip {
+        position: absolute;
+        background: #333;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    .copied-tooltip.show {
+        opacity: 1;
+    }
+
     @media (max-width: 768px) {
         .page-header {
-            padding: 1.5rem;
+            padding: 1rem;
             text-align: center;
         }
 
         .page-header h1 {
-            font-size: 2rem;
+            font-size: 1.5rem; /* Reduced font size for mobile */
         }
 
         .stats-card {
@@ -617,6 +648,12 @@
                                            data-bs-toggle="tooltip">
                                             <i class="fas fa-external-link-alt"></i>
                                         </a>
+                                        <a href="{{ route('dynamic-forms.share', $form->id) }}"
+                                            class="btn btn-share"
+                                            title="Share Form"
+                                            data-bs-toggle="tooltip">
+                                             <i class="fas fa-share-alt"></i>
+                                         </a>
                                         <form action="{{ route('dynamic-forms.destroy', $form->id) }}"
                                               method="POST"
                                               class="d-inline-block"
@@ -850,6 +887,19 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.forEach(row => tbody.appendChild(row));
         filterTable(); // Reapply filters after sorting
     }
+
+    // Copy to clipboard functionality
+    window.copyFormLink = function(url, button) {
+        navigator.clipboard.writeText(url).then(() => {
+            const tooltip = button.querySelector('.copied-tooltip');
+            tooltip.classList.add('show');
+            setTimeout(() => {
+                tooltip.classList.remove('show');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    };
 
     // Event listeners
     searchInput.addEventListener('input', filterTable);

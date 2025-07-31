@@ -70,6 +70,11 @@ class Task extends Model
         return $this->belongsTo(Employee::class, 'assigned_to');
     }
 
+    public function adminCreator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(Employee::class, 'created_by');
@@ -204,5 +209,5 @@ class Task extends Model
         ];
     }
 
-    
+
 }

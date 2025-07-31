@@ -38,7 +38,6 @@
                                     <h5 class="border-bottom pb-2 mb-3">Call Information</h5>
                                 </div>
 
-                                @if (Auth::user()->role === 'admin')
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="employee_id" class="form-label">Assign to Employee</label>
@@ -48,7 +47,7 @@
                                                 @foreach ($employees as $employee)
                                                     <option value="{{ $employee->id }}"
                                                         {{ old('employee_id') == $employee->id ? 'selected' : '' }}>
-                                                        {{ $employee->user->name }}
+                                                        {{ $employee->name }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -58,7 +57,6 @@
                                             <div class="form-text">Leave empty to assign to yourself</div>
                                         </div>
                                     </div>
-                                @endif
 
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -348,7 +346,7 @@
                 console.log('Caller phone field found:', callerPhoneField !== null);
                 console.log('Caller phone select found:', callerPhoneSelect !== null);
 
-                $('#client_id').on('change', function() { // <--- CORRECTED EVENT LISTENER FOR SELECT2
+                $('#client_id').on('change', function() { // Select2 change event
                     const clientId = $(this).val(); // Get value using jQuery
                     console.log('Client selected (via Select2 change event). ID:', clientId); // Debug log
 
@@ -471,7 +469,7 @@
 
             if (statusSelect && createTaskCheckbox) {
                 // Initial check on page load
-                if (statusSelect.value == '8') { // Assuming '8' is the value for "Resolved" status
+                if (statusSelect.value == '{{ \App\Models\CallLog::STATUS_RESOLVED}}') { // Assuming '8' is the value for "Resolved" status
                     createTaskCheckbox.checked = false;
                     createTaskCheckbox.disabled = true;
                     console.log('Initial status is resolved, task creation disabled');
@@ -479,7 +477,7 @@
 
                 statusSelect.addEventListener('change', function() {
                     console.log('Status changed to:', this.value);
-                    if (this.value == '8') { // Resolved status
+                    if (this.value == '{{ \App\Models\CallLog::STATUS_RESOLVED }}') { // Resolved status
                         createTaskCheckbox.checked = false;
                         createTaskCheckbox.disabled = true;
                         console.log('Disabled task creation for resolved status');

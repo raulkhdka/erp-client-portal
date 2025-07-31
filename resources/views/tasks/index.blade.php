@@ -20,14 +20,7 @@
                         </a>
                     </div>
                 </div>
-                {{-- <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif --}}
-
+                <div class="card-body">
                     <!-- Filters -->
                     <form method="GET" action="{{ route('tasks.index') }}" class="mb-4">
                         <div class="row g-3">
@@ -89,22 +82,22 @@
                             <table class="table table-striped table-hover">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>ID</th>
+                                        <th>S.N.</th>
                                         <th>Title</th>
                                         <th>Client</th>
                                         <th>Priority</th>
                                         <th>Status</th>
-                                        <th>Due Date</th>
+                                        <th>Created By:</th>
                                         <th>Assigned To</th>
                                         <th>Call Log</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($tasks as $task)
+                                    @foreach($tasks as $key => $task)
                                         <tr class="{{ $task->is_overdue ? 'table-warning' : '' }}">
                                             <td>
-                                                <strong>#{{ $task->id }}</strong>
+                                                <strong>{{ $loop->iteration }}</strong>
                                                 @if($task->is_overdue)
                                                     <br><small class="text-danger">Overdue</small>
                                                 @endif
@@ -115,7 +108,7 @@
                                                     <i class="fas fa-info-circle text-muted ms-1" data-bs-toggle="tooltip" title="{{ $task->title }}"></i>
                                                 @endif
                                             </td>
-                                            <td>{{ $task->client->company_name }}</td>
+                                            <td>{{ $task->client->name }}</td>
                                             <td>
                                                 <span class="badge bg-{{ $task->priority_color }}">
                                                     {{ ucfirst($task->priority) }}
@@ -126,16 +119,10 @@
                                                     {{ $task->status_label }}
                                                 </span>
                                             </td>
-                                            <td>
-                                                @if($task->due_date)
-                                                    {{ $task->due_date->format('M d, Y') }}
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
+                                            <td>{{ $task->adminCreator->name ?? 'Admin' }}</td>
                                             <td>
                                                 @if($task->assignedTo && $task->assignedTo->user)
-                                                    {{ $task->assignedTo->user->name }}
+                                                    {{ $task->assignedTo->name }}
                                                 @else
                                                     <span class="text-muted">-</span>
                                                 @endif

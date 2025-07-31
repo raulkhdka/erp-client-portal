@@ -330,6 +330,62 @@ class DynamicFormController extends Controller
     }
 
     /**
+     * Show the form for sharing the dynamic form with clients.
+     */
+    public function share(string $id)
+    {
+        try {
+            $form = DynamicForm::with('fields')->findOrFail($id);
+            // Fetch clients (assuming clients are users with a specific role or a related model)
+            $clients = Client::all(); // Adjust this query based on your client model and relationship
+            return view('dynamic-forms.share', compact('form', 'clients'));
+        } catch (\Exception $e) {
+            Log::error('Failed to load share view for dynamic form: ' . $e->getMessage());
+            return redirect()->route('dynamic-forms.index')->withErrors(['error' => 'Failed to load share page. Please try again.']);
+        }
+    }
+
+    public function send(Request $request, string $id)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:clients,id',
+            'message' => 'nullable|string',
+        ]);
+
+        try {
+            $form = DynamicForm::findOrFail($id);
+            $client = Client::findOrFail($request->user_id);
+
+            // Prepare the share link (e.g., public form URL)
+            $shareLink = route('dynamic-forms.public-show', $form->id);
+
+            // Example: Send an email (implement Mail class if using)
+            // Mail::to($client->email)->send(new ShareFormMail($form, $shareLink, $request->message));
+
+            // For now, return a success response (replace with actual logic)
+            return response()->json([
+                'success' => true,
+                'message' => 'Form shared successfully with ' . $client->name . '!',
+                'redirect' => route('dynamic-forms.index'),
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('Failed to find form or client for sharing: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Form or client not found.',
+                'errors' => ['general' => 'Invalid form or client ID.'],
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Failed to send dynamic form: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to share form.',
+                'errors' => ['general' => $e->getMessage()],
+            ], 500);
+        }
+    }
+
+    /**
      * Remove the specified dynamic form from storage.
      */
     public function destroy(string $id)

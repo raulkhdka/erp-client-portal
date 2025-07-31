@@ -41,25 +41,13 @@
                                 </tr>
                                 <tr>
                                     <th>Assigned To:</th>
-                                    <td>{{ $task->assignedTo->user->name }}</td>
+                                    <td>{{ $task->assignedTo->name }}</td>
                                 </tr>
                                 <tr>
                                     <th>Created By:</th>
-                                    <td>{{ $task->createdBy->user->name }}</td>
+                                    <td>{{ $task->adminCreator->name ?? 'Admin' }}</td>
                                 </tr>
-                                <tr>
-                                    <th>Due Date:</th>
-                                    <td>
-                                        @if($task->due_date)
-                                            {{ $task->due_date->format('M d, Y') }}
-                                            @if($task->is_overdue)
-                                                <span class="badge bg-danger ms-2">Overdue</span>
-                                            @endif
-                                        @else
-                                            <span class="text-muted">Not set</span>
-                                        @endif
-                                    </td>
-                                </tr>
+                        
                                 <tr>
                                     <th>Created:</th>
                                     <td>{{ $task->created_at->format('M d, Y \a\t H:i') }}</td>

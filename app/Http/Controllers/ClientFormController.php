@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\Client; // Make sure your Client model exists
 use App\Models\DynamicFormResponse; // Make sure your DynamicFormResponse model exists
 use App\Models\DynamicForm; // Make sure your DynamicForm model exists
@@ -15,24 +16,34 @@ class ClientFormController extends Controller
      */
     public function index()
     {
+        Log::info('ClientFormController@index called - START');
+        Log::info('ClientFormController@index called', [
+            'user_id' => Auth::id(),
+            'user_role' => Auth::user()->role ?? 'no-user',
+            'is_authenticated' => Auth::check()
+        ]);
+
         $user = Auth::user();
+        Log::info('User data', ['user' => $user]);
+
         $client = $user->client;
+        Log::info('Client data', ['client' => $client]);
 
         if (!$client) {
+            Log::warning('Client profile not found for user', ['user_id' => Auth::id()]);
             Auth::logout();
             return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
         }
 
-        // Fetch all form responses submitted by this client
-        // Ensure your Client model has a 'formResponses' relationship
+        // Fetch forms shared with this client (via responses)
+        $forms = DynamicForm::whereHas('responses', function ($query) use ($client) {
+            $query->where('client_id', $client->id);
+        })->where('is_active', true)->with('fields')->paginate(10);
+
+        // Fetch all form responses submitted by this client (optional, for display)
         $formResponses = $client->formResponses()->with('dynamicForm')->latest()->paginate(15);
 
-        // Fetch available forms for the client to fill out
-        // Adjust this query based on how you determine which forms are available to clients
-        $forms = DynamicForm::where('is_active', true)->get();
-
-
-        return view('client.forms.index', compact('client', 'formResponses'));
+        return view('clients.forms.index', compact('client', 'forms', 'formResponses'));
     }
 
     /**
@@ -48,8 +59,60 @@ class ClientFormController extends Controller
             abort(403, 'Unauthorized access to form response.');
         }
 
-        return view('client.forms.show', compact('client', 'dynamicFormResponse'));
+        return view('clients.forms.show', compact('client', 'dynamicFormResponse'));
     }
+
+    public function create(DynamicForm $dynamicForm)
+    {
+        $user = Auth::user();
+        $client = $user->client;
+
+        if (!$client || !$dynamicForm->is_active || !$dynamicForm->responses()->where('client_id', $client->id)->exists()) {
+            abort(403, 'Unauthorized access to this form.');
+        }
+
+        return view('clients.forms.create', compact('client', 'dynamicForm'));
+    }
+
+    /**
+     * Store a new form submission from the client.
+     */
+    public function store(Request $request, DynamicForm $dynamicForm)
+    {
+        $user = Auth::user();
+        $client = $user->client;
+
+        if (!$client || !$dynamicForm->is_active || !$dynamicForm->responses()->where('client_id', $client->id)->exists()) {
+            abort(403, 'Unauthorized access to this form.');
+        }
+
+        // Validate and store the form submission (similar to public submit logic)
+        $rules = [];
+        foreach ($dynamicForm->fields as $field) {
+            $fieldRules = $field->is_required ? ['required'] : [];
+            if ($field->field_type === 'email') $fieldRules[] = 'email';
+            elseif ($field->field_type === 'number') $fieldRules[] = 'numeric';
+            elseif ($field->field_type === 'date') $fieldRules[] = 'date';
+            $rules[$field->field_name] = implode('|', $fieldRules);
+        }
+
+        $validatedData = $request->validate($rules);
+
+        $responseData = [];
+        foreach ($dynamicForm->fields as $field) {
+            $responseData[$field->field_name] = $request->input($field->field_name, null);
+        }
+
+        DynamicFormResponse::create([
+            'dynamic_form_id' => $dynamicForm->id,
+            'client_id' => $client->id,
+            'response_data' => $responseData,
+            'submitted_at' => now(),
+        ]);
+
+        return redirect()->route('clients.forms.index')->with('success', 'Form submitted successfully.');
+    }
+
 
     // You might also add methods here for:
     // public function create(DynamicForm $form) { ... } // To display a blank form for filling

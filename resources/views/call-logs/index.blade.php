@@ -102,7 +102,7 @@
                                                 <small class="text-muted">{{ $callLog->call_date->format('h:i A') }}</small>
                                             </td>
                                             <td>
-                                                <strong>{{ $callLog->client->company_name }}</strong>
+                                                <strong>{{ $callLog->client->name }}</strong>
                                                 @if($callLog->duration_minutes)
                                                     <br><small class="text-muted">Duration: {{ $callLog->duration_minutes }}min</small>
                                                 @endif
@@ -153,7 +153,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <small>{{ $callLog->employee->user->name }}</small>
+                                                <small>{{ $callLog->employee->name }}</small>
                                             </td>
                                             <td>
                                                 @if($callLog->task)
