@@ -2,6 +2,18 @@
 
 @section('title', 'Dynamic Forms')
 
+@section('breadcrumb')
+    <span class="breadcrumb-item active">Dynamic Forms</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('dynamic-forms.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Form
+        </a>
+    </div>
+@endsection
+
 @section('styles')
 <style>
     .page-header {

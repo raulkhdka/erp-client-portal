@@ -2,6 +2,31 @@
 
 @section('title', 'Dynamic Form Details')
 
+@section('breadcrumb')
+    <a href="{{ route('dynamic-forms.index') }}">Dynamic Forms</a>
+    <span class="breadcrumb-item active">{{ $form->name }}</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('dynamic-forms.edit', $form->id) }}" class="btn btn-warning">
+            <i class="fas fa-edit me-2"></i>Edit Form
+        </a>
+        <a href="{{ route('dynamic-forms.public-show', $form->id) }}" target="_blank" class="btn btn-info">
+            <i class="fas fa-external-link-alt me-2"></i>Public View
+        </a>
+        <a href="{{ route('dynamic-forms.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Forms
+        </a>
+    </div>
+@endsection
+
+@section('content')
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-info-circle me-2"></i>Form Details: {{ $form->name }}</h1>.app')
+
+@section('title', 'Dynamic Form Details')
+
 @section('content')
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2"><i class="fas fa-info-circle me-2"></i>Form Details: {{ $form->name }}</h1>

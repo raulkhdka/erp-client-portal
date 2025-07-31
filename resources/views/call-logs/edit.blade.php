@@ -1,5 +1,23 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Call Log')
+
+@section('breadcrumb')
+    <a href="{{ route('call-logs.index') }}">Call Logs</a>
+    <span class="breadcrumb-item active">Edit</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('call-logs.show', $callLog) }}" class="btn btn-info">
+            <i class="fas fa-eye me-2"></i>View Call Log
+        </a>
+        <a href="{{ route('call-logs.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Call Logs
+        </a>
+    </div>
+@endsection
+
 @push('styles')
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />

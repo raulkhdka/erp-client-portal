@@ -2,6 +2,21 @@
 
 @section('title', 'Document Center')
 
+@section('breadcrumb')
+    <span class="breadcrumb-item active">Documents</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('documents.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Document
+        </a>
+        <a href="{{ route('document-categories.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-folder me-2"></i>Categories
+        </a>
+    </div>
+@endsection
+
 @push('styles')
     <style>
         .document-card {

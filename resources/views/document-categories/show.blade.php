@@ -1,17 +1,26 @@
 @extends('layouts.app')
 
+@section('title', 'Document Category Details')
+
+@section('breadcrumb')
+    <a href="{{ route('documents.index') }}">Documents</a>
+    <a href="{{ route('document-categories.index') }}">Categories</a>
+    <span class="breadcrumb-item active">{{ $documentCategory->name }}</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editCategoryModal">
+            <i class="fas fa-edit me-2"></i>Edit Category
+        </button>
+        <a href="{{ route('document-categories.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Categories
+        </a>
+    </div>
+@endsection
+
 @section('content')
     <div class="py-4 px-3">
-        <div class="d-flex justify-content-between align-items-center mb-3 px-3">
-            <h2><i class="fas fa-folder me-2"></i> Document Category Details</h2>
-            <div>
-                <a href="{{ route('document-categories.index') }}" class="btn btn-secondary me-2">
-                    <i class="fas fa-arrow-left"></i> Back to Categories
-                </a>
-
-                <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#editCategoryModal">
-                    <i class="fas fa-edit"></i> Edit Category
-                </button>
                 <form action="{{ route('document-categories.destroy', $documentCategory->id) }}" method="POST" class="d-inline-block"
                     onsubmit="return confirm('Are you sure you want to delete this category?');">
                     @csrf

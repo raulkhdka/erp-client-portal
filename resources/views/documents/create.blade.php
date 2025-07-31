@@ -2,6 +2,19 @@
 
 @section('title', 'Upload Document')
 
+@section('breadcrumb')
+    <a href="{{ route('documents.index') }}">Documents</a>
+    <span class="breadcrumb-item active">Upload</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('documents.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Documents
+        </a>
+    </div>
+@endsection
+
 @push('styles')
     <style>
         .upload-area {

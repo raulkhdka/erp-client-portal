@@ -1,13 +1,25 @@
 @extends('layouts.app')
 
+@section('title', 'Document Categories')
+
+@section('breadcrumb')
+    <a href="{{ route('documents.index') }}">Documents</a>
+    <span class="breadcrumb-item active">Categories</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+            <i class="fas fa-plus me-2"></i>New Category
+        </button>
+        <a href="{{ route('documents.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Documents
+        </a>
+    </div>
+@endsection
+
 @section('content')
     <div class="py-4 px-3">
-        <div class="d-flex justify-content-between align-items-center mb-3 px-3">
-            <h2><i class="fas fa-folder me-2"></i> Document Categories</h2>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
-                <i class="fas fa-plus-circle"></i> Add New Category
-            </button>
-        </div>
 
         {{-- @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show mx-3" role="alert">

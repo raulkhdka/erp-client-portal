@@ -101,4 +101,16 @@ class User extends Authenticatable
     {
         return $this->role === 'admin' || $this->role === 'employee';
     }
+
+    public function getDashboardUrl(){
+        if ($this->isAdmin()) {
+            return route('admin.dashboard');
+        } elseif ($this->isClient()) {
+            return route('client.dashboard');
+        } elseif ($this->isEmployee()) {
+            return route('employee.dashboard');
+        }
+
+        return route('home'); // Default fallback
+    }
 }

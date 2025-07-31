@@ -2,20 +2,24 @@
 
 @section('title', 'Edit Employee - ' . $employee->user->name)
 
-@section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-user-edit me-2"></i>Edit Employee</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{{ route('employees.show', $employee->id) }}" class="btn btn-outline-info">
-                <i class="fas fa-eye me-2"></i>View Details
-            </a>
-        </div>
-        <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Employees
+@section('breadcrumb')
+    <a href="{{ route('employees.index') }}">Employees</a>
+    <a href="{{ route('employees.show', $employee->id) }}">{{ $employee->user->name }}</a>
+    <span class="breadcrumb-item active">Edit</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group me-2">
+        <a href="{{ route('employees.show', $employee->id) }}" class="btn btn-outline-info">
+            <i class="fas fa-eye me-2"></i>View Details
         </a>
     </div>
-</div>
+    <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Employees
+    </a>
+@endsection
+
+@section('content')
 
 <div class="row">
     <div class="col-lg-8">

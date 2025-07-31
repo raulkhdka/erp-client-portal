@@ -1,6 +1,22 @@
 @extends('layouts.app')
 @section('title', 'Edit Dynamic Form')
 
+@section('breadcrumb')
+    <a href="{{ route('dynamic-forms.index') }}">Dynamic Forms</a>
+    <span class="breadcrumb-item active">Edit {{ $form->name }}</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('dynamic-forms.show', $form) }}" class="btn btn-info">
+            <i class="fas fa-eye me-2"></i>View Form
+        </a>
+        <a href="{{ route('dynamic-forms.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Forms
+        </a>
+    </div>
+@endsection
+
 @push('styles')
 <style>
 /* Same styles as create.blade.php */

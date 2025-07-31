@@ -2,17 +2,21 @@
 
 @section('title', 'Services')
 
+@section('breadcrumb')
+    <span class="breadcrumb-item active">Services</span>
+@endsection
+
+@section('actions')
+    <a href="{{ route('services.create') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Create New Service
+    </a>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Services Management</h3>
-                    <a href="{{ route('services.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i>Create New Service
-                    </a>
-                </div>
                 <div class="card-body">
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">

@@ -1,19 +1,25 @@
 @extends('layouts.app')
 
+@section('title', 'Create New Task')
+
+@section('breadcrumb')
+    <a href="{{ route('tasks.index') }}">Tasks</a>
+    <span class="breadcrumb-item active">Create</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('tasks.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Tasks
+        </a>
+    </div>
+@endsection
+
 @section('content')
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4>📋 Create New Task</h4>
-                            <small class="text-muted">Create a new task and assign it to team members</small>
-                        </div>
-                        <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back to Tasks
-                        </a>
-                    </div>
 
                     <div class="card-body">
                         @if ($errors->any())

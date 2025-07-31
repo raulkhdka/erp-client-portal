@@ -1,21 +1,28 @@
 @extends('layouts.app')
 
+@section('title', 'Call Log Details')
+
+@section('breadcrumb')
+    <a href="{{ route('call-logs.index') }}">Call Logs</a>
+    <span class="breadcrumb-item active">Call Details</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('call-logs.edit', $callLog) }}" class="btn btn-warning">
+            <i class="fas fa-edit me-2"></i>Edit Call Log
+        </a>
+        <a href="{{ route('call-logs.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Call Logs
+        </a>
+    </div>
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>Call Log Details</h4>
-                    <div>
-                        <a href="{{ route('call-logs.edit', $callLog) }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                        <a href="{{ route('call-logs.index') }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back to List
-                        </a>
-                    </div>
-                </div>
 
                 <div class="card-body">
                     <div class="row">

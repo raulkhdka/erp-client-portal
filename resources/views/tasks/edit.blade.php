@@ -1,21 +1,28 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Task')
+
+@section('breadcrumb')
+    <a href="{{ route('tasks.index') }}">Tasks</a>
+    <span class="breadcrumb-item active">Edit</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('tasks.show', $task) }}" class="btn btn-info">
+            <i class="fas fa-eye me-2"></i>View Task
+        </a>
+        <a href="{{ route('tasks.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Tasks
+        </a>
+    </div>
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>Edit Task</h4>
-                    <div>
-                        <a href="{{ route('tasks.show', $task) }}" class="btn btn-info btn-sm">
-                            <i class="fas fa-eye"></i> View
-                        </a>
-                        <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back to Tasks
-                        </a>
-                    </div>
-                </div>
 
                 <div class="card-body">
                     @if ($errors->any())

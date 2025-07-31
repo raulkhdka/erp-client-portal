@@ -2,15 +2,17 @@
 
 @section('title', 'Employees')
 
+@section('breadcrumb')
+    <span class="breadcrumb-item active">Employees</span>
+@endsection
+
+@section('actions')
+    <a href="{{ route('employees.create') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add New Employee
+    </a>
+@endsection
+
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-user-tie me-2"></i>Employees</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('employees.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Add New Employee
-        </a>
-    </div>
-</div>
 
 <div class="card shadow">
     <div class="card-body">

@@ -2,15 +2,18 @@
 
 @section('title', 'Add New Employee')
 
+@section('breadcrumb')
+    <a href="{{ route('employees.index') }}">Employees</a>
+    <span class="breadcrumb-item active">Add New Employee</span>
+@endsection
+
+@section('actions')
+    <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Employees
+    </a>
+@endsection
+
 @section('content')
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2"><i class="fas fa-user-plus me-2"></i>Add New Employee</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back to Employees
-            </a>
-        </div>
-    </div>
 
     <div class="row">
         <div class="col-lg-8">

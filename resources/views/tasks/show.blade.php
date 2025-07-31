@@ -2,19 +2,27 @@
 
 @section('title', 'Task Details')
 
+@section('breadcrumb')
+    <a href="{{ route('tasks.index') }}">Tasks</a>
+    <span class="breadcrumb-item active">Task #{{ $task->id }}</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('tasks.edit', $task) }}" class="btn btn-warning">
+            <i class="fas fa-edit me-2"></i>Edit Task
+        </a>
+        <a href="{{ route('tasks.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Tasks
+        </a>
+    </div>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Task #{{ $task->id }}</h3>
-                    <div class="btn-group">
-                        <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-arrow-left me-1"></i>Back to Tasks
-                        </a>
-                    </div>
-                </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-8">
@@ -47,7 +55,7 @@
                                     <th>Created By:</th>
                                     <td>{{ $task->adminCreator->name ?? 'Admin' }}</td>
                                 </tr>
-                        
+
                                 <tr>
                                     <th>Created:</th>
                                     <td>{{ $task->created_at->format('M d, Y \a\t H:i') }}</td>

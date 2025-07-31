@@ -1,6 +1,19 @@
 @extends('layouts.app')
 @section('title', 'Create Dynamic Form')
 
+@section('breadcrumb')
+    <a href="{{ route('dynamic-forms.index') }}">Dynamic Forms</a>
+    <span class="breadcrumb-item active">Create</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('dynamic-forms.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Forms
+        </a>
+    </div>
+@endsection
+
 @section('styles')
 <style>
 /* Enhanced Preview Styles */

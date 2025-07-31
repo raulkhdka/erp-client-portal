@@ -2,28 +2,26 @@
 
 @section('title', 'Employee Details - ' . $employee->user->name)
 
-@section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">
-        <i class="fas fa-user me-2"></i>Employee Details
-        <span class="badge bg-{{ $employee->status === 'active' ? 'success' : ($employee->status === 'inactive' ? 'warning' : 'danger') }} ms-2">
-            {{ ucfirst($employee->status) }}
-        </span>
-    </h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-primary">
-                <i class="fas fa-edit me-2"></i>Edit
-            </a>
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                <i class="fas fa-trash me-2"></i>Delete
-            </button>
-        </div>
-        <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Employees
+@section('breadcrumb')
+    <a href="{{ route('employees.index') }}">Employees</a>
+    <span class="breadcrumb-item active">{{ $employee->user->name }}</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group me-2">
+        <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-primary">
+            <i class="fas fa-edit me-2"></i>Edit
         </a>
+        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="fas fa-trash me-2"></i>Delete
+        </button>
     </div>
-</div>
+    <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Employees
+    </a>
+@endsection
+
+@section('content')
 
 <div class="row">
     <div class="col-lg-8">

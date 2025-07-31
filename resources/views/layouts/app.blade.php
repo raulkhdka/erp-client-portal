@@ -60,7 +60,7 @@
 
                 <div class="d-flex align-items-center justify-content-between p-3">
                     <div class="breadcrumb">
-                        <a href="{{ route('admin.dashboard') }}">Admin</a> @yield('breadcrumb')
+                        <a href="{{ Auth::user()->getDashboardUrl() }}">Dashboard</a> @yield('breadcrumb')
                     </div>
                     <div class="actions">
                         @yield('actions')

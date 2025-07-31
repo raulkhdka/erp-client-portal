@@ -2,6 +2,22 @@
 
 @section('title', 'Edit Document')
 
+@section('breadcrumb')
+    <a href="{{ route('documents.index') }}">Documents</a>
+    <span class="breadcrumb-item active">Edit</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('documents.show', $document) }}" class="btn btn-info">
+            <i class="fas fa-eye me-2"></i>View Document
+        </a>
+        <a href="{{ route('documents.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Documents
+        </a>
+    </div>
+@endsection
+
 @section('content')
 <div class="container mt-5">
     <h2>Edit Document</h2>

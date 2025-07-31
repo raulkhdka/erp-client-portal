@@ -2,17 +2,22 @@
 
 @section('title', 'Create Service')
 
+@section('breadcrumb')
+    <a href="{{ route('services.index') }}">Services</a>
+    <span class="breadcrumb-item active">Create New Service</span>
+@endsection
+
+@section('actions')
+    <a href="{{ route('services.index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Services
+    </a>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Create New Service</h3>
-                    <a href="{{ route('services.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>Back to Services
-                    </a>
-                </div>
                 <div class="card-body">
                     <form action="{{ route('services.store') }}" method="POST">
                         @csrf

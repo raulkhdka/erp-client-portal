@@ -2,24 +2,28 @@
 
 @section('title', 'Tasks')
 
+@section('breadcrumb')
+    <span class="breadcrumb-item active">Tasks</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        @if(Auth::user()->isEmployee())
+        <a href="{{ route('tasks.my-tasks') }}" class="btn btn-outline-primary">
+            <i class="fas fa-user me-2"></i>My Tasks
+        </a>
+        @endif
+        <a href="{{ route('tasks.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Task
+        </a>
+    </div>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">📋 Tasks Management</h3>
-                    <div>
-                        @if(Auth::user()->isEmployee())
-                        <a href="{{ route('tasks.my-tasks') }}" class="btn btn-outline-primary me-2">
-                            <i class="fas fa-user me-1"></i>My Tasks
-                        </a>
-                        @endif
-                        <a href="{{ route('tasks.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus me-1"></i>Create Task
-                        </a>
-                    </div>
-                </div>
                 <div class="card-body">
                     <!-- Filters -->
                     <form method="GET" action="{{ route('tasks.index') }}" class="mb-4">
