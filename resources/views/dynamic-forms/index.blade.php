@@ -15,43 +15,28 @@
 @endsection
 
 @section('styles')
+@verbatim
 <style>
-    .page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 15px;
-        padding: 1rem; /* Reduced padding from 2rem */
-        margin-bottom: 0;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-
-    .page-header h1 {
-        font-weight: 700;
-        margin: 0;
-        font-size: 2rem; /* Reduced font size from 2.5rem */
-    }
-
-    .page-header .subtitle {
-        opacity: 0.9;
-        margin-top: 0.5rem;
-        font-size: 1rem; /* Reduced font size from 1.1rem */
-    }
-
     .stats-card {
-        border-radius: 15px;
-        /* padding: 1.5rem; */
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         border: none;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: all 0.3s ease;
         margin-bottom: 1rem;
         cursor: pointer;
         text-decoration: none;
         color: inherit;
+        height: 100%;
     }
 
     .stats-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         text-decoration: none;
         color: inherit;
     }
@@ -90,20 +75,17 @@
 
     .table-container {
         padding: 0;
-        display: flex; /* Added to wrap table in flex */
-        flex-direction: column; /* Ensures rows stack vertically */
     }
 
     .table-modern {
         margin: 0;
         border-collapse: separate;
         border-spacing: 0;
-        border: 1px solid #dee2e6; /* Added border to the table */
     }
 
     .table-modern thead th {
         background: #f8f9fa;
-        border: 1px solid #dee2e6; /* Added border to th */
+        border: 1px solid #dee2e6;
         padding: 1rem 1.5rem;
         font-weight: 600;
         color: #495057;
@@ -136,19 +118,19 @@
     .table-modern thead th.sort-asc::after {
         content: '\f0de';
         opacity: 1;
-        color: #667eea;
+        color: #10b981;
     }
 
     .table-modern thead th.sort-desc::after {
         content: '\f0dd';
         opacity: 1;
-        color: #667eea;
+        color: #10b981;
     }
 
     .table-modern tbody td {
         padding: 1.25rem 1.5rem;
-        border: 1px solid #dee2e6; /* Added border to td */
-        border-top: none; /* Avoid double border on top */
+        border: 1px solid #dee2e6;
+        border-top: none;
         vertical-align: middle;
     }
 
@@ -189,65 +171,6 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
-    .btn-create-new {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 50px;
-        padding: 1rem 2.5rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 1rem;
-        color: white;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        position: relative;
-        overflow: hidden;
-        min-width: 200px;
-    }
-
-    .btn-create-new::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s;
-    }
-
-    .btn-create-new:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
-        color: white;
-        text-decoration: none;
-    }
-
-    .btn-create-new:hover::before {
-        left: 100%;
-    }
-
-    .btn-create-new:active {
-        transform: translateY(-1px) scale(1.02);
-    }
-
-    .btn-create-new i {
-        margin-right: 0.75rem;
-        font-size: 1.2rem;
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-
     .alert-modern {
         border: none;
         border-radius: 15px;
@@ -260,11 +183,17 @@
         text-align: center;
         padding: 4rem 2rem;
         color: #6c757d;
+
+    }
+
+    .empty-state a{
+        display: inline-flex;
+        align-items: center;
+        border-radius: 1.6rem
     }
 
     .empty-state i {
-        font-size: 4rem;
-        margin-bottom: 1rem;
+        font-size: 3rem;
         opacity: 0.3;
     }
 
@@ -278,24 +207,24 @@
         border-radius: 10px;
         margin: 0 2px;
         padding: 0.5rem 1rem;
-        color: #667eea;
+        color: #10b981;
         transition: all 0.3s ease;
     }
 
     .pagination-modern .page-link:hover {
-        background: #667eea;
+        background: #10b981;
         color: white;
         transform: translateY(-2px);
     }
 
     .pagination-modern .page-item.active .page-link {
-        background: linear-gradient(45deg, #667eea, #764ba2);
+        background: #10b981;
         border: none;
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
     }
 
     .field-count {
-        background: linear-gradient(45deg, #667eea, #764ba2);
+        background: #10b981;
         color: white;
         padding: 0.25rem 0.75rem;
         border-radius: 15px;
@@ -305,7 +234,7 @@
     }
 
     .sn-number {
-        background: linear-gradient(45deg, #667eea, #764ba2);
+        background: #10b981;
         color: white;
         width: 30px;
         height: 30px;
@@ -333,8 +262,8 @@
     }
 
     .filter-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        border-color: #10b981;
+        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
     }
 
     .search-input {
@@ -347,8 +276,8 @@
     }
 
     .search-input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        border-color: #10b981;
+        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
         background: white;
     }
 
@@ -368,7 +297,7 @@
     }
 
     .modal-modern .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #10b981;
         color: white;
         border-radius: 20px 20px 0 0;
         border: none;
@@ -408,33 +337,7 @@
         color: white;
     }
 
-    .copied-tooltip {
-        position: absolute;
-        background: #333;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.8rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        pointer-events: none;
-        z-index: 1000;
-    }
-
-    .copied-tooltip.show {
-        opacity: 1;
-    }
-
     @media (max-width: 768px) {
-        .page-header {
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .page-header h1 {
-            font-size: 1.5rem; /* Reduced font size for mobile */
-        }
-
         .stats-card {
             margin-bottom: 1rem;
         }
@@ -449,72 +352,60 @@
             font-size: 0.8rem;
         }
 
-        .btn-create-new {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.9rem;
-            min-width: 150px;
-        }
-
         .search-filter-container {
             padding: 1rem;
         }
     }
 </style>
+@endverbatim
 @endsection
 
 @section('content')
 <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1><i class="fas fa-file-alt me-3"></i>Dynamic Forms</h1>
-                <p class="subtitle mb-0">Create, manage, and track your dynamic forms</p>
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <a href="{{ route('dynamic-forms.create') }}" class="btn-create-new">
-                    <i class="fas fa-plus-circle"></i>Create New Form
-                </a>
-            </div>
-        </div>
-    </div>
-
     <!-- Stats Cards -->
     <div class="row mb-4">
         <div class="col-md-3 col-sm-6">
             <a href="#" class="stats-card" data-bs-toggle="modal" data-bs-target="#totalFormsModal">
-                <div class="stats-icon primary">
-                    <i class="fas fa-file-alt"></i>
+                <div>
+                    <div class="stats-icon primary">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <p class="text-muted mb-0">Total Forms</p>
                 </div>
                 <h3 class="mb-1">{{ $forms->total() }}</h3>
-                <p class="text-muted mb-0">Total Forms</p>
             </a>
         </div>
         <div class="col-md-3 col-sm-6">
             <a href="#" class="stats-card" data-bs-toggle="modal" data-bs-target="#activeFormsModal">
-                <div class="stats-icon success">
-                    <i class="fas fa-check-circle"></i>
+                <div>
+                    <div class="stats-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <p class="text-muted mb-0">Active Forms</p>
                 </div>
                 <h3 class="mb-1">{{ $forms->where('is_active', true)->count() }}</h3>
-                <p class="text-muted mb-0">Active Forms</p>
             </a>
         </div>
         <div class="col-md-3 col-sm-6">
             <a href="#" class="stats-card" data-bs-toggle="modal" data-bs-target="#inactiveFormsModal">
-                <div class="stats-icon warning">
-                    <i class="fas fa-pause-circle"></i>
+                <div>
+                    <div class="stats-icon warning">
+                        <i class="fas fa-pause-circle"></i>
+                    </div>
+                    <p class="text-muted mb-0">Inactive Forms</p>
                 </div>
                 <h3 class="mb-1">{{ $forms->where('is_active', false)->count() }}</h3>
-                <p class="text-muted mb-0">Inactive Forms</p>
             </a>
         </div>
         <div class="col-md-3 col-sm-6">
             <a href="#" class="stats-card" data-bs-toggle="modal" data-bs-target="#thisWeekFormsModal">
-                <div class="stats-icon info">
-                    <i class="fas fa-calendar-plus"></i>
+                <div>
+                    <div class="stats-icon info">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <p class="text-muted mb-0">This Week</p>
                 </div>
                 <h3 class="mb-1">{{ $forms->where('created_at', '>=', now()->subDays(7))->count() }}</h3>
-                <p class="text-muted mb-0">This Week</p>
             </a>
         </div>
     </div>
@@ -661,7 +552,7 @@
                                             <i class="fas fa-external-link-alt"></i>
                                         </a>
                                         <a href="{{ route('dynamic-forms.share', $form->id) }}"
-                                            class="btn btn-share"
+                                            class="btn btn-share btn-action"
                                             title="Share Form"
                                             data-bs-toggle="tooltip">
                                              <i class="fas fa-share-alt"></i>
@@ -700,8 +591,8 @@
                     <i class="fas fa-file-alt"></i>
                     <h3>No Forms Found</h3>
                     <p class="mb-4">You haven't created any dynamic forms yet. Get started by creating your first form!</p>
-                    <a href="{{ route('dynamic-forms.create') }}" class="btn-create-new">
-                        <i class="fas fa-plus-circle"></i>Create Your First Form
+                    <a href="{{ route('dynamic-forms.create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Create Your First Form
                     </a>
                 </div>
             @endif
@@ -822,6 +713,7 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
@@ -900,19 +792,6 @@ document.addEventListener('DOMContentLoaded', function() {
         filterTable(); // Reapply filters after sorting
     }
 
-    // Copy to clipboard functionality
-    window.copyFormLink = function(url, button) {
-        navigator.clipboard.writeText(url).then(() => {
-            const tooltip = button.querySelector('.copied-tooltip');
-            tooltip.classList.add('show');
-            setTimeout(() => {
-                tooltip.classList.remove('show');
-            }, 2000);
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
-        });
-    };
-
     // Event listeners
     searchInput.addEventListener('input', filterTable);
     statusFilter.addEventListener('change', filterTable);
@@ -952,19 +831,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sortTable();
         });
     });
-
-    // Add smooth animations
-    const cards = document.querySelectorAll('.stats-card, .main-card, .search-filter-container');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
 });
 </script>
+@endpush
 @endsection
