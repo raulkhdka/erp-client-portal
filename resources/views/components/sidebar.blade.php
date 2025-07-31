@@ -1,88 +1,40 @@
 <!-- Sidebar Component -->
-<nav id="sidebar" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+<nav id="sidebar" class="col-md-3 col-lg-2 p-0 d-md-block sidebar collapse">
     <div class="sidebar-wrapper">
         <!-- Logo/Brand Section -->
         <div class="sidebar-header">
-            <div class="brand-section">
-                <div class="brand-icon">
-                    <i class="fas fa-circle"></i>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=10b981&color=fff"
+                         alt="{{ Auth::user()->name }}" class="avatar-img">
                 </div>
-                <span class="brand-text">Flup</span>
+                <div class="user-info">
+                    <span class="user-name">{{ Auth::user()->name }}</span>
+                    <span class="user-role">{{ Auth::user()->role ?? 'User' }}</span>
+                </div>
             </div>
         </div>
 
         <!-- Navigation Menu -->
         <div class="sidebar-menu">
-            <!-- Marketing Section -->
-            @if (Auth::user()->isAdmin() || Auth::user()->isEmployee())
-                <div class="menu-section">
-                    <h6 class="menu-section-title">MARKETING</h6>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-                                href="{{ route('dashboard') }}">
-                                <i class="fas fa-th-large"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('marketplace.*') ? 'active' : '' }}"
-                                href="#">
-                                <i class="fas fa-shopping-cart"></i>Marketplace
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}"
-                                href="#">
-                                <i class="fas fa-box"></i>Orders
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('tracking.*') ? 'active' : '' }}"
-                                href="#">
-                                <i class="fas fa-shipping-fast"></i>Tracking
-                            </a>
-                        </li>
+            <div class="menu-section">
+                <ul class="nav flex-column">
+                    <!-- Dashboard - Available to all users -->
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+                            href="{{ route('dashboard') }}">
+                            <i class="fas fa-home"></i>Dashboard
+                        </a>
+                    </li>
+
+                    <!-- Admin Only Items -->
+                    @if (Auth::user()->isAdmin())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}"
                                 href="{{ route('clients.index') }}">
-                                <i class="fas fa-users"></i>Customers
+                                <i class="fas fa-users"></i>Clients
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('discounts.*') ? 'active' : '' }}"
-                                href="#">
-                                <i class="fas fa-tags"></i>Discounts
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            @endif
-
-            <!-- Admin Only Sections -->
-            @if (Auth::user()->isAdmin())
-                <!-- Payments Section -->
-                <div class="menu-section">
-                    <h6 class="menu-section-title">PAYMENTS</h6>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('ledger.*') ? 'active' : '' }}"
-                                href="#">
-                                <i class="fas fa-book"></i>Ledger
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('taxes.*') ? 'active' : '' }}"
-                                href="#">
-                                <i class="fas fa-dollar-sign"></i>Taxes
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- System Section -->
-                <div class="menu-section">
-                    <h6 class="menu-section-title">SYSTEM</h6>
-                    <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
                                 href="{{ route('employees.index') }}">
@@ -131,15 +83,10 @@
                                 <i class="fas fa-cog"></i>Settings
                             </a>
                         </li>
-                    </ul>
-                </div>
-            @endif
+                    @endif
 
-            <!-- Employee Only Sections -->
-            @if (Auth::user()->isEmployee())
-                <div class="menu-section">
-                    <h6 class="menu-section-title">MY WORK</h6>
-                    <ul class="nav flex-column">
+                    <!-- Employee Only Items -->
+                    @if (Auth::user()->isEmployee())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
                                 href="{{ route('call-logs.index') }}">
@@ -169,15 +116,10 @@
                                 <i class="fas fa-briefcase"></i>My Clients
                             </a>
                         </li>
-                    </ul>
-                </div>
-            @endif
+                    @endif
 
-            <!-- Client Only Sections -->
-            @if (Auth::user()->isClient())
-                <div class="menu-section">
-                    <h6 class="menu-section-title">CLIENT PORTAL</h6>
-                    <ul class="nav flex-column">
+                    <!-- Client Only Items -->
+                    @if (Auth::user()->isClient())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('client.services.*') ? 'active' : '' }}"
                                 href="{{ route('clients.services.index') }}">
@@ -202,22 +144,18 @@
                                 <i class="fas fa-clipboard-check"></i>Forms
                             </a>
                         </li>
-                    </ul>
-                </div>
-            @endif
-        </div>
+                    @endif
 
-        <!-- User Profile Section -->
-        <div class="sidebar-footer">
-            <div class="user-profile">
-                <div class="user-avatar">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=10b981&color=fff"
-                         alt="{{ Auth::user()->name }}" class="avatar-img">
-                </div>
-                <div class="user-info">
-                    <span class="user-name">{{ Auth::user()->name }}</span>
-                    <span class="user-role">{{ Auth::user()->role ?? 'User' }}</span>
-                </div>
+                    <!-- Logout - Available to all users -->
+                    <li class="nav-item">
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline w-100">
+                            @csrf
+                            <button type="submit" class="nav-link btn btn-link text-start w-100 border-0 p-0" style="color: inherit; text-decoration: none;">
+                                <i class="fas fa-sign-out-alt"></i>Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

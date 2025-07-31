@@ -17,8 +17,12 @@
 
 /* Sidebar Header */
 .sidebar-header {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
     border-bottom: 1px solid #f3f4f6;
+}
+
+.sidebar-header .user-profile {
+    padding: 0.5rem;
 }
 
 .brand-section {
@@ -105,6 +109,29 @@
     margin-right: 0.75rem;
     font-size: 16px;
     text-align: center;
+}
+
+/* Logout Button Styling */
+.menu-section .nav-link.btn {
+    background: none !important;
+    border: none !important;
+    padding: 0.75rem 1rem !important;
+    margin: 0 0.5rem !important;
+    border-radius: 0.5rem !important;
+    text-align: left !important;
+    width: calc(100% - 1rem) !important;
+    display: flex !important;
+    align-items: center !important;
+    color: #4b5563 !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+.menu-section .nav-link.btn:hover {
+    background-color: #f9fafb !important;
+    color: #10b981 !important;
+    text-decoration: none !important;
 }
 
 /* Sidebar Footer */

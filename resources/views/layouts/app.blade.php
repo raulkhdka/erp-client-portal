@@ -24,44 +24,7 @@
 </head>
 
 <body class="m-0 p-0">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <!-- Mobile Sidebar Toggle -->
-            <button class="sidebar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar">
-                <i class="fas fa-bars"></i>
-            </button>
-
-            <a class="navbar-brand" href="{{ auth()->check() ? route('dashboard') : url('/') }}">
-                <i class="fas fa-building me-2"></i>ERP System
-            </a>
-
-            @auth
-                <div class="navbar-nav ms-auto">
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>{{ Auth::user()->name }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            @endauth
-        </div>
-    </nav>
-
-    <div class="container-fluid">
+   <div class="container-fluid">
         <div class="row">
             <!-- Include Sidebar Component -->
             @include('components.sidebar')
@@ -95,7 +58,7 @@
                     </div>
                 @endif
 
-                <div class="d-flex align-items-between p-3">
+                <div class="d-flex align-items-center justify-content-between p-3">
                     <div class="breadcrumb">
                         <a href="{{ route('admin.dashboard') }}">Admin</a> @yield('breadcrumb')
                     </div>

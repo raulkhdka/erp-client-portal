@@ -2,20 +2,23 @@
 
 @section('title', $client->company_name . ' - Client Details')
 
-@section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-building me-2"></i>{{ $client->company_name }}</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{{ route('clients.edit', $client->id) }}" class="btn btn-outline-primary">
-                <i class="fas fa-edit me-2"></i>Edit
-            </a>
-            <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back
-            </a>
-        </div>
+@section('breadcrumb')
+    <a href="{{ route('clients.index') }}">Clients</a>
+    <span class="breadcrumb-item active">{{ $client->company_name }}</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group me-2">
+        <a href="{{ route('clients.edit', $client->id) }}" class="btn btn-outline-primary">
+            <i class="fas fa-edit me-2"></i>Edit
+        </a>
+        <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
     </div>
-</div>
+@endsection
+
+@section('content')
 
 <div class="row">
     <div class="col-lg-8">
