@@ -126,8 +126,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/client/documents/{document}/preview', [ClientDocumentController::class, 'preview'])->name('clients.documents.preview');
         Route::get('/client/services', [ClientServicesController::class, 'index'])->name('clients.services.index');
         Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('clients.employees.index');
-        //Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('documents.index');
-        Route::get('/clients/forms', [ClientFormController::class, 'index'])->name('clients.forms.index');
+        Route::get('/client/forms', [ClientFormController::class, 'index'])->name('clients.forms.index');
 
         // Optional: Client-specific document actions (if allowed to upload/download their own)
         // Route::get('/client/documents/upload', [ClientDocumentController::class, 'create'])->name('documents.create');

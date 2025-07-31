@@ -35,15 +35,16 @@ class ClientFormController extends Controller
             return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
         }
 
-        // Fetch forms shared with this client (via responses)
-        $forms = DynamicForm::whereHas('responses', function ($query) use ($client) {
+        // Fetch forms shared with this client (assuming a pivot table or a shared_with_clients relationship)
+        // If you use a pivot table 'dynamic_form_client' or a relation 'sharedForms' on Client:
+        $forms = DynamicForm::whereHas('sharedWithClients', function ($query) use ($client) {
             $query->where('client_id', $client->id);
         })->where('is_active', true)->with('fields')->paginate(10);
 
-        // Fetch all form responses submitted by this client (optional, for display)
-        $formResponses = $client->formResponses()->with('dynamicForm')->latest()->paginate(15);
+        // If you do not have such a relation, fallback to all active forms (not recommended for production)
+        // $forms = DynamicForm::where('is_active', true)->with('fields')->paginate(10);
 
-        return view('clients.forms.index', compact('client', 'forms', 'formResponses'));
+        return view('clients.forms.index', compact('client', 'forms'));
     }
 
     /**
@@ -117,4 +118,5 @@ class ClientFormController extends Controller
     // You might also add methods here for:
     // public function create(DynamicForm $form) { ... } // To display a blank form for filling
     // public function store(Request $request, DynamicForm $form) { ... } // To save a new form submission
+
 }

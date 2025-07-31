@@ -31,4 +31,9 @@ class DynamicForm extends Model
     {
         return $this->hasMany(DynamicFormResponse::class);
     }
+
+    public function sharedWithClients()
+    {
+        return $this->belongsToMany(Client::class, 'dynamic_form_client', 'dynamic_form_id', 'client_id');
+    }
 }
