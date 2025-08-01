@@ -13,6 +13,23 @@
         </a>
     </div>
 @endsection
+@push('styles')
+<style>
+    .table-bordered th,td{
+        border: 1px solid black;
+    }
+    .table th{
+        text-wrap: nowrap;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .table td {
+        font-size: 0.9rem;
+    }
+</style>
+
+@endpush
 
 @section('content')
 <div class="container-fluid">
@@ -20,7 +37,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    @if(session('success'))
+                    {{-- @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -32,7 +49,7 @@
                             {{ session('error') }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                    @endif
+                    @endif --}}
 
                     <!-- Filters -->
                     <form method="GET" action="{{ route('call-logs.index') }}" class="mb-4">
@@ -85,7 +102,7 @@
 
                     @if($callLogs->count() > 0)
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
+                            <table class="table table-bordered table-striped table-hover">
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Date/Time</th>
@@ -96,7 +113,7 @@
                                         <th>Priority</th>
                                         <th>Status</th>
                                         <th>Employee</th>
-                                        <th>Task</th>
+                                        <th>Company Name</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -162,15 +179,9 @@
                                                 <small>{{ $callLog->employee->name }}</small>
                                             </td>
                                             <td>
-                                                @if($callLog->task)
-                                                    <a href="{{ route('tasks.show', $callLog->task) }}"
-                                                       class="badge bg-primary text-decoration-none">
-                                                        Task #{{ $callLog->task->id }}
-                                                    </a>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
+                                                <small>{{ $callLog->client->company_name }}</small>
                                             </td>
+
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <a href="{{ route('call-logs.show', $callLog) }}"

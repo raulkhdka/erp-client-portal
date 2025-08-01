@@ -7,6 +7,18 @@
     <span class="breadcrumb-item active">Categories</span>
 @endsection
 
+{{-- @section('styles')
+    <style>
+        .icon-wrapper {
+            transition: background-color 0.3s ease;
+        }
+
+        .icon-wrapper:hover {
+            opacity: 0.9;
+        }
+    </style>
+@endsection --}}
+
 @section('actions')
     <div class="btn-group">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
@@ -45,7 +57,7 @@
                                 <th scope="col">Name</th>
                                 <th scope="col">Description</th>
                                 <th scope="col" class="text-center">Icon</th>
-                                <th scope="col" class="text-center">Color</th>
+                                {{-- <th scope="col" class="text-center">Color</th> --}}
                                 <th scope="col" class="text-center">Active</th>
                                 <th scope="col" class="text-center">Order</th>
                                 <th scope="col" class="text-center">Documents</th>
@@ -64,18 +76,14 @@
                                     </td>
                                     <td>{{ Str::limit($category->description, 50) }}</td>
                                     <td class="text-center">
-                                        @if ($category->icon)
-                                            <i class="{{ $category->icon }}" style="font-size: 1.2em;"></i>
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        @if ($category->color)
-                                            <span class="badge"
-                                                style="background-color: {{ $category->color }}; color: {{ \App\Helpers\ColorHelper::getTextColor($category->color) ?? '#ffffff' }};">
-                                                {{ $category->color }}
+                                        @if ($category->icon && $category->color)
+                                            <span
+                                                class="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle"
+                                                style="background-color: {{ $category->color }}; color: {{ \App\Helpers\ColorHelper::getTextColor($category->color) ?? '#ffffff' }}; width: 30px; height: 30px;">
+                                                <i class="{{ $category->icon }}" style="font-size: 1.2em;"></i>
                                             </span>
+                                        @elseif ($category->icon)
+                                            <i class="{{ $category->icon }}" style="font-size: 1.2em;"></i>
                                         @else
                                             N/A
                                         @endif
@@ -432,7 +440,8 @@
                         // currentTargetInput.dispatchEvent(new Event('change', { bubbles: true }));
 
                         // Close the icon picker modal only
-                        const iconPickerModal = bootstrap.Modal.getInstance(document.getElementById('iconPickerModal'));
+                        const iconPickerModal = bootstrap.Modal.getInstance(document.getElementById(
+                            'iconPickerModal'));
                         if (iconPickerModal) {
                             iconPickerModal.hide();
                         }
@@ -454,7 +463,8 @@
                     if (form) {
                         form.addEventListener('submit', function(event) {
                             const submitButton = event.submitter;
-                            if (!submitButton || (!submitButton.classList.contains('btn-primary') && !submitButton.classList.contains('btn-warning'))) {
+                            if (!submitButton || (!submitButton.classList.contains('btn-primary') && !
+                                    submitButton.classList.contains('btn-warning'))) {
                                 event.preventDefault();
                                 event.stopPropagation();
                             }

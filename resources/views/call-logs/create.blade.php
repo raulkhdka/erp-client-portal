@@ -83,7 +83,7 @@
                                                     data-contact-name="{{ $client->user ? $client->user->name : $client->contact_person ?? 'N/A' }}"
                                                     {{-- We will fetch phones via AJAX, so don't include them in data-attributes here --}}
                                                     {{ old('client_id') == $client->id ? 'selected' : '' }}>
-                                                    {{ $client->name }}
+                                                    {{ $client->name }} ({{ $client->company_name ?? 'N/A' }})
                                                 </option>
                                             @endforeach
                                         </select>

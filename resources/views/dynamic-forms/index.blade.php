@@ -15,7 +15,6 @@
 @endsection
 
 @section('styles')
-@verbatim
 <style>
     .stats-card {
         display: flex;
@@ -359,7 +358,6 @@
         }
     }
 </style>
-@endverbatim
 @endsection
 
 @section('content')

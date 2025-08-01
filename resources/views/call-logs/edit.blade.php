@@ -140,6 +140,7 @@
                                         <option value="low" {{ old('priority', $callLog->priority) == 'low' ? 'selected' : '' }}>Low</option>
                                         <option value="medium" {{ old('priority', $callLog->priority) == 'medium' ? 'selected' : '' }}>Medium</option>
                                         <option value="high" {{ old('priority', $callLog->priority) == 'high' ? 'selected' : '' }}>High</option>
+                                        <option value="urgent" {{ old('priority', $callLog->priority) == 'urgent' ? 'selected' : '' }}>Urgent</option>
                                     </select>
                                 </div>
 

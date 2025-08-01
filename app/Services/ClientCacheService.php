@@ -42,7 +42,7 @@ class ClientCacheService
     {
         return Cache::remember(self::CACHE_KEY . '_with_user', self::CACHE_DURATION, function () {
             return Client::with('user:id,name')
-                ->select('id', 'name', 'contact_person', 'user_id')
+                ->select('id', 'name','company_name', 'contact_person', 'user_id')
                 ->orderBy('name')
                 ->get();
         });

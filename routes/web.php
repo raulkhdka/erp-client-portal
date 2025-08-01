@@ -88,7 +88,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('tasks', TaskController::class);
         Route::resource('documents', DocumentController::class); // Admin's comprehensive document management
         Route::resource('document-categories', DocumentCategoryController::class);
-        Route::resource('client-services', ClientServiceController::class); // Admin managing client-service pivot
+
 
         // Admin-specific routes
         Route::get('/clients/{client}/manage-access', [ClientController::class, 'manageAccess'])->name('clients.manage-access');
@@ -138,25 +138,25 @@ Route::middleware(['auth'])->group(function () {
         // Optional: Client-specific form response viewing
         Route::get('/client/form-responses/{dynamicFormResponse}', [ClientFormController::class, 'show'])->name('clients.form-responses.show');
 
-        // Temporary debug route
-        Route::get('/debug-client-forms', function() {
-            Log::info('Debug route accessed', [
-                'user_authenticated' => Auth::check(),
-                'user_role' => Auth::check() ? Auth::user()->role : 'not-authenticated'
-            ]);
+        // // Temporary debug route
+        // Route::get('/debug-client-forms', function() {
+        //     Log::info('Debug route accessed', [
+        //         'user_authenticated' => Auth::check(),
+        //         'user_role' => Auth::check() ? Auth::user()->role : 'not-authenticated'
+        //     ]);
 
-            if (!Auth::check()) {
-                return 'Not authenticated';
-            }
+        //     if (!Auth::check()) {
+        //         return 'Not authenticated';
+        //     }
 
-            $user = Auth::user();
-            return response()->json([
-                'user_id' => $user->id,
-                'user_role' => $user->role,
-                'has_client_profile' => $user->client ? true : false,
-                'client_id' => $user->client ? $user->client->id : null
-            ]);
-        });
+        //     $user = Auth::user();
+        //     return response()->json([
+        //         'user_id' => $user->id,
+        //         'user_role' => $user->role,
+        //         'has_client_profile' => $user->client ? true : false,
+        //         'client_id' => $user->client ? $user->client->id : null
+        //     ]);
+        // });
     });
 
     // --- Shared Document Routes (Admin, Employee, Client) ---
@@ -180,6 +180,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Simple test route outside of any middleware
-Route::get('/test-route', function() {
-    return 'Test route working';
-});
+// Route::get('/test-route', function() {
+//     return 'Test route working';
+// });
