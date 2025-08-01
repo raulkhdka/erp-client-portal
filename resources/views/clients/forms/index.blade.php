@@ -37,7 +37,7 @@
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-bottom: 1px solid #dee2e6;
         padding: 1.5rem 2rem;
-        border-radius: 20px 20px 0 0 !important;
+        border-radius: 20px 20px 0 0;
     }
 
     .table-container {
@@ -176,6 +176,30 @@
         font-weight: 600;
     }
 
+    .modal-content {
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding: 1.5rem 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .modal-body {
+        padding: 2rem;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .modal-footer {
+        border-top: none;
+        padding: 1rem 2rem;
+    }
+
     @media (max-width: 768px) {
         .page-header {
             padding: 1rem;
@@ -195,6 +219,10 @@
             height: 30px;
             font-size: 0.8rem;
         }
+
+        .modal-body {
+            padding: 1rem;
+        }
     }
 </style>
 @endsection
@@ -211,7 +239,7 @@
         </div>
     </div>
 
-    <!-- Alerts -->
+    {{-- <!-- Alerts -->
     @if (session('success'))
         <div class="alert alert-success alert-modern alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>
@@ -226,7 +254,7 @@
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    @endif
+    @endif --}}
 
     <!-- Main Content Card -->
     <div class="main-card">
@@ -252,7 +280,7 @@
                                 <th><i class="fas fa-align-left me-2"></i>Description</th>
                                 <th><i class="fas fa-toggle-on me-2"></i>Status</th>
                                 <th><i class="fas fa-list-ul me-2"></i>Fields</th>
-                                <th><i class="fas fa-calendar me-2"></i>Created</th>
+                                <th><i class="fas fa-check-circle me-2"></i>Submitted</th>
                                 <th><i class="fas fa-eye me-2"></i>Action</th>
                             </tr>
                         </thead>
@@ -283,21 +311,24 @@
                                     <span class="field-count">{{ $form->fields->count() }} fields</span>
                                 </td>
                                 <td>
-                                    <div class="text-muted">
-                                        <i class="fas fa-calendar-alt me-1"></i>
-                                        {{ $form->created_at->format('M d, Y') }}
-                                    </div>
-                                    <small class="text-muted">{{ $form->created_at->diffForHumans() }}</small>
+                                    @if (auth()->user()->isClient() && $form->responses()->where('client_id', auth()->user()->client->id)->exists())
+                                        <span class="badge badge-modern bg-success"><i class="fas fa-check me-1"></i>Submitted</span>
+                                    @else
+                                        <span class="badge badge-modern bg-warning"><i class="fas fa-hourglass-half me-1"></i>Pending</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('dynamic-forms.public-show', $form->id) }}"
-                                           class="btn btn-info btn-action"
-                                           target="_blank"
-                                           title="Fill Form"
-                                           data-bs-toggle="tooltip">
+                                        <button type="button"
+                                                class="btn btn-info btn-action fill-form-btn"
+                                                data-form-id="{{ $form->id }}"
+                                                data-form-url="{{ route('dynamic-forms.public-show', $form->id) }}"
+                                                title="Fill Form"
+                                                data-bs-toggle="tooltip"
+                                                aria-label="Fill Form {{ e($form->name) }}"
+                                                {{ $form->is_active ? '' : 'disabled' }}>
                                             <i class="fas fa-edit"></i>
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -323,26 +354,185 @@
             @endif
         </div>
     </div>
+
+    <!-- Form Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="formModalLabel">Fill Form</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="formModalBody">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/axios@1.7.7/dist/axios.min.js" integrity="sha256-9bKyYHG7WfRmaDNW3xG1OSYUz2lmWGkXmQxl1Irw3Lk=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=" crossorigin="anonymous"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+    if (!window.axios || !window.bootstrap) {
+        console.error('Dependencies missing:', {
+            axios: !!window.axios,
+            bootstrap: !!window.bootstrap
+        });
+        document.getElementById('formModalBody').innerHTML = '<div class="alert alert-danger" role="alert">Required scripts failed to load. Please refresh the page.</div>';
+        return;
+    }
+
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
     const cards = document.querySelectorAll('.main-card');
-    cards.forEach((card, index) => {
+    cards.forEach(function(card, index) {
         card.style.opacity = '0';
         card.style.transform = 'translateY(20px)';
-
-        setTimeout(() => {
+        setTimeout(function() {
             card.style.transition = 'all 0.6s ease';
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
         }, index * 100);
     });
+
+    const formCache = new Map();
+
+    function trapFocus(modalElement) {
+        const focusableElements = modalElement.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+
+        modalElement.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                if (e.shiftKey && document.activeElement === firstFocusable) {
+                    e.preventDefault();
+                    lastFocusable.focus();
+                } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                    e.preventDefault();
+                    firstFocusable.focus();
+                }
+            }
+        });
+
+        if (firstFocusable) firstFocusable.focus();
+    }
+
+    const fillFormButtons = document.querySelectorAll('.fill-form-btn');
+    if (!fillFormButtons.length) {
+        console.warn('No fill-form-btn elements found');
+    }
+
+    fillFormButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Fill Form button clicked:', {
+                formId: this.getAttribute('data-form-id'),
+                formUrl: this.getAttribute('data-form-url'),
+                disabled: this.hasAttribute('disabled')
+            });
+
+            if (this.hasAttribute('disabled')) {
+                console.log('Button is disabled, ignoring click');
+                return;
+            }
+
+            var formId = this.getAttribute('data-form-id');
+            var formUrl = this.getAttribute('data-form-url');
+            var modalBody = document.getElementById('formModalBody');
+            var modalTitle = document.getElementById('formModalLabel');
+
+            var modal;
+            try {
+                modal = new bootstrap.Modal(document.getElementById('formModal'), {
+                    keyboard: true,
+                    backdrop: 'static'
+                });
+            } catch (error) {
+                console.error('Failed to initialize modal:', error);
+                modalBody.innerHTML = '<div class="alert alert-danger" role="alert">Failed to open form modal. Please try again.</div>';
+                return;
+            }
+
+            if (formCache.has(formId)) {
+                modalBody.innerHTML = formCache.get(formId).html;
+                modalTitle.textContent = formCache.get(formId).formName;
+                modal.show();
+                trapFocus(document.getElementById('formModal'));
+                if (modalBody.querySelector('#publicForm') && typeof PublicFormHandler !== 'undefined') {
+                    new PublicFormHandler();
+                }
+                return;
+            }
+
+            modalBody.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+            modal.show();
+
+            axios.get(formUrl, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function(response) {
+                if (response.data && response.data.success) {
+                    modalBody.innerHTML = response.data.html;
+                    modalTitle.textContent = response.data.formName || 'Fill Form';
+                    formCache.set(formId, {
+                        html: response.data.html,
+                        formName: response.data.formName
+                    });
+                    trapFocus(document.getElementById('formModal'));
+                    if (modalBody.querySelector('#publicForm') && typeof PublicFormHandler !== 'undefined') {
+                        new PublicFormHandler();
+                    }
+                } else {
+                    console.warn('Invalid response:', response.data);
+                    modalBody.innerHTML = '<div class="alert alert-danger" role="alert">Failed to load form: ' + (response.data && response.data.message ? response.data.message : 'Invalid response from server.') + '</div>';
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading form:', {
+                    message: error.message,
+                    status: error.response ? error.response.status : null,
+                    data: error.response ? error.response.data : null,
+                    url: formUrl
+                });
+                var errorMessage = 'Failed to load form. Please try again later.';
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        errorMessage = 'You are not authorized to access this form.';
+                    } else if (error.response.status === 404) {
+                        errorMessage = 'Form not found.';
+                    } else if (error.response.status === 500) {
+                        errorMessage = 'Server error occurred. Please try again later.';
+                    } else if (error.response.data && error.response.data.message) {
+                        errorMessage = error.response.data.message;
+                    }
+                } else if (error.code === 'ERR_NETWORK') {
+                    errorMessage = 'Network error. Please check your connection.';
+                }
+                modalBody.innerHTML = '<div class="alert alert-danger" role="alert">' + errorMessage + '</div>';
+            });
+        });
+    });
+
+    var formModal = document.getElementById('formModal');
+    formModal.addEventListener('hidden.bs.modal', function() {
+        formCache.clear();
+    });
 });
 </script>
+@endpush
 @endsection

@@ -42,7 +42,7 @@ class DashboardController extends Controller
         $totalClients = Client::count();
         $totalEmployees = Employee::count();
         $activeClients = Client::where('status', 'active')->count();
-        $recentClients = Client::with('user')->latest()->take(5)->get();
+        $recentClients = Client::with('Phones')->latest()->take(5)->get();
 
         // Call logs statistics
         $totalCallLogs = CallLog::count();

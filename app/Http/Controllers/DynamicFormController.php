@@ -12,6 +12,8 @@ use App\Models\User;   // Required for finding clients by user email
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str; // For generating unique field names from labels
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DynamicFormController extends Controller
 {
@@ -332,20 +334,36 @@ class DynamicFormController extends Controller
     /**
      * Show the form for sharing the dynamic form with clients.
      */
-    public function share(string $id)
+    public function share(DynamicForm $form)
     {
         try {
-            $form = DynamicForm::with('fields')->findOrFail($id);
-            // Fetch clients (assuming clients are users with a specific role or a related model)
-            $clients = Client::all(); // Adjust this query based on your client model and relationship
+            // Eager-load clients with their emails
+            $clients = Client::with('emails')->select('id', 'name')->get();
+
+            // Verify view exists
+            if (!view()->exists('dynamic-forms.share')) {
+                throw new \Exception('View dynamic-forms.share does not exist.');
+            }
+
             return view('dynamic-forms.share', compact('form', 'clients'));
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Database error in share method: ' . $e->getMessage(), [
+                'form_id' => $form->id,
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->route('dynamic-forms.index')->withErrors(['error' => 'Database error occurred. Please contact support.']);
         } catch (\Exception $e) {
-            Log::error('Failed to load share view for dynamic form: ' . $e->getMessage());
-            return redirect()->route('dynamic-forms.index')->withErrors(['error' => 'Failed to load share page. Please try again.']);
+            Log::error('Failed to load share view for dynamic form: ' . $e->getMessage(), [
+                'form_id' => $form->id,
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->route('dynamic-forms.index')->withErrors(['error' => 'Failed to load share page: ' . $e->getMessage()]);
         }
     }
-
-    public function send(Request $request, string $id)
+    /**
+     * Share the dynamic form with a client and save to dynamic_form_client table.
+     */
+    public function send(Request $request, DynamicForm $form)
     {
         $request->validate([
             'user_id' => 'required|exists:clients,id',
@@ -353,30 +371,40 @@ class DynamicFormController extends Controller
         ]);
 
         try {
-            $form = DynamicForm::findOrFail($id);
             $client = Client::findOrFail($request->user_id);
 
-            // Prepare the share link (e.g., public form URL)
+            // Save the form-client relationship in dynamic_form_client table
+            DB::table('dynamic_form_client')->updateOrInsert(   //Create or update the record in the table, preventing duplicate entries for the same client 'client_id' and dynamic_form_id.
+                [
+                    'client_id' => $client->id,
+                    'dynamic_form_id' => $form->id,
+                ],
+                [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+
+            // Prepare the share link (public form URL)
             $shareLink = route('dynamic-forms.public-show', $form->id);
 
             // Example: Send an email (implement Mail class if using)
             // Mail::to($client->email)->send(new ShareFormMail($form, $shareLink, $request->message));
 
-            // For now, return a success response (replace with actual logic)
             return response()->json([
                 'success' => true,
                 'message' => 'Form shared successfully with ' . $client->name . '!',
                 'redirect' => route('dynamic-forms.index'),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('Failed to find form or client for sharing: ' . $e->getMessage());
+            Log::error('Failed to find client for sharing: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Form or client not found.',
-                'errors' => ['general' => 'Invalid form or client ID.'],
+                'message' => 'Client not found.',
+                'errors' => ['general' => 'Invalid client ID.'],
             ], 404);
         } catch (\Exception $e) {
-            Log::error('Failed to send dynamic form: ' . $e->getMessage());
+            Log::error('Failed to share dynamic form: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to share form.',
@@ -404,25 +432,91 @@ class DynamicFormController extends Controller
     /**
      * Show the public-facing version of the dynamic form for submission.
      */
-    public function showPublicForm(string $id)
+    public function showPublicForm($form)
     {
-        $form = DynamicForm::with('fields')->where('is_active', true)->findOrFail($id);
-        return view('dynamic-forms.public', compact('form'));
+        $form = DynamicForm::with(['fields', 'clients'])->findOrFail($form);
+        $client = Auth::user()->client;
+
+        if (!$form->clients->contains($client->id)) {
+            abort(403, 'Unauthorized');
+        }
+
+        $hasSubmitted = $form->responses()->where('client_id', $client->id)->exists();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'html' => view('dynamic-forms.public', compact('form', 'hasSubmitted'))->render(),
+                'formName' => $form->name,
+            ]);
+        }
+
+        return view('dynamic-forms.public', compact('form', 'hasSubmitted'));
     }
 
     /**
      * Handle the submission of the public dynamic form.
      */
-    public function submitPublicForm(Request $request, string $id)
+    public function submitPublicForm(Request $request, DynamicForm $form)
     {
         try {
-            $form = DynamicForm::with('fields')->where('is_active', true)->findOrFail($id);
+            // Verify form is active
+            if (!$form->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['general' => 'This form is not active.'],
+                ], 403);
+            }
 
+            // Determine client_id and check for duplicates
+            $clientId = null;
+            if (Auth::check() && Auth::user()) {
+                $user = Auth::user();
+                if ($user->isClient()) {
+                    $client = $user->client()->first();
+                    if ($client) {
+                        $clientId = $client->id;
+                        // Check for existing submission
+                        $existingSubmission = DynamicFormResponse::where('dynamic_form_id', $form->id)
+                            ->where('client_id', $clientId)
+                            ->exists();
+                        if ($existingSubmission) {
+                            Log::warning('Duplicate submission attempt by client', [
+                                'form_id' => $form->id,
+                                'client_id' => $clientId,
+                                'user_id' => $user->id,
+                            ]);
+                            return response()->json([
+                                'success' => false,
+                                'errors' => ['general' => 'You have already submitted this form.'],
+                            ], 422);
+                        }
+                    } else {
+                        Log::warning('No client record found for user with client role', [
+                            'user_id' => $user->id,
+                        ]);
+                        return response()->json([
+                            'success' => false,
+                            'errors' => ['general' => 'No client profile found for your account.'],
+                        ], 403);
+                    }
+                } else {
+                    Log::info('Non-client user attempted form submission', [
+                        'user_id' => $user->id,
+                        'role' => $user->role,
+                    ]);
+                    // Non-clients submit with client_id = null
+                }
+            }
+
+            // Start transaction
+            DB::beginTransaction();
+
+            // Build validation rules
             $rules = [];
             $messages = [];
             foreach ($form->fields as $field) {
                 $fieldRules = [];
-
                 if ($field->is_required) {
                     $fieldRules[] = 'required';
                     $messages[$field->field_name . '.required'] = $field->field_label . ' is required.';
@@ -443,41 +537,42 @@ class DynamicFormController extends Controller
                         break;
                     case 'file':
                         $fieldRules[] = 'file';
-                        // Optional: Add more specific file rules like mimes, max size if needed
-                        // $fieldRules[] = 'mimes:pdf,doc,docx,jpg,png|max:10240'; // Example: max 10MB
-                        $messages[$field->field_name . '.file'] = 'Please upload a valid file for ' . $field->field_label . '.';
+                        $fieldRules[] = 'mimes:pdf,doc,docx,jpg,png|max:10240';
+                        $messages[$field->field_name . '.mimes'] = 'The ' . $field->field_label . ' must be a file of type: pdf, doc, docx, jpg, png.';
+                        $messages[$field->field_name . '.max'] = 'The ' . $field->field_label . ' may not be larger than 10MB.';
+                        break;
+                    case 'checkbox':
+                        if ($field->is_required) {
+                            $fieldRules[] = 'array|min:1';
+                            $messages[$field->field_name . '.min'] = 'At least one option must be selected for ' . $field->field_label . '.';
+                        }
                         break;
                 }
 
-                if ($field->validation_rules && is_array($field->validation_rules)) {
+                if (!empty($field->validation_rules) && is_array($field->validation_rules)) {
                     $fieldRules = array_merge($fieldRules, $field->validation_rules);
                 }
 
                 $rules[$field->field_name] = implode('|', array_unique($fieldRules));
             }
 
-            // Using DB::transaction here to ensure atomicity, especially with file uploads
-            // If the file upload fails AFTER the DB save, the DB save will still be there.
-            // So, for file uploads, it's better to store the file first, then save to DB,
-            // and if DB save fails, delete the file. Or, defer file cleanup.
-            // For now, let's just wrap the DB part in a transaction.
-
-            DB::beginTransaction();
-
+            // Validate request
             $validatedData = $request->validate($rules, $messages);
 
+            // Process response data
             $responseData = [];
             foreach ($form->fields as $field) {
                 $fieldName = $field->field_name;
-
                 if ($field->field_type === 'file' && $request->hasFile($fieldName)) {
-                    // Store file and save its path
-                    // Ensure 'dynamic_form_uploads' directory exists and is writable in storage/app/
-                    $path = $request->file($fieldName)->store('dynamic_form_uploads');
-                    $responseData[$fieldName] = $path;
-                } else if (isset($validatedData[$fieldName])) {
+                    $file = $request->file($fieldName);
+                    $path = $file->store('dynamic_form_uploads', 'public');
+                    $responseData[$fieldName] = [
+                        'path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                    ];
+                } elseif (isset($validatedData[$fieldName])) {
                     $value = $validatedData[$fieldName];
-                    if (($field->field_type === 'checkbox' || $field->field_type === 'radio') && is_array($value)) {
+                    if (in_array($field->field_type, ['checkbox', 'radio']) && is_array($value)) {
                         $responseData[$fieldName] = implode(', ', $value);
                     } else {
                         $responseData[$fieldName] = $value;
@@ -487,34 +582,57 @@ class DynamicFormController extends Controller
                 }
             }
 
-            $client = null;
-            $emailField = $form->fields->firstWhere('field_type', 'email');
-
-            if ($emailField && !empty($validatedData[$emailField->field_name])) {
-                $email = $validatedData[$emailField->field_name];
-                $user = User::where('email', $email)->first();
-                if ($user && $user->client) {
-                    $client = $user->client;
-                }
-            }
-
-            DynamicFormResponse::create([
-                'dynamic_form_id' => $form->id,
-                'client_id' => $client ? $client->id : null,
+            // Log form data for debugging
+            Log::debug('Form submission data', [
+                'form_id' => $form->id,
                 'response_data' => $responseData,
+                'user_id' => Auth::check() ? Auth::id() : 'unauthenticated',
+                'client_id' => $clientId,
+                'role' => Auth::check() ? Auth::user()->role : 'none',
+            ]);
+
+            // Save the response
+            $response = DynamicFormResponse::create([
+                'dynamic_form_id' => $form->id,
+                'client_id' => $clientId,
+                'response_data' => json_encode($responseData),
                 'submitted_at' => now(),
             ]);
 
-            DB::commit(); // Commit transaction only if everything above succeeds
+            // Log successful save
+            Log::info('Form response saved', [
+                'response_id' => $response->id,
+                'form_id' => $form->id,
+                'client_id' => $clientId,
+            ]);
 
-            return redirect()->back()->with('success', 'Your form has been submitted successfully.');
+            DB::commit();
+
+            return redirect()->route('clients.forms.index')->with('success', 'Form submitted successfully');
+
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // This catches validation errors specifically
-            return redirect()->back()->withInput()->withErrors($e->errors());
+            DB::rollBack();
+            Log::warning('Validation failed for public form submission', [
+                'form_id' => $form->id,
+                'errors' => $e->errors(),
+                'request_data' => $request->all(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
-            DB::rollback(); // Rollback any DB changes if an error occurred after transaction started
-            Log::error('Failed to submit public dynamic form: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
-            return redirect()->back()->withInput()->withErrors(['submission_error' => 'An unexpected error occurred while submitting your form. Please try again. If the problem persists, contact support.']);
+            DB::rollBack();
+            Log::error('Failed to submit public form: ' . $e->getMessage(), [
+                'form_id' => $form->id,
+                'user_id' => Auth::check() ? Auth::id() : 'unauthenticated',
+                'request_data' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'errors' => ['general' => 'An unexpected error occurred: ' . $e->getMessage()],
+            ], 500);
         }
     }
 }

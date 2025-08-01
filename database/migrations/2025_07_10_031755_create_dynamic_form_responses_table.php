@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('dynamic_form_responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dynamic_form_id')->constrained()->onDelete('cascade');
-            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->foreignId('dynamic_form_id')->constrained('dynamic_forms')->onDelete('cascade');
+            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
             $table->json('response_data'); // stores the actual form responses
             $table->timestamp('submitted_at');
             $table->timestamps();

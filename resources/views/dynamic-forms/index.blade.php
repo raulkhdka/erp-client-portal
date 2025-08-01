@@ -75,6 +75,7 @@
 
     .table-container {
         padding: 0;
+        border: 2px;
     }
 
     .table-modern {
@@ -95,6 +96,7 @@
         cursor: pointer;
         transition: all 0.3s ease;
         position: relative;
+        text-align: center;
     }
 
     .table-modern thead th:hover {

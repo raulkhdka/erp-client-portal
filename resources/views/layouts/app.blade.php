@@ -21,6 +21,7 @@
         /* Additional inline styles if needed */
     </style>
     @yield('styles')
+    @stack('styles')
 </head>
 
 <body class="m-0 p-0">

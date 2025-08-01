@@ -111,6 +111,6 @@ class User extends Authenticatable
             return route('employee.dashboard');
         }
 
-        return route('home'); // Default fallback
+        return url('/'); // Default fallback to the application's root URL
     }
 }

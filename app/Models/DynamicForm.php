@@ -27,6 +27,12 @@ class DynamicForm extends Model
         return $this->hasMany(DynamicFormField::class)->orderBy('sort_order');
     }
 
+    public function clients()
+    {
+        return $this->belongsToMany(Client::class, 'dynamic_form_client');
+    }
+
+
     public function responses()
     {
         return $this->hasMany(DynamicFormResponse::class);

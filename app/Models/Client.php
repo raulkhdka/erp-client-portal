@@ -132,4 +132,9 @@ class Client extends Model
     {
         return $this->belongsToMany(DynamicForm::class, 'dynamic_form_client', 'client_id', 'dynamic_form_id');
     }
+
+    public function dynamicForms()
+    {
+        return $this->belongsToMany(DynamicForm::class, 'dynamic_form_client');
+    }
 }

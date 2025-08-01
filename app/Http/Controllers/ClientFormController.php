@@ -26,10 +26,14 @@ class ClientFormController extends Controller
         $user = Auth::user();
         Log::info('User data', ['user' => $user]);
 
+        // Fix: fallback if $user->client is null
         $client = $user->client;
+        if (!$client) {
+            $client = \App\Models\Client::where('user_id', $user->id)->first();
+        }
         Log::info('Client data', ['client' => $client]);
 
-        if (!$client) {
+        if (!$client || !$client->id) {
             Log::warning('Client profile not found for user', ['user_id' => Auth::id()]);
             Auth::logout();
             return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
@@ -54,6 +58,9 @@ class ClientFormController extends Controller
     {
         $user = Auth::user();
         $client = $user->client;
+        if (!$client) {
+            $client = \App\Models\Client::where('user_id', $user->id)->first();
+        }
 
         // Ensure the client has access to this form response
         if (!$client || $dynamicFormResponse->client_id !== $client->id) {
@@ -67,6 +74,9 @@ class ClientFormController extends Controller
     {
         $user = Auth::user();
         $client = $user->client;
+        if (!$client) {
+            $client = \App\Models\Client::where('user_id', $user->id)->first();
+        }
 
         if (!$client || !$dynamicForm->is_active || !$dynamicForm->responses()->where('client_id', $client->id)->exists()) {
             abort(403, 'Unauthorized access to this form.');
@@ -82,6 +92,9 @@ class ClientFormController extends Controller
     {
         $user = Auth::user();
         $client = $user->client;
+        if (!$client) {
+            $client = \App\Models\Client::where('user_id', $user->id)->first();
+        }
 
         if (!$client || !$dynamicForm->is_active || !$dynamicForm->responses()->where('client_id', $client->id)->exists()) {
             abort(403, 'Unauthorized access to this form.');
