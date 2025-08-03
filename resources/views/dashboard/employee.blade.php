@@ -44,7 +44,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('clients.show', $client->id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ route('admin.clients.show', $client->id) }}" class="btn btn-sm btn-outline-primary">View</a>
                                 </td>
                             </tr>
                             @endforeach

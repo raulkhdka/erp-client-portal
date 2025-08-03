@@ -50,7 +50,7 @@ class TaskController extends Controller
         $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
 
-        return view('tasks.index', compact('tasks', 'clients', 'employees'));
+        return view('admin.tasks.index', compact('tasks', 'clients', 'employees'));
     }
 
     /**
@@ -59,7 +59,7 @@ class TaskController extends Controller
     public function myTasks(Request $request)
     {
         if (!Auth::user()->isEmployee()) {
-            return redirect()->route('tasks.index');
+            return redirect()->route('admin.tasks.index');
         }
 
         $query = Task::with(['client', 'assignedTo', 'createdBy', 'callLog'])
@@ -84,7 +84,7 @@ class TaskController extends Controller
         $tasks = $query->paginate(15)->withQueryString();
         $clients = ClientCacheService::getClientsCollection();
 
-        return view('tasks.my-tasks', compact('tasks', 'clients'));
+        return view('admin.tasks.my-tasks', compact('tasks', 'clients'));
     }
 
     /**
@@ -99,7 +99,7 @@ class TaskController extends Controller
         // Auto-select client if coming from client view
         $selectedClientId = $request->get('client_id');
 
-        return view('tasks.create', compact('clients', 'employees', 'selectedClientId', 'callLogs'));
+        return view('admin.tasks.create', compact('clients', 'employees', 'selectedClientId', 'callLogs'));
     }
 
     /**
@@ -133,7 +133,7 @@ class TaskController extends Controller
 
         $task = Task::create($validated);
 
-        return redirect()->route('tasks.index')
+        return redirect()->route('admin.tasks.index')
             ->with('success', 'Task created successfully.');
     }
 
@@ -143,7 +143,7 @@ class TaskController extends Controller
     public function show(Task $task)
     {
         $task->load(['client', 'assignedTo', 'createdBy', 'callLog']);
-        return view('tasks.show', compact('task'));
+        return view('admin.tasks.show', compact('task'));
     }
 
     /**
@@ -158,7 +158,7 @@ class TaskController extends Controller
             ->latest()
             ->get();
 
-        return view('tasks.edit', compact('task', 'clients', 'employees', 'callLogs'));
+        return view('admin.tasks.edit', compact('task', 'clients', 'employees', 'callLogs'));
     }
 
     /**
@@ -197,7 +197,7 @@ class TaskController extends Controller
             'notes' => $validated['notes'],
         ]);
 
-        return redirect()->route('tasks.show', $task)
+        return redirect()->route('admin.tasks.index', $task)
             ->with('success', 'Task updated successfully.');
     }
 
@@ -208,7 +208,7 @@ class TaskController extends Controller
     {
         $task->delete();
 
-        return redirect()->route('tasks.index')
+        return redirect()->route('admin.tasks.index')
             ->with('success', 'Task deleted successfully.');
     }
 }

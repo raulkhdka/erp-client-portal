@@ -63,7 +63,7 @@ class DocumentController extends Controller
         $categories = DocumentCategory::active()->ordered()->get();
         $clients = ClientCacheService::getClientsCollection();
 
-        return view('documents.index', compact('documents', 'categories', 'clients'));
+        return view('admin.documents.index', compact('documents', 'categories', 'clients'));
     }
 
     public function create(Request $request)
@@ -76,7 +76,7 @@ class DocumentController extends Controller
 
         $selectedClientId = $request->get('client_id');
 
-        return view('documents.create', compact('categories', 'clients', 'users', 'selectedClientId', 'user'));
+        return view('admin.documents.create', compact('categories', 'clients', 'users', 'selectedClientId', 'user'));
     }
 
     public function store(Request $request)
@@ -138,7 +138,7 @@ class DocumentController extends Controller
             'expires_at' => $request->expires_at,
         ]);
 
-        return redirect()->route('documents.index')->with('success', 'Document uploaded successfully!');
+        return redirect()->route('admin.documents.index')->with('success', 'Document uploaded successfully!');
     }
 
     public function show(Document $document)
@@ -147,7 +147,7 @@ class DocumentController extends Controller
 
         $document->load(['category', 'client', 'uploader']);
 
-        return view('documents.show', compact('document'));
+        return view('admin.documents.show', compact('document'));
     }
 
     public function edit(Document $document)
@@ -158,7 +158,7 @@ class DocumentController extends Controller
         $clients = ClientCacheService::getClientsForSelect();
         $users = User::where('id', '!=', Auth::id())->orderBy('name')->pluck('name', 'id');
 
-        return view('documents.edit', compact('document', 'categories', 'clients', 'users'));
+        return view('admin.documents.edit', compact('document', 'categories', 'clients', 'users'));
     }
 
     public function update(Request $request, Document $document)
@@ -266,7 +266,7 @@ class DocumentController extends Controller
 
         $document->delete();
 
-        return redirect()->route('documents.index')->with('success', 'Document deleted successfully.');
+        return redirect()->route('admin.documents.index')->with('success', 'Document deleted successfully.');
     }
 
     // Approve/Reject (same as your previous logic)

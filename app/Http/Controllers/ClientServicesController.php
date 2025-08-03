@@ -14,39 +14,22 @@ class ClientServicesController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
-        $client = $user->client;
+        $client = Auth::user()->client;
 
         if (!$client) {
             Auth::logout();
-            return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
+            return redirect()->route('login')->with('error', 'Client profile not found.');
         }
-        $client = $user->client;
 
-        // Fetch all services assigned to this client
-        // Ensure your Client model has a 'services' relationship
-        $assignedServices = $client->services()->withPivot('status', 'description', 'created_at')->paginate(10);
+        $assignedServices = $client->services()
+            ->select('services.*')
+            ->withPivot(['status', 'description', 'created_at', 'assigned_by'])
+            ->paginate(15);
 
-        // --- NEW: Calculate statistics for assigned services ---
-        $totalAssignedServices = $client->services()->count();
-        $activeServices = $client->services()->wherePivot('status', 'active')->count();
-        $inactiveServices = $client->services()->wherePivot('status', 'inactive')->count();
-        $suspendedServices = $client->services()->wherePivot('status', 'suspended')->count();
-        $expiredServices = $client->services()->wherePivot('status', 'expired')->count();
-        $assignedEmployee = $client->assignedEmployee ?? null; // Assuming a belongsTo relationship
-        // --- END NEW ---
+        $assignedByIds = $assignedServices->pluck('pivot.assigned_by')->filter()->unique();
 
-        return view('client.services.index', compact(
-            'client',
-            'assignedServices',
-            'totalAssignedServices',   // Pass these new variables to the view
-            'activeServices',
-            'inactiveServices',
-            'suspendedServices',
-            'expiredServices',
-            'assignedEmployee' // Pass the assigned employee to the view
-        ));
+        $assigners = \App\Models\User::whereIn('id', $assignedByIds)->get()->keyBy('id');
 
-        // return view('client.services.index', compact('client', 'assignedServices'));
+        return view('clients.services.index', compact('assignedServices', 'assigners'));
     }
 }

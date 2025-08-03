@@ -25,12 +25,19 @@ class Service extends Model
     public function clients()
     {
         return $this->belongsToMany(Client::class, 'client_services')
-                    ->withTimestamps();
+            ->using(\App\Models\ClientService::class) // custom pivot
+            ->withPivot(['status', 'description', 'assigned_by', 'created_at'])
+            ->withTimestamps();
     }
 
     // Scopes
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function assignedBy()
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
     }
 }

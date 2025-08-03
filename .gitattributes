@@ -9,3 +9,11 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# Auto-normalize all text files
+* text=auto
+
+# Force LF for these specific files (optional)
+*.js text eol=lf
+*.blade.php text eol=lf
+

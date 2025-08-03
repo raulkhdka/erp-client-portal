@@ -5,37 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class ClientService extends Model
+class ClientService extends Pivot
 {
     use HasFactory;
 
-    protected $table = 'client_service_details';
+    protected $table = 'client_services';
 
     protected $fillable = [
         'client_id',
-        'name',
-        'description',
-        'start_date',
-        'end_date',
+        'service_id',
         'status',
-        'service_links',
-        'credentials',
-        'amount',
-        'cost_type',
-        'next_due_date',
-        'notes',
-        'assigned_employee_id',
+        'description',
+        'assigned_by',
     ];
 
-    protected $casts = [
-        'service_links' => 'array',
-        'credentials' => 'array',
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'amount' => 'decimal:2',
-        'next_due_date' => 'date',
-    ];
+    // protected $casts = [
+    //     'service_links' => 'array',
+    //     'credentials' => 'array',
+    //     'start_date' => 'date',
+    //     'end_date' => 'date',
+    //     'amount' => 'decimal:2',
+    //     'next_due_date' => 'date',
+    // ];
 
     // Relationships
     public function client()
@@ -79,5 +72,16 @@ class ClientService extends Model
     {
         return $query->where('end_date', '<=', now()->addDays($days))
                     ->where('end_date', '>', now());
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+
+    public function assignedBy()
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
     }
 }

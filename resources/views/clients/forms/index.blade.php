@@ -322,7 +322,7 @@
                                         <button type="button"
                                                 class="btn btn-info btn-action fill-form-btn"
                                                 data-form-id="{{ $form->id }}"
-                                                data-form-url="{{ route('dynamic-forms.public-show', $form->id) }}"
+                                                data-form-url="{{ route('admin.dynamic-forms.public-show', $form->id) }}"
                                                 title="Fill Form"
                                                 data-bs-toggle="tooltip"
                                                 aria-label="Fill Form {{ e($form->name) }}"

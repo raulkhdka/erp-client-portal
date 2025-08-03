@@ -12,6 +12,7 @@ use App\Models\Employee;
 use App\Models\Service;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
@@ -21,7 +22,7 @@ class ClientController extends Controller
     public function index()
     {
         $clients = Client::with(['user', 'phones', 'emails', 'services'])->paginate(15);
-        return view('clients.index', compact('clients'));
+        return view('admin.clients.index', compact('clients'));
     }
 
     /**
@@ -31,7 +32,7 @@ class ClientController extends Controller
     {
         $employees = Employee::with('user')->where('status', 'active')->get();
         $services = Service::active()->orderBy('name')->get();
-        return view('clients.create', compact('employees', 'services'));
+        return view('admin.clients.create', compact('employees', 'services'));
     }
 
     /**
@@ -95,9 +96,16 @@ class ClientController extends Controller
                 }
             }
 
-            // Assign services if any
-            if ($request->services) {
-                $client->services()->sync($request->services);
+             // Assign services if any
+             if ($request->services) {
+                $client->services()->sync(array_map(function ($serviceId) {
+                    return [
+                        'service_id' => $serviceId,
+                        'status' => 'active',
+                        'description' => null, // Adjust based on your form input
+                        'assigned_by' => Auth::id(), // Set the current admin/employee as assigner
+                    ];
+                }, $request->services));
             }
 
             // Create phone numbers
@@ -125,7 +133,7 @@ class ClientController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('clients.index')->with('success', 'Client created successfully.');
+            return redirect()->route('admin.clients.index')->with('success', 'Client created successfully.');
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to create client: ' . $e->getMessage()]);
@@ -139,7 +147,7 @@ class ClientController extends Controller
     {
         $client = Client::with(['user', 'phones', 'emails', 'services', 'documents', 'images', 'formResponses.dynamicForm'])
             ->findOrFail($id);
-        return view('clients.show', compact('client'));
+        return view('admin.clients.show', compact('client'));
     }
 
     /**
@@ -150,7 +158,7 @@ class ClientController extends Controller
         $client = Client::with(['user', 'phones', 'emails', 'assignedEmployees', 'services'])->findOrFail($id);
         $employees = Employee::with('user')->where('status', 'active')->get();
         $services = Service::active()->orderBy('name')->get();
-        return view('clients.edit', compact('client', 'employees', 'services'));
+        return view('admin.clients.edit', compact('client', 'employees', 'services'));
     }
 
     /**
@@ -198,7 +206,14 @@ class ClientController extends Controller
 
             // Update services
             if ($request->has('services')) {
-                $client->services()->sync($request->services);
+                $client->services()->sync(array_map(function ($serviceId) {
+                    return [
+                        'service_id' => $serviceId,
+                        'status' => 'active',
+                        'description' => null, // Adjust based on your form input
+                        'assigned_by' => Auth::id(), // Set the current admin/employee as assigner
+                    ];
+                }, $request->services));
             } else {
                 $client->services()->detach();
             }
@@ -244,7 +259,7 @@ class ClientController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('clients.show', $client->id)->with('success', 'Client updated successfully.');
+            return redirect()->route('admin.clients.index')->with('success', 'Client updated successfully.');
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to update client: ' . $e->getMessage()]);
@@ -264,7 +279,7 @@ class ClientController extends Controller
             $client->user->delete(); // This will cascade delete the client
 
             DB::commit();
-            return redirect()->route('clients.index')->with('success', 'Client deleted successfully.');
+            return redirect()->route('admin.clients.index')->with('success', 'Client deleted successfully.');
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to delete client: ' . $e->getMessage()]);

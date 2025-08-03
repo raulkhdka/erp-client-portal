@@ -16,7 +16,7 @@ class EmployeeController extends Controller
     public function index()
     {
         $employees = Employee::with('user')->paginate(15);
-        return view('employees.index', compact('employees'));
+        return view('admin.employees.index', compact('employees'));
     }
 
     /**
@@ -24,7 +24,7 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        return view('employees.create');
+        return view('admin.employees.create');
     }
 
     /**
@@ -69,7 +69,7 @@ class EmployeeController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
+            return redirect()->route('admin.employees.index')->with('success', 'Employee created successfully.');
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -83,7 +83,7 @@ class EmployeeController extends Controller
     public function show(string $id)
     {
         $employee = Employee::with(['user', 'accessibleClients'])->findOrFail($id);
-        return view('employees.show', compact('employee'));
+        return view('admin.employees.show', compact('employee'));
     }
 
     /**
@@ -92,7 +92,7 @@ class EmployeeController extends Controller
     public function edit(string $id)
     {
         $employee = Employee::with('user')->findOrFail($id);
-        return view('employees.edit', compact('employee'));
+        return view('admin.employees.edit', compact('employee'));
     }
 
     /**
@@ -134,7 +134,7 @@ class EmployeeController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('employees.show', $employee->id)->with('success', 'Employee updated successfully.');
+            return redirect()->route('admin.employees.index', $employee->id)->with('success', 'Employee updated successfully.');
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -155,7 +155,7 @@ class EmployeeController extends Controller
             $employee->user->delete(); // This will cascade delete the employee
 
             DB::commit();
-            return redirect()->route('employees.index')->with('success', 'Employee deleted successfully.');
+            return redirect()->route('admin.employees.index')->with('success', 'Employee deleted successfully.');
 
         } catch (\Exception $e) {
             DB::rollback();

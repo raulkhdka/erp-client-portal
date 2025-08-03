@@ -161,7 +161,7 @@
                 <div
                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-primary">
                     <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-users me-2"></i>Recent Clients</h6>
-                    <a href="{{ route('clients.index') }}" class="btn btn-sm btn-light btn-hover">
+                    <a href="{{ route('admin.clients.index') }}" class="btn btn-sm btn-light btn-hover">
                         <i class="fas fa-eye me-1"></i>View All
                     </a>
                 </div>
@@ -210,7 +210,7 @@
                 <div
                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-success">
                     <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-phone me-2"></i>Recent Call Logs</h6>
-                    <a href="{{ route('call-logs.index') }}" class="btn btn-sm btn-light btn-hover">
+                    <a href="{{ route('admin.call-logs.index') }}" class="btn btn-sm btn-light btn-hover">
                         <i class="fas fa-eye me-1"></i>View All
                     </a>
                 </div>
@@ -259,7 +259,7 @@
             <div class="card shadow-enhanced mb-4 data-card" data-aos="fade-up">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-info">
                     <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-tasks me-2"></i>Recent Tasks</h6>
-                    <a href="{{ route('tasks.index') }}" class="btn btn-sm btn-light btn-hover">
+                    <a href="{{ route('admin.tasks.index') }}" class="btn btn-sm btn-light btn-hover">
                         <i class="fas fa-eye me-1"></i>View All
                     </a>
                 </div>
@@ -315,7 +315,7 @@
                                             </td>
                                             <td class="border-dark">{{ $task->created_at->format('M d') }}</td>
                                             <td class="border-dark">
-                                                <a href="{{ route('tasks.show', $task) }}"
+                                                <a href="{{ route('admin.tasks.show', $task) }}"
                                                     class="btn btn-sm btn-outline-primary btn-action">
                                                     <i class="fas fa-eye me-1"></i>View
                                                 </a>
@@ -343,7 +343,7 @@
                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-primary">
                     <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-file-alt me-2"></i>Document Management
                     </h6>
-                    <a href="{{ route('documents.index') }}" class="btn btn-sm btn-light btn-hover">
+                    <a href="{{ route('admin.documents.index') }}" class="btn btn-sm btn-light btn-hover">
                         <i class="fas fa-cog me-1"></i>Manage Documents
                     </a>
                 </div>

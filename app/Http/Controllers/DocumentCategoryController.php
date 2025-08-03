@@ -18,7 +18,7 @@ class DocumentCategoryController extends Controller
                                     ->get();
 
 
-        return view('document-categories.index', compact('categories'));
+        return view('admin.document-categories.index', compact('categories'));
     }
 
     /**
@@ -26,7 +26,7 @@ class DocumentCategoryController extends Controller
      */
     public function create()
     {
-        return view('document-categories.create');
+        return view('admin.document-categories.create');
     }
 
     /**
@@ -55,7 +55,7 @@ class DocumentCategoryController extends Controller
             ]);
 
             if ($category) {
-                return redirect()->route('document-categories.index')
+                return redirect()->route('admin.document-categories.index')
                                 ->with('success', 'Document category created successfully!');
             }
         } catch (\Exception $e) {
@@ -73,7 +73,7 @@ class DocumentCategoryController extends Controller
     {
         $documentCategory->load(['documents.uploader', 'documents.client']);
 
-        return view('document-categories.show', compact('documentCategory'));
+        return view('admin.document-categories.show', compact('documentCategory'));
     }
 
     /**
@@ -81,7 +81,7 @@ class DocumentCategoryController extends Controller
      */
     public function edit(DocumentCategory $documentCategory)
     {
-        return view('document-categories.edit', compact('documentCategory'));
+        return view('admin.document-categories.edit', compact('documentCategory'));
     }
 
     /**
@@ -109,7 +109,7 @@ class DocumentCategoryController extends Controller
                 'is_active' => $validatedData['is_active'] ?? $documentCategory->is_active,
             ]);
 
-            return redirect()->route('document-categories.index')
+            return redirect()->route('admin.document-categories.index')
                             ->with('success', 'Document category updated successfully!');
         } catch (\Exception $e) {
             Log::error('Error updating category: ' . $e->getMessage());
@@ -124,13 +124,13 @@ class DocumentCategoryController extends Controller
     {
         // Check if category has documents
         if ($documentCategory->documents()->count() > 0) {
-            return redirect()->route('document-categories.index')
+            return redirect()->route('admin.document-categories.index')
                            ->with('error', 'Cannot delete category that contains documents.');
         }
 
         $documentCategory->delete();
 
-        return redirect()->route('document-categories.index')
+        return redirect()->route('admin.document-categories.index')
                         ->with('success', 'Document category deleted successfully!');
     }
 }

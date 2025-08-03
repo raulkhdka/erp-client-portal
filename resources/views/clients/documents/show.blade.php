@@ -100,7 +100,7 @@
 
             <div class="col-md-4 text-end">
                 <div class="btn-group-vertical" role="group">
-                    <a href="{{ route('documents.download', $document) }}" class="btn btn-light btn-lg mb-2">
+                    <a href="{{ route('admin.documents.download', $document) }}" class="btn btn-light btn-lg mb-2">
                         <i class="fas fa-download me-2"></i>Download
                     </a>
                     @if(in_array(strtolower($document->file_type), ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'txt']))
@@ -124,9 +124,9 @@
             <div class="card-body p-0">
                 <div class="preview-container">
                     @if(strtolower($document->file_type) === 'pdf')
-                        <iframe src="{{ route('documents.preview', $document) }}" width="100%" height="600px"></iframe>
+                        <iframe src="{{ route('admin.documents.preview', $document) }}" width="100%" height="600px"></iframe>
                     @elseif(in_array(strtolower($document->file_type), ['jpg', 'jpeg', 'png', 'gif', 'svg']))
-                        <img src="{{ route('documents.preview', $document) }}" class="img-fluid">
+                        <img src="{{ route('admin.documents.preview', $document) }}" class="img-fluid">
                     @elseif(strtolower($document->file_type) === 'txt')
                         <div class="p-3">
                             <pre>{{ Storage::disk('public')->get($document->file_path) }}</pre>

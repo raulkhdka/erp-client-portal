@@ -29,7 +29,7 @@ class DocumentApprovalController extends Controller
             abort(403, 'Unauthorized access');
         }
 
-        return view('documents.approval.index', compact('documents'));
+        return view('admin.documents.approval.index', compact('documents'));
     }
 
      /**

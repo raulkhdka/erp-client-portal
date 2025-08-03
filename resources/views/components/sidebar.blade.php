@@ -31,49 +31,49 @@
                     @if (Auth::user()->isAdmin())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}"
-                                href="{{ route('clients.index') }}">
+                                href="{{ route('admin.clients.index') }}">
                                 <i class="fas fa-users"></i>Clients
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
-                                href="{{ route('employees.index') }}">
+                                href="{{ route('admin.employees.index') }}">
                                 <i class="fas fa-user-tie"></i>Employees
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('services.*') ? 'active' : '' }}"
-                                href="{{ route('services.index') }}">
+                                href="{{ route('admin.services.index') }}">
                                 <i class="fas fa-concierge-bell"></i>Services
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
-                                href="{{ route('call-logs.index') }}">
+                                href="{{ route('admin.call-logs.index') }}">
                                 <i class="fas fa-phone"></i>Call Logs
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}"
-                                href="{{ route('tasks.index') }}">
+                                href="{{ route('admin.tasks.index') }}">
                                 <i class="fas fa-tasks"></i>Tasks
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
-                                href="{{ route('documents.index') }}">
+                                href="{{ route('admin.documents.index') }}">
                                 <i class="fas fa-folder"></i>Documents
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('document-categories.*') ? 'active' : '' }}"
-                                href="{{ route('document-categories.index') }}">
+                                href="{{ route('admin.document-categories.index') }}">
                                 <i class="fas fa-folder-open"></i>Document Categories
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('dynamic-forms.*') ? 'active' : '' }}"
-                                href="{{ route('dynamic-forms.index') }}">
+                                href="{{ route('admin.dynamic-forms.index') }}">
                                 <i class="fas fa-clipboard-list"></i>Dynamic Forms
                             </a>
                         </li>
@@ -89,25 +89,25 @@
                     @if (Auth::user()->isEmployee())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
-                                href="{{ route('call-logs.index') }}">
+                                href="{{ route('admin.call-logs.index') }}">
                                 <i class="fas fa-phone"></i>My Call Logs
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('tasks.my-tasks') ? 'active' : '' }}"
-                                href="{{ route('tasks.my-tasks') }}">
+                                href="{{ route('admin.tasks.my-tasks') }}">
                                 <i class="fas fa-tasks"></i>My Tasks
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}"
-                                href="{{ route('tasks.index') }}">
+                                href="{{ route('admin.tasks.index') }}">
                                 <i class="fas fa-list"></i>All Tasks
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
-                                href="{{ route('documents.index') }}">
+                                href="{{ route('admin.documents.index') }}">
                                 <i class="fas fa-folder"></i>Documents
                             </a>
                         </li>

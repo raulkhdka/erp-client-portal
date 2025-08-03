@@ -23,7 +23,7 @@ class DynamicFormController extends Controller
     public function index()
     {
         $forms = DynamicForm::with('fields')->paginate(10); // Paginate for larger lists
-        return view('dynamic-forms.index', compact('forms'));
+        return view('admin.dynamic-forms.index', compact('forms'));
     }
 
     /**
@@ -31,7 +31,7 @@ class DynamicFormController extends Controller
      */
     public function create()
     {
-        return view('dynamic-forms.create');
+        return view('admin.dynamic-forms.create');
     }
 
     /**
@@ -99,10 +99,10 @@ class DynamicFormController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Form created successfully!',
-                    'redirect' => route('dynamic-forms.index'), // Provide the redirect URL
+                    'redirect' => route('admin.dynamic-forms.index'), // Provide the redirect URL
                 ]);
             } else {
-                return redirect()->route('dynamic-forms.index')->with('success', 'Form created successfully.');
+                return redirect()->route('admin.dynamic-forms.index')->with('success', 'Form created successfully.');
             }
         } catch (\Exception $e) {
             DB::rollback();
@@ -128,7 +128,7 @@ class DynamicFormController extends Controller
     public function show(string $id)
     {
         $form = DynamicForm::with(['fields', 'responses.client.user'])->findOrFail($id);
-        return view('dynamic-forms.show', compact('form'));
+        return view('admin.dynamic-forms.show', compact('form'));
     }
 
     /**
@@ -137,7 +137,7 @@ class DynamicFormController extends Controller
     public function edit(string $id)
     {
         $form = DynamicForm::with('fields')->findOrFail($id);
-        return view('dynamic-forms.edit', compact('form'));
+        return view('admin.dynamic-forms.edit', compact('form'));
     }
 
     /**
@@ -297,11 +297,11 @@ class DynamicFormController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form updated successfully!',
-                    'redirect' => route('dynamic-forms.index'),
+                    'redirect' => route('admin.dynamic-forms.index'),
                 ], 200);
             }
 
-            return redirect()->route('dynamic-forms.index')->with('success', $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form updated successfully.');
+            return redirect()->route('admin.dynamic-forms.index')->with('success', $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form updated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             Log::error('Form update validation error:', ['error' => $e->getMessage(), 'errors' => $e->errors(), 'request' => $request->all()]);
@@ -341,23 +341,23 @@ class DynamicFormController extends Controller
             $clients = Client::with('emails')->select('id', 'name')->get();
 
             // Verify view exists
-            if (!view()->exists('dynamic-forms.share')) {
+            if (!view()->exists('admin.dynamic-forms.share')) {
                 throw new \Exception('View dynamic-forms.share does not exist.');
             }
 
-            return view('dynamic-forms.share', compact('form', 'clients'));
+            return view('admin.dynamic-forms.share', compact('form', 'clients'));
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error('Database error in share method: ' . $e->getMessage(), [
                 'form_id' => $form->id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return redirect()->route('dynamic-forms.index')->withErrors(['error' => 'Database error occurred. Please contact support.']);
+            return redirect()->route('admin.dynamic-forms.index')->withErrors(['error' => 'Database error occurred. Please contact support.']);
         } catch (\Exception $e) {
             Log::error('Failed to load share view for dynamic form: ' . $e->getMessage(), [
                 'form_id' => $form->id,
                 'stack_trace' => $e->getTraceAsString(),
             ]);
-            return redirect()->route('dynamic-forms.index')->withErrors(['error' => 'Failed to load share page: ' . $e->getMessage()]);
+            return redirect()->route('admin.dynamic-forms.index')->withErrors(['error' => 'Failed to load share page: ' . $e->getMessage()]);
         }
     }
     /**
@@ -386,7 +386,7 @@ class DynamicFormController extends Controller
             );
 
             // Prepare the share link (public form URL)
-            $shareLink = route('dynamic-forms.public-show', $form->id);
+            $shareLink = route('admin.dynamic-forms.public-show', $form->id);
 
             // Example: Send an email (implement Mail class if using)
             // Mail::to($client->email)->send(new ShareFormMail($form, $shareLink, $request->message));
@@ -394,7 +394,7 @@ class DynamicFormController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Form shared successfully with ' . $client->name . '!',
-                'redirect' => route('dynamic-forms.index'),
+                'redirect' => route('admin.dynamic-forms.index'),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('Failed to find client for sharing: ' . $e->getMessage());
@@ -422,7 +422,7 @@ class DynamicFormController extends Controller
             $form = DynamicForm::findOrFail($id);
             $form->delete(); // This will cascade delete fields and responses due to onDelete('cascade')
 
-            return redirect()->route('dynamic-forms.index')->with('success', 'Form deleted successfully.');
+            return redirect()->route('admin.dynamic-forms.index')->with('success', 'Form deleted successfully.');
         } catch (\Exception $e) {
             Log::error('Failed to delete dynamic form: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Failed to delete form. Please try again.']);
@@ -433,26 +433,80 @@ class DynamicFormController extends Controller
      * Show the public-facing version of the dynamic form for submission.
      */
     public function showPublicForm($form)
-    {
+{
+    try {
+        // Load the form with its fields and clients
         $form = DynamicForm::with(['fields', 'clients'])->findOrFail($form);
-        $client = Auth::user()->client;
 
-        if (!$form->clients->contains($client->id)) {
-            abort(403, 'Unauthorized');
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            Log::warning('Unauthenticated user attempted to access public form', [
+                'form_id' => $form->id,
+            ]);
+            abort(403, 'You must be logged in to access this form.');
         }
 
-        $hasSubmitted = $form->responses()->where('client_id', $client->id)->exists();
+        // Get the authenticated user
+        $user = Auth::user();
 
+        // Check if the user is an admin
+        $isAdmin = $user->role === 'admin'; // Adjust this based on your admin identification logic
+
+        // Initialize variables
+        $client = null;
+        $hasSubmitted = false;
+
+        if (!$isAdmin) {
+            // For non-admins, check for a client profile
+            $client = $user->client()->first();
+            if (!$client) {
+                Log::warning('No client record found for authenticated user', [
+                    'form_id' => $form->id,
+                    'user_id' => $user->id,
+                ]);
+                return redirect()->route('admin.clients.create')->with('error', 'Please create a client profile to access this form.');
+            }
+
+            // Check if the form is assigned to the client
+            if (!$form->clients->contains($client->id)) {
+                Log::warning('Client not authorized to access form', [
+                    'form_id' => $form->id,
+                    'client_id' => $client->id,
+                ]);
+                abort(403, 'You are not authorized to access this form.');
+            }
+
+            // Check if the client has already submitted the form
+            $hasSubmitted = $form->responses()->where('client_id', $client->id)->exists();
+        }
+
+        // Prepare view data
         if (request()->ajax()) {
             return response()->json([
                 'success' => true,
-                'html' => view('dynamic-forms.public', compact('form', 'hasSubmitted'))->render(),
+                'html' => view('admin.dynamic-forms.public', compact('form', 'hasSubmitted'))->render(),
                 'formName' => $form->name,
             ]);
         }
 
-        return view('dynamic-forms.public', compact('form', 'hasSubmitted'));
+        return view('admin.dynamic-forms.public', compact('form', 'hasSubmitted'));
+
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        Log::error('Form not found', [
+            'form_id' => $form,
+            'user_id' => Auth::id() ?? 'unauthenticated',
+        ]);
+        abort(404, 'Form not found.');
+    } catch (\Exception $e) {
+        Log::error('Error displaying public form', [
+            'form_id' => $form,
+            'user_id' => Auth::id() ?? 'unauthenticated',
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+        abort(500, 'An unexpected error occurred.');
     }
+}
 
     /**
      * Handle the submission of the public dynamic form.

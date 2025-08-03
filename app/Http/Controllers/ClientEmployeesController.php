@@ -26,6 +26,6 @@ class ClientEmployeesController extends Controller
         // Ensure your Client model has an 'assignedEmployees' relationship
         $assignedEmployees = $client->assignedEmployees()->with('user')->paginate(10);
 
-        return view('client.employees.index', compact('client', 'assignedEmployees'));
+        return view('clients.employees.index', compact('client', 'assignedEmployees'));
     }
 }

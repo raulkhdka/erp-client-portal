@@ -40,12 +40,12 @@ use App\Http\Controllers\DocumentApprovalController; // For document approval by
 */
 
 // CSRF Token refresh route
-Route::get('/csrf-token', function() {
+Route::get('/csrf-token', function () {
     return response()->json(['csrf_token' => csrf_token()]);
 });
 
 // Session extend route
-Route::post('/extend-session', function() {
+Route::post('/extend-session', function () {
     if (Auth::check()) {
         session()->regenerate();
         return response()->json(['success' => true, 'csrf_token' => csrf_token()]);
@@ -61,8 +61,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Public Dynamic Form Routes (for clients to fill without being logged in if needed)
 // Keep these outside the 'auth' middleware if anonymous submission is allowed
 //Route::post('/dynamic-forms/store', [DynamicFormController::class, 'store'])->name('dynamic-forms.store');
-Route::get('/dynamic-forms/public/{form}', [DynamicFormController::class, 'showPublicForm'])->name('dynamic-forms.public-show');
-Route::post('/dynamic-forms/public/{form}/submit', [DynamicFormController::class, 'submitPublicForm'])->name('dynamic-forms.submit');
+Route::get('/dynamic-forms/public/{form}', [DynamicFormController::class, 'showPublicForm'])->name('admin.dynamic-forms.public-show');
+Route::post('/dynamic-forms/public/{form}/submit', [DynamicFormController::class, 'submitPublicForm'])->name('admin.dynamic-forms.submit');
 
 
 // Authenticated Routes - All routes below this require authentication
@@ -71,34 +71,140 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard redirection for all authenticated users
     Route::get('/', [DashboardController::class, 'redirectBasedOnRole'])->name('dashboard');
 
-    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+    //Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
 
     // --- Admin Routes ---
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
 
-        // Resources for Admin
-        Route::resource('clients', ClientController::class);
-        Route::resource('employees', EmployeeController::class);
-        Route::resource('dynamic-forms', DynamicFormController::class);
-        Route::get('/dynamic-forms/{id}/share', [DynamicFormController::class, 'share'])->name('dynamic-forms.share');
-        Route::post('/dynamic-forms/{id}/send', [DynamicFormController::class, 'send'])->name('dynamic-forms.send');
-        Route::resource('services', ServiceController::class);
-        Route::resource('call-logs', CallLogController::class);
-        Route::resource('tasks', TaskController::class);
-        Route::resource('documents', DocumentController::class); // Admin's comprehensive document management
-        Route::resource('document-categories', DocumentCategoryController::class);
+        // Client management routes
+        // Using a prefix and controller grouping for cleaner routes
+        Route::prefix('clients')
+            ->name('admin.clients.')
+            ->controller(App\Http\Controllers\ClientController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{id}/edit', 'edit')->name('edit');
+                Route::put('/{id}', 'update')->name('update');
+                Route::delete('/{id}', 'destroy')->name('destroy');
+                Route::get('/{id}', 'show')->name('show');
+                Route::get('/{client}/manage-access', 'manageAccess')->name('manage-access');
+            });
 
+        // Route::resource('clients', ClientController::class);
+        // Employee Management Routes
+        Route::prefix('employees')
+            ->name('admin.employees.')
+            ->controller(App\Http\Controllers\EmployeeController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{id}/edit', 'edit')->name('edit');
+                Route::put('/{id}', 'update')->name('update');
+                Route::delete('/{id}', 'destroy')->name('destroy');
+                Route::get('/{id}', 'show')->name('show');
+            });
+        // Blended routes for services management
+        Route::prefix('services')
+            ->name('admin.services.')
+            ->controller(App\Http\Controllers\ServiceController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{service}/edit', 'edit')->name('edit');
+                Route::put('/{service}', 'update')->name('update');
+                Route::delete('/{service}', 'destroy')->name('destroy');
+                Route::get('/{service}', 'show')->name('show');
+                Route::patch('/{service}/toggle-status', 'toggleStatus')->name('toggle-status');
+            });
+
+        //Call Logs management blended route
+        Route::prefix('call-logs')
+            ->name('admin.call-logs.')
+            ->controller(App\Http\Controllers\CallLogController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{callLog}/edit', 'edit')->name('edit');
+                Route::put('/{callLog}', 'update')->name('update');
+                Route::delete('/{callLog}', 'destroy')->name('destroy');
+                Route::get('/{callLog}', 'show')->name('show');
+                Route::patch('/{callLog}/status', 'updateStatus')->name('update-status');
+                Route::get('/{callLog}/contacts', 'getClientContacts')->name('client-contacts');
+            });
+
+        // Tasks Management Routes blended
+        Route::prefix('tasks')
+            ->name('admin.tasks.')
+            ->controller(App\Http\Controllers\TaskController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{task}/edit', 'edit')->name('edit');
+                Route::put('/{task}', 'update')->name('update');
+                Route::delete('/{task}', 'destroy')->name('destroy');
+                Route::get('/{task}', 'show')->name('show');
+                Route::get('/my-tasks', 'myTasks')->name('my-tasks'); // Admin's view of all tasks
+            });
+
+        //Blended Documents Routes Management
+        Route::prefix('documents')
+            ->name('admin.documents.')
+            ->controller(App\Http\Controllers\DocumentController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{document}/edit', 'edit')->name('edit');
+                Route::put('/{document}', 'update')->name('update');
+                Route::delete('/{document}', 'destroy')->name('destroy');
+                Route::get('/{document}', 'show')->name('show');
+                Route::get('/{document}/download', 'download')->name('download');
+                Route::get('/{document}/preview', 'preview')->name('preview');
+                Route::get('/{document}/manage-access', 'manageAccess')->name('manage-access');
+                Route::patch('/{document}/access', 'updateAccess')->name('update-access');
+            });
+
+
+        // Blended Dynamic Forms Management
+        Route::prefix('dynamic-forms')
+            ->name('admin.dynamic-forms.')
+            ->controller(App\Http\Controllers\DynamicFormController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{form}/edit', 'edit')->name('edit');
+                Route::put('/{form}', 'update')->name('update');
+                Route::delete('/{form}', 'destroy')->name('destroy');
+                Route::get('/{form}', 'show')->name('show');
+                Route::get('/{form}/share', 'share')->name('share');
+                Route::post('/{form}/send', 'send')->name('send');
+            });
+
+        // Blended Document Categories Management
+        Route::prefix('document-categories')
+            ->name('admin.document-categories.')
+            ->controller(App\Http\Controllers\DocumentCategoryController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{id}/edit', 'edit')->name('edit');
+                Route::put('/{id}', 'update')->name('update');
+                Route::delete('/{id}', 'destroy')->name('destroy');
+                Route::get('/{id}', 'show')->name('show');
+            });
 
         // Admin-specific routes
-        Route::get('/clients/{client}/manage-access', [ClientController::class, 'manageAccess'])->name('clients.manage-access');
-        Route::patch('/services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('services.toggle-status');
-        Route::patch('/call-logs/{call_log}/status', [CallLogController::class, 'updateStatus'])->name('call-logs.update-status');
-        Route::get('/call-logs/client/{client}/contacts', [CallLogController::class, 'getClientContacts'])->name('call-logs.client-contacts');
-        Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
-        Route::get('/documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
-        Route::get('/documents/{document}/manage-access', [DocumentController::class, 'manageAccess'])->name('documents.manage-access');
-        Route::patch('/documents/{document}/access', [DocumentController::class, 'updateAccess'])->name('documents.update-access');
+
+
     });
 
     // --- Employee Routes ---
@@ -125,17 +231,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/client/documents/{document}/show', [ClientDocumentController::class, 'show'])->name('clients.documents.show');
         Route::get('/client/documents/{document}/preview', [ClientDocumentController::class, 'preview'])->name('clients.documents.preview');
         Route::get('/client/services', [ClientServicesController::class, 'index'])->name('clients.services.index');
+        Route::get('/clients/services/{service}/show', [ClientServicesController::class, 'show'])->name('clients.services.show');
         Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('clients.employees.index');
         Route::get('/client/forms', [ClientFormController::class, 'index'])->name('clients.forms.index');
-
-        // Optional: Client-specific document actions (if allowed to upload/download their own)
-        // Route::get('/client/documents/upload', [ClientDocumentController::class, 'create'])->name('documents.create');
-        // Route::post('/client/documents', [ClientDocumentController::class, 'store'])->name('documents.store');
-        // Route::get('/client/documents/{document}/download', [ClientDocumentController::class, 'download'])->name('documents.download');
-        // Route::get('/client/documents/{document}/show', [ClientDocumentController::class, 'show'])->name('documents.show');
-        //Route::get('/client/images', [ClientImageController::class, 'index'])->name('client.images.index');
-
-        // Optional: Client-specific form response viewing
         Route::get('/client/form-responses/{dynamicFormResponse}', [ClientFormController::class, 'show'])->name('clients.form-responses.show');
 
         // // Temporary debug route
@@ -159,24 +257,30 @@ Route::middleware(['auth'])->group(function () {
         // });
     });
 
-    // --- Shared Document Routes (Admin, Employee, Client) ---
-    Route::resource('documents', DocumentController::class);
-    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
-    Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
-    Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
-    Route::post('/documents/{document}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
 
 
-     // --- Document Approval Routes (Shared by Admin & Assigned Employees) ---
-     Route::prefix('document-approvals')->name('document-approvals.')->group(function () {
+    // --- Document Approval Routes (Shared by Admin & Assigned Employees) ---
+    Route::prefix('admin.document-approvals')->name('admin.document-approvals.')->group(function () {
         Route::get('/', [DocumentApprovalController::class, 'index'])->name('index');
         Route::get('/{document}', [DocumentApprovalController::class, 'show'])->name('show');
         Route::post('/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('approve');
         Route::post('/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('reject');
     });
 
-    Route::post('/documents/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('documents.approve');
-    Route::post('/documents/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('documents.reject');
+    //Shared Document Routes (Admin, Employee, Client)  If this doesnot work remove prefix and name
+    Route::controller(DocumentController::class)->group(function () {
+        Route::get('/{document}/download', 'download')->name('admin.documents.download');
+        Route::get('/{document}/preview', 'preview')->name('admin.documents.preview');
+    });
+
+    // Document Approval Routes for Admin & Employee
+    Route::prefix('admin.documents')->name('admin.documents.')->group(function () {
+        Route::post('/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('reject');
+    });
+
+    // Route::post('/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('admin.documents.approve');
+    // Route::post('/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('admin.documents.reject');
 });
 
 // Simple test route outside of any middleware

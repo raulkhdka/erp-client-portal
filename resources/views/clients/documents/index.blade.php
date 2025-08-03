@@ -215,7 +215,7 @@
                             <a href="{{ route('clients.documents.show', $document) }}" class="btn btn-sm btn-outline-primary" title="View Document">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('documents.download', $document) }}" class="btn btn-sm btn-outline-success" title="Download Document">
+                            <a href="{{ route('admin.documents.download', $document) }}" class="btn btn-sm btn-outline-success" title="Download Document">
                                 <i class="fas fa-download"></i>
                             </a>
                         </div>
@@ -247,7 +247,7 @@
     <!-- Upload Document Modal -->
     <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="modal-content">
+            <form method="POST" action="{{ route('admin.documents.store') }}" enctype="multipart/form-data" class="modal-content">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title" id="uploadDocumentModalLabel">Upload Document</h5>

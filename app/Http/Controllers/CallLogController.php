@@ -64,7 +64,7 @@ class CallLogController extends Controller
         $clients = ClientCacheService::getClientsCollection();
         $employees = Employee::with('user')->orderBy('id')->get();
 
-        return view('call-logs.index', compact('callLogs', 'clients', 'employees'));
+        return view('admin.call-logs.index', compact('callLogs', 'clients', 'employees'));
     }
 
     /**
@@ -74,7 +74,7 @@ class CallLogController extends Controller
     {
         $clients = ClientCacheService::getClientsWithUser();
         $employees = Employee::with('user')->orderBy('id')->get();
-        return view('call-logs.create', compact('clients', 'employees'));
+        return view('admin.call-logs.create', compact('clients', 'employees'));
     }
 
     /**
@@ -162,7 +162,7 @@ class CallLogController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('call-logs.index')->with('success', 'Call log recorded successfully!');
+            return redirect()->route('admin.call-logs.index')->with('success', 'Call log recorded successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Call log creation failed: ' . $e->getMessage(), ['exception' => $e]);
@@ -176,7 +176,7 @@ class CallLogController extends Controller
     public function show(CallLog $callLog)
     {
         $callLog->load(['client', 'employee', 'tasks.assignedTo']);
-        return view('call-logs.show', compact('callLog'));
+        return view('admin.call-logs.show', compact('callLog'));
     }
 
     /**
@@ -187,7 +187,7 @@ class CallLogController extends Controller
         $callLog->load('tasks');
         $clients = \App\Services\ClientCacheService::getClientsCollection();
         $employees = \App\Models\Employee::orderBy('id')->get();
-        return view('call-logs.edit', compact('callLog', 'clients', 'employees'));
+        return view('admin.call-logs.edit', compact('callLog', 'clients', 'employees'));
     }
 
     /**
@@ -295,7 +295,7 @@ class CallLogController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('call-logs.index')->with('success', 'Call log updated successfully!');
+            return redirect()->route('admin.call-logs.index')->with('success', 'Call log updated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Call log update failed: ' . $e->getMessage(), ['exception' => $e]);
@@ -310,10 +310,10 @@ class CallLogController extends Controller
     {
         try {
             $callLog->delete();
-            return redirect()->route('call-logs.index')
+            return redirect()->route('admin.call-logs.index')
                 ->with('success', 'Call log deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->route('call-logs.index')
+            return redirect()->route('admin.call-logs.index')
                 ->with('error', 'Failed to delete call log: ' . $e->getMessage());
         }
     }

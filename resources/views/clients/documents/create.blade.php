@@ -18,7 +18,7 @@
                 <div class="card-body">
                     {{-- Form for document upload --}}
                     {{-- Make sure your form has enctype="multipart/form-data" for file uploads --}}
-                    <form action="{{ route('clients.documents.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.documents.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-3">
@@ -47,7 +47,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('client.documents.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('clients.documents.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-1"></i> Back to Documents
                             </a>
                             <button type="submit" class="btn btn-primary">

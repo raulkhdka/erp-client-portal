@@ -17,7 +17,7 @@ class ServiceController extends Controller
             ->orderBy('name')
             ->paginate(15);
 
-        return view('services.index', compact('services'));
+        return view('admin.services.index', compact('services'));
     }
 
     /**
@@ -25,7 +25,7 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        return view('services.create');
+        return view('admin.services.create');
     }
 
     /**
@@ -54,7 +54,7 @@ class ServiceController extends Controller
                 ]);
             }
 
-            return redirect()->route('services.index')
+            return redirect()->route('admin.services.index')
                 ->with('success', 'Service created successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->wantsJson() || $request->ajax()) {
@@ -73,7 +73,7 @@ class ServiceController extends Controller
     public function show(Service $service)
     {
         $service->load('clients');
-        return view('services.show', compact('service'));
+        return view('admin.services.show', compact('service'));
     }
 
     /**
@@ -81,7 +81,7 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
-        return view('services.edit', compact('service'));
+        return view('admin.services.edit', compact('service'));
     }
 
     /**
@@ -100,7 +100,7 @@ class ServiceController extends Controller
 
         $service->update($validated);
 
-        return redirect()->route('services.index')
+        return redirect()->route('admin.services.index')
             ->with('success', 'Service updated successfully.');
     }
 
@@ -111,13 +111,13 @@ class ServiceController extends Controller
     {
         // Check if service has any clients
         if ($service->clients()->count() > 0) {
-            return redirect()->route('services.index')
+            return redirect()->route('admin.services.index')
                 ->with('error', 'Cannot delete service that is assigned to clients. Please remove all client assignments first.');
         }
 
         $service->delete();
 
-        return redirect()->route('services.index')
+        return redirect()->route('admin.services.index')
             ->with('success', 'Service deleted successfully.');
     }
 
