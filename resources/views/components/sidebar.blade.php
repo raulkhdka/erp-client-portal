@@ -89,7 +89,7 @@
                     @if (Auth::user()->isEmployee())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
-                                href="{{ route('admin.call-logs.index') }}">
+                                href="{{ route('employees.call-logs.index') }}">
                                 <i class="fas fa-phone"></i>My Call Logs
                             </a>
                         </li>

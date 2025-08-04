@@ -9,6 +9,7 @@ use App\Models\Client;
 use App\Models\Employee;
 use App\Models\CallLog;
 use App\Models\Task;
+use App\Models\Document;
 
 class DashboardController extends Controller
 {
@@ -78,19 +79,26 @@ class DashboardController extends Controller
         $employee = Auth::user()->employee;
         $accessibleClients = $employee->accessibleClients()->where('is_active', true)->get();
 
-        // Employee-specific call logs and tasks
-        $myCallLogs = CallLog::where('employee_id', $employee->id)->latest()->take(5)->get();
-        $myTasks = Task::where('assigned_to', $employee->id)->latest()->take(5)->get();
-        $myPendingTasks = Task::where('assigned_to', $employee->id)
-            ->where('status', Task::STATUS_PENDING)
-            ->count();
+        // Employee-specific call logs (related to accessible clients)
+        $recentCallLogs = CallLog::whereIn('client_id', $accessibleClients->pluck('id'))
+            ->latest()->take(5)->get();
+
+        // Assigned tasks
+        $assignedTasks = Task::where('assigned_to', $employee->id)
+            ->with(['client', 'assignedTo'])
+            ->latest()->take(5)->get();
+
+        // Uploaded or client-related documents
+        $employeeDocuments = Document::where('employee_id', $employee->id)
+            ->orWhereIn('client_id', $accessibleClients->pluck('id'))
+            ->latest()->take(5)->get();
 
         return view('dashboard.employee', compact(
             'employee',
             'accessibleClients',
-            'myCallLogs',
-            'myTasks',
-            'myPendingTasks'
+            'recentCallLogs',
+            'assignedTasks',
+            'employeeDocuments'
         ));
     }
 

@@ -26,7 +26,7 @@ use App\Http\Controllers\ClientDocumentController; // Specific controller for cl
 use App\Http\Controllers\ClientFormController;     // Specific controller for client's forms
 
 use App\Http\Controllers\DocumentApprovalController; // For document approval by admin/employee.
-
+use App\Http\Controllers\EmployeeCallLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -212,9 +212,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/employee/dashboard', [DashboardController::class, 'employeeDashboard'])->name('employee.dashboard');
 
         // Employee-specific tasks/logs
-        Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('tasks.my-tasks'); // Shared route name, ensure logic handles employee context
-        Route::get('/employee/call-logs', [CallLogController::class, 'index'])->name('employee.call-logs.index');
-        Route::get('/employee/tasks', [TaskController::class, 'index'])->name('employee.tasks.index'); // Employee's view of all tasks
+        Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('admin.tasks.my-tasks'); // Shared route name, ensure logic handles employee context
+        Route::get('/employee/call-logs', [EmployeeCallLogController::class, 'index'])->name('employees.call-logs.index');
+        Route::get('/call-logs/{callLog}/show', [EmployeeCallLogController::class, 'show'])->name('employees.call-logs.show');
+        Route::get('/employee/call-logs/{callLog}/edit', [EmployeeCallLogController::class, 'edit'])->name('employees.call-logs.edit');
+        Route::put('/employee/call-logs/{callLog}', [EmployeeCallLogController::class, 'update'])->name('employees.call-logs.update');
+        Route::delete('/employee/call-logs/{callLog}', [EmployeeCallLogController::class, 'destroy'])->name('employees.call-logs.destroy');
+        Route::get('/employee/call-logs/create', [EmployeeCallLogController::class, 'create'])->name('employees.call-logs.create');
+        Route::post('/employee/call-logs', [EmployeeCallLogController::class, 'store'])->name('employees.call-logs.store');
+        Route::get('/employee/tasks', [TaskController::class, 'index'])->name('employees.tasks.index'); // Employee's view of all tasks
 
         // Employee access to general documents (perhaps filtered by their accessible clients)
         Route::get('/employee/documents', [DocumentController::class, 'index'])->name('employee.documents.index');

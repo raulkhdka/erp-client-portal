@@ -50,7 +50,7 @@ class ClientDocumentController extends Controller
             return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
         }
 
-        return view('documents.create', compact('client'));
+        return view('admin.documents.create', compact('client'));
     }
 
     /**

@@ -83,7 +83,7 @@ class CallLogController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
+            'client_id' => 'nullable|exists:clients,id',
             'call_type' => 'required|string|in:incoming,outgoing',
             'call_date' => 'required|date',
             'caller_name' => 'nullable|string|max:255',
@@ -196,7 +196,7 @@ class CallLogController extends Controller
     public function update(Request $request, CallLog $callLog)
     {
         $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
+            'client_id' => 'nullable|exists:clients,id',
             'call_type' => 'required|string|in:incoming,outgoing',
             'call_date' => 'required|date',
             'caller_name' => 'nullable|string|max:255',
