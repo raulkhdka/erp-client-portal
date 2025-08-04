@@ -17,6 +17,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\DocumentController; // For admin/employee general document management
 use App\Http\Controllers\DocumentCategoryController;
 use App\Http\Controllers\ClientServiceController; // For managing client-service assignments by admin/employee
+use App\Http\Controllers\Employee\TaskController as EmployeeTaskController;
 use Illuminate\Support\Facades\Log;
 
 // Client-specific Controllers (Make sure these exist!)
@@ -211,21 +212,29 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:employee'])->group(function () {
         Route::get('/employee/dashboard', [DashboardController::class, 'employeeDashboard'])->name('employee.dashboard');
 
-        // Employee-specific tasks/logs
-        Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('admin.tasks.my-tasks'); // Shared route name, ensure logic handles employee context
-        Route::get('/employee/call-logs', [EmployeeCallLogController::class, 'index'])->name('employees.call-logs.index');
-        Route::get('/call-logs/{callLog}/show', [EmployeeCallLogController::class, 'show'])->name('employees.call-logs.show');
-        Route::get('/employee/call-logs/{callLog}/edit', [EmployeeCallLogController::class, 'edit'])->name('employees.call-logs.edit');
-        Route::put('/employee/call-logs/{callLog}', [EmployeeCallLogController::class, 'update'])->name('employees.call-logs.update');
-        Route::delete('/employee/call-logs/{callLog}', [EmployeeCallLogController::class, 'destroy'])->name('employees.call-logs.destroy');
-        Route::get('/employee/call-logs/create', [EmployeeCallLogController::class, 'create'])->name('employees.call-logs.create');
-        Route::post('/employee/call-logs', [EmployeeCallLogController::class, 'store'])->name('employees.call-logs.store');
-        Route::get('/employee/tasks', [TaskController::class, 'index'])->name('employees.tasks.index'); // Employee's view of all tasks
+        // Employee Tasks Routes
+        Route::prefix('employee/tasks')->name('employees.tasks.')->controller(App\Http\Controllers\Employee\TaskController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{task}', 'show')->name('show')->where('task', '[0-9]+');
+            Route::patch('/{task}/status', 'updateStatus')->name('update-status');
+        });
 
-        // Employee access to general documents (perhaps filtered by their accessible clients)
+        // Employee Call Logs Routes
+        Route::prefix('employee/call-logs')->name('employees.call-logs.')->group(function () {
+            Route::get('/', [EmployeeCallLogController::class, 'index'])->name('index');
+            Route::get('/create', [EmployeeCallLogController::class, 'create'])->name('create');
+            Route::post('/', [EmployeeCallLogController::class, 'store'])->name('store');
+            Route::get('/{callLog}', [EmployeeCallLogController::class, 'show'])->name('show');
+            Route::get('/{callLog}/edit', [EmployeeCallLogController::class, 'edit'])->name('edit');
+            Route::put('/{callLog}', [EmployeeCallLogController::class, 'update'])->name('update');
+            Route::delete('/{callLog}', [EmployeeCallLogController::class, 'destroy'])->name('destroy');
+        });
+
+        // Employee Document Routes
         Route::get('/employee/documents', [DocumentController::class, 'index'])->name('employee.documents.index');
-        // Employee's view of client list (if they manage clients)
-        Route::get('/employee/clients', [ClientController::class, 'index'])->name('employee.clients.index'); // Or specific list of accessible clients
+
+        // Employee Client Routes
+        Route::get('/employee/clients', [ClientController::class, 'index'])->name('employee.clients.index');
     });
 
     // --- Client Routes ---
@@ -277,6 +286,12 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(DocumentController::class)->group(function () {
         Route::get('/{document}/download', 'download')->name('admin.documents.download');
         Route::get('/{document}/preview', 'preview')->name('admin.documents.preview');
+    });
+
+    // Document Approval Routes for Admin & Employee
+    Route::prefix('admin.documents')->name('admin.documents.')->group(function () {
+        Route::post('/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('reject');
     });
 
     // Document Approval Routes for Admin & Employee

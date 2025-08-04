@@ -18,23 +18,29 @@ class Task extends Model
         'description',
         'priority',
         'status',
+        'completed_at',
         'due_date',
         'started_at',
-        'completed_at',
         'notes',
         'attachments',
         'estimated_hours',
         'actual_hours'
     ];
 
+    // protected $dates = [
+    //     'due_date',
+    //     'started_at',
+    //     'completed_at'
+    // ];
+
     protected $casts = [
-        'due_date' => 'date',
-        'started_at' => 'datetime',
-        'completed_at' => 'datetime',
         'attachments' => 'array',
         'status' => 'integer',
         'estimated_hours' => 'integer',
-        'actual_hours' => 'integer'
+        'actual_hours' => 'integer',
+        'due_date' => 'datetime',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime'
     ];
 
     // Status constants (same as CallLog for consistency)

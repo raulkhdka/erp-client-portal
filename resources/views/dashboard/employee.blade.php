@@ -130,7 +130,7 @@
             <div class="card shadow-enhanced mb-4 data-card" data-aos="fade-left">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-info">
                     <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-tasks me-2"></i>My Assigned Tasks</h6>
-                    <a href="{{ route('admin.tasks.my-tasks') }}" class="btn btn-sm btn-light btn-hover">
+                    <a href="{{ route('employees.tasks.index') }}" class="btn btn-sm btn-light btn-hover">
                         <i class="fas fa-eye me-1"></i>View All
                     </a>
                 </div>

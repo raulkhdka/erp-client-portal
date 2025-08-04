@@ -311,7 +311,7 @@
                                                 </span>
                                             </td>
                                             <td class="border-dark">
-                                                {{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}
+                                                {{ $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('M d, Y') : 'No due date' }}
                                             </td>
                                             <td class="border-dark">{{ $task->created_at->format('M d') }}</td>
                                             <td class="border-dark">

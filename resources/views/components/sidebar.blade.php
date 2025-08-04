@@ -94,17 +94,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('tasks.my-tasks') ? 'active' : '' }}"
-                                href="{{ route('admin.tasks.my-tasks') }}">
+                            <a class="nav-link {{ request()->routeIs('employees.tasks.*') ? 'active' : '' }}"
+                                href="{{ route('employees.tasks.index') }}">
                                 <i class="fas fa-tasks"></i>My Tasks
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}"
-                                href="{{ route('admin.tasks.index') }}">
-                                <i class="fas fa-list"></i>All Tasks
-                            </a>
-                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
                                 href="{{ route('admin.documents.index') }}">
