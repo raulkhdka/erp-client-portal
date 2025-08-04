@@ -30,7 +30,8 @@
                             <div class="col-md-6">
                                 <label for="user_name" class="form-label">User Name *</label>
                                 <input type="text" class="form-control @error('user_name') is-invalid @enderror"
-                                    id="user_name" name="user_name" value="{{ old('user_name') }}" placeholder="User name" required>
+                                    id="user_name" name="user_name" value="{{ old('user_name') }}" placeholder="User name"
+                                    required>
                                 @error('user_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -38,7 +39,8 @@
                             <div class="col-md-6">
                                 <label for="email" class="form-label">Email Address *</label>
                                 <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                    id="email" name="email" value="{{ old('email') }}" placeholder="Enter your Email" required>
+                                    id="email" name="email" value="{{ old('email') }}" placeholder="Enter your Email"
+                                    required>
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -61,7 +63,8 @@
                             <div class="col-md-6">
                                 <label for="employee_name" class="form-label">Employee Name *</label>
                                 <input type="text" class="form-control @error('employee_name') is-invalid @enderror"
-                                    id="employee_name" name="employee_name" value="{{ old('employee_name') }}" placeholder="Full Name">
+                                    id="employee_name" name="employee_name" value="{{ old('employee_name') }}"
+                                    placeholder="Full Name">
                                 @error('employee_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -109,7 +112,7 @@
                             <div class="col-md-6">
                                 <label for="hire_date" class="form-label">Hire Date *</label>
                                 <div class="input-group">
-                                    <input type="date" class="form-control @error('hire_date') is-invalid @enderror"
+                                    <input type="text" class="form-control @error('hire_date') is-invalid @enderror"
                                         id="hire_date" name="hire_date" value="{{ old('hire_date') }}" required
                                         placeholder="Select date" autocomplete="off">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
@@ -227,4 +230,12 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+        <script type="text/javascript">
+            window.onload = function() {
+                var mainInput = document.getElementById("hire_date");
+                mainInput.NepaliDatePicker();
+            };
+        </script>
+    @endpush
 @endsection

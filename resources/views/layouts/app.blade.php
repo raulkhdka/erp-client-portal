@@ -16,6 +16,7 @@
     <!-- Custom Application Styles -->
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/nd.min.css') }}" rel="stylesheet">
 
     <style>
         /* Additional inline styles if needed */
@@ -85,7 +86,7 @@
     <!-- Custom Application Scripts -->
     <script src="{{ asset('assets/js/utils.js') }}"></script>
     <script src="{{ asset('assets/js/sidebar.js') }}"></script>
-
+    <script src="{{ asset('assets/js/nd.min.js') }}" type="text/javascript"></script>
     @auth
         <!-- Session Management -->
         <script>
