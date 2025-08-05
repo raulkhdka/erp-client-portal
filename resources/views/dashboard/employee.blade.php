@@ -76,12 +76,13 @@
 
     <!-- Data Tables -->
     <div class="row">
-        <!-- Assigned Clients -->
-        <div class="col-lg-6">
-            <div class="card shadow-enhanced mb-4 data-card" data-aos="fade-right">
+        <!-- Full-width Column: Clients and Tasks -->
+        <div class="col-lg-12">
+            <!-- Assigned Clients -->
+            <div class="card shadow-enhanced mb-4 data-card" data-aos="fade-up">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-primary">
                     <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-users me-2"></i>My Accessible Clients</h6>
-                    <a href="{{ route('employee.clients.index') }}" class="btn btn-sm btn-light btn-hover">
+                    <a href="{{ route('employees.clients.index') }}" class="btn btn-sm btn-light btn-hover">
                         <i class="fas fa-eye me-1"></i>View All
                     </a>
                 </div>
@@ -91,8 +92,8 @@
                             <table class="table table-professional mb-0">
                                 <thead class="table-header">
                                     <tr>
-                                        <th class="border-dark">Company Name</th>
-                                        <th class="border-dark">Contact Person</th>
+                                        <b><th class="border-dark">Company Name</th></b>
+                                        <th class="border-dark">Client Name</th>
                                         <th class="border-dark">Status</th>
                                         <th class="border-dark">Actions</th>
                                     </tr>
@@ -101,7 +102,7 @@
                                     @foreach($accessibleClients as $client)
                                         <tr class="table-row-hover">
                                             <td class="border-dark">{{ $client->company_name }}</td>
-                                            <td class="border-dark">{{ $client->user->name }}</td>
+                                            <td class="border-dark">{{ $client->name }}</td>
                                             <td class="border-dark">
                                                 <span class="badge badge-professional bg-{{ $client->status === 'active' ? 'success' : 'secondary' }}">
                                                     {{ ucfirst($client->status) }}
@@ -123,14 +124,12 @@
                     @endif
                 </div>
             </div>
-        </div>
 
-        <!-- Assigned Tasks -->
-        <div class="col-lg-6">
-            <div class="card shadow-enhanced mb-4 data-card" data-aos="fade-left">
+            <!-- Assigned Tasks -->
+            <div class="card shadow-enhanced mb-4 data-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-info">
                     <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-tasks me-2"></i>My Assigned Tasks</h6>
-                    <a href="{{ route('admin.tasks.my-tasks') }}" class="btn btn-sm btn-light btn-hover">
+                    <a href="{{ route('employees.tasks.index') }}" class="btn btn-sm btn-light btn-hover">
                         <i class="fas fa-eye me-1"></i>View All
                     </a>
                 </div>
@@ -182,6 +181,7 @@
         </div>
     </div>
 
+    <!-- Side-by-Side Tables: Call Logs and Documents -->
     <div class="row">
         <!-- Recent Call Logs -->
         <div class="col-lg-6">

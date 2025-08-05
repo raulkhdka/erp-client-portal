@@ -33,13 +33,13 @@
                         <td class="px-4 py-2">{{ $document->client->name ?? 'N/A' }}</td>
                         <td class="px-4 py-2">{{ $document->created_at->format('Y-m-d H:i') }}</td>
                         <td class="px-4 py-2 flex space-x-2">
-                            <a href="{{ route('documents.download', $document->id) }}"
+                            <a href="{{ route('admin.documents.download', $document->id) }}"
                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
                                 Download
                             </a>
 
                             @if($isAdmin || $isEmployee)
-                                <form action="{{ route('document-approvals.approve', $document->id) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.documents.approve', $document->id) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit"
                                             class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
@@ -48,7 +48,7 @@
                                     </button>
                                 </form>
 
-                                <form action="{{ route('document-approvals.reject', $document->id) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.documents.reject', $document->id) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit"
                                             class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"

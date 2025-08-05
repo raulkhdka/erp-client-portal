@@ -93,20 +93,21 @@
             let warningTime = sessionTimeout - (5 * 60 * 1000); // 5 minutes before expiration
             let sessionTimer;
             let warningTimer;
+            let isModalActive = false; // Flag to disable session warnings during modal interactions
 
             function resetSessionTimer() {
+                if (isModalActive) return; // Skip if modal is active
+
                 clearTimeout(sessionTimer);
                 clearTimeout(warningTimer);
 
                 // Set warning timer
                 warningTimer = setTimeout(function() {
-                    if (confirm('Your session will expire in 5 minutes. Click OK to extend your session.')) {
-                        // Make a request to refresh the session
+                    if (!isModalActive && confirm('Your session will expire in 5 minutes. Click OK to extend your session.')) {
                         fetch('/csrf-token')
                             .then(response => response.json())
                             .then(data => {
-                                document.querySelector('meta[name="csrf-token"]').setAttribute('content', data
-                                    .csrf_token);
+                                document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.csrf_token);
                                 resetSessionTimer();
                             })
                             .catch(console.error);
@@ -115,8 +116,10 @@
 
                 // Set session expiration timer
                 sessionTimer = setTimeout(function() {
-                    alert('Your session has expired. You will be redirected to the login page.');
-                    window.location.href = '/login?expired=1';
+                    if (!isModalActive) {
+                        alert('Your session has expired. You will be redirected to the login page.');
+                        window.location.href = '/login?expired=1';
+                    }
                 }, sessionTimeout);
             }
 
@@ -124,9 +127,21 @@
             resetSessionTimer();
 
             // Reset timer on user activity
-            document.addEventListener('click', resetSessionTimer);
-            document.addEventListener('keypress', resetSessionTimer);
-            document.addEventListener('scroll', resetSessionTimer);
+            document.addEventListener('click', function(e) {
+                if (!$(e.target).closest('.modal').length) {
+                    resetSessionTimer();
+                }
+            });
+            document.addEventListener('keypress', function(e) {
+                if (!$(e.target).closest('.modal').length) {
+                    resetSessionTimer();
+                }
+            });
+            document.addEventListener('scroll', function(e) {
+                if (!$(e.target).closest('.modal').length) {
+                    resetSessionTimer();
+                }
+            });
 
             // Refresh CSRF token periodically
             setInterval(function() {
@@ -142,6 +157,15 @@
                     })
                     .catch(console.error);
             }, 300000); // Every 5 minutes
+
+            // Handle modal state
+            $(document).on('show.bs.modal', '.modal', function() {
+                isModalActive = true;
+            });
+            $(document).on('hidden.bs.modal', '.modal', function() {
+                isModalActive = false;
+                resetSessionTimer(); // Reset timer when modal closes
+            });
         </script>
     @endauth
 

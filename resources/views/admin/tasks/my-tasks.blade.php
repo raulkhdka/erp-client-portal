@@ -68,7 +68,7 @@
                     </div>
 
                     <!-- Filters -->
-                    <form method="GET" action="{{ route('tasks.my-tasks') }}" class="mb-4">
+                    <form method="GET" action="{{ route('admin.tasks.my-tasks') }}" class="mb-4">
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <select name="status" class="form-select">
@@ -106,7 +106,7 @@
                                 <button type="submit" class="btn btn-outline-primary me-2">
                                     <i class="fas fa-search me-1"></i>Filter
                                 </button>
-                                <a href="{{ route('tasks.my-tasks') }}" class="btn btn-outline-secondary">
+                                <a href="{{ route('admin.tasks.my-tasks') }}" class="btn btn-outline-secondary">
                                     <i class="fas fa-times me-1"></i>Clear
                                 </a>
                             </div>

@@ -17,6 +17,11 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
+        // Allow all roles when running in console (e.g. php artisan route:list)
+        if (app()->runningInConsole()) {
+            return $next($request);
+        }
+
         Log::info('RoleMiddleware called - START', ['requested_roles' => $roles]);
         Log::info('RoleMiddleware called', [
             'requested_roles' => $roles,

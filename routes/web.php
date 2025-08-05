@@ -27,6 +27,8 @@ use App\Http\Controllers\ClientFormController;     // Specific controller for cl
 
 use App\Http\Controllers\DocumentApprovalController; // For document approval by admin/employee.
 use App\Http\Controllers\EmployeeCallLogController;
+use App\Http\Controllers\EmployeeClientController;
+use App\Http\Controllers\EmployeeDocumentController; // For employee-specific document management
 
 /*
 |--------------------------------------------------------------------------
@@ -169,6 +171,8 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{document}/preview', 'preview')->name('preview');
                 Route::get('/{document}/manage-access', 'manageAccess')->name('manage-access');
                 Route::patch('/{document}/access', 'updateAccess')->name('update-access');
+                Route::post('/{document}/approve', 'approve')->name('approve');
+                Route::post('/{document}/reject', 'reject')->name('reject');
             });
 
 
@@ -213,6 +217,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Employee-specific tasks/logs
         Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('admin.tasks.my-tasks'); // Shared route name, ensure logic handles employee context
+        // Call-logs Management Routes for Employees
         Route::get('/employee/call-logs', [EmployeeCallLogController::class, 'index'])->name('employees.call-logs.index');
         Route::get('/call-logs/{callLog}/show', [EmployeeCallLogController::class, 'show'])->name('employees.call-logs.show');
         Route::get('/employee/call-logs/{callLog}/edit', [EmployeeCallLogController::class, 'edit'])->name('employees.call-logs.edit');
@@ -222,10 +227,60 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/employee/call-logs', [EmployeeCallLogController::class, 'store'])->name('employees.call-logs.store');
         Route::get('/employee/tasks', [TaskController::class, 'index'])->name('employees.tasks.index'); // Employee's view of all tasks
 
-        // Employee access to general documents (perhaps filtered by their accessible clients)
-        Route::get('/employee/documents', [DocumentController::class, 'index'])->name('employee.documents.index');
-        // Employee's view of client list (if they manage clients)
-        Route::get('/employee/clients', [ClientController::class, 'index'])->name('employee.clients.index'); // Or specific list of accessible clients
+        // Clients Route Management for Employees
+        Route::get('/employee/clients', [EmployeeClientController::class, 'index'])->name('employees.clients.index');
+        Route::get('/employee/clients/{client}/show', [EmployeeClientController::class, 'show'])->name('employees.clients.show');
+
+        // Document Management Routes
+        Route::prefix('employee/documents')
+            ->name('employee.documents.')
+            ->controller(EmployeeDocumentController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{document}/show', 'show')->name('show');
+                Route::get('/{document}/edit', 'edit')->name('edit');
+                Route::put('/{document}', 'update')->name('update');
+                Route::delete('/{document}', 'destroy')->name('destroy');
+                Route::get('/{document}/download', 'download')->name('download');
+                Route::get('/{document}/preview', 'preview')->name('preview');
+            });
+
+        // Document approval Route Management for Employees
+        Route::prefix('employee/document-approvals')
+            ->name('employee.document-approvals.')
+            ->controller(\App\Http\Controllers\DocumentApprovalController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('/{document}/approve', 'approve')->name('approve');
+                Route::post('/{document}/reject', 'reject')->name('reject');
+            });
+
+        // Employee Tasks Routes
+        Route::prefix('employee/tasks')
+            ->name('employees.tasks.')
+            ->controller(App\Http\Controllers\EmployeeTaskController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{task}', 'show')->name('show')->where('task', '[0-9]+');
+                Route::patch('/{task}/status', 'updateStatus')->name('update-status');
+            });
+
+        Route::prefix('employee/dynamic-forms')
+            ->name('employees.dynamic-forms.')
+            ->controller(App\Http\Controllers\EmployeeDynamicFormController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{form}/edit', 'edit')->name('edit');
+                Route::put('/{form}', 'update')->name('update');
+                Route::delete('/{form}', 'destroy')->name('destroy');
+                Route::get('/{form}', 'show')->name('show');
+                Route::get('/{form}/share', 'share')->name('share');
+                Route::post('/{form}/send', 'send')->name('send');
+            });
     });
 
     // --- Client Routes ---
@@ -234,8 +289,13 @@ Route::middleware(['auth'])->group(function () {
 
         // Client's dedicated pages - These were missing!
         Route::get('/client/documents', [ClientDocumentController::class, 'index'])->name('clients.documents.index');
+        Route::get('/client/documents/create', [ClientDocumentController::class, 'create'])->name('clients.documents.create');
+        Route::post('/client/documents', [ClientDocumentController::class, 'store'])->name('clients.documents.store');
         Route::get('/client/documents/{document}/show', [ClientDocumentController::class, 'show'])->name('clients.documents.show');
         Route::get('/client/documents/{document}/preview', [ClientDocumentController::class, 'preview'])->name('clients.documents.preview');
+        Route::get('/client/documents/{document}/download', [ClientDocumentController::class, 'download'])->name('clients.documents.download');
+
+
         Route::get('/client/services', [ClientServicesController::class, 'index'])->name('clients.services.index');
         Route::get('/clients/services/{service}/show', [ClientServicesController::class, 'show'])->name('clients.services.show');
         Route::get('/client/employees', [ClientEmployeesController::class, 'index'])->name('clients.employees.index');
@@ -265,13 +325,13 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-    // --- Document Approval Routes (Shared by Admin & Assigned Employees) ---
-    Route::prefix('admin.document-approvals')->name('admin.document-approvals.')->group(function () {
-        Route::get('/', [DocumentApprovalController::class, 'index'])->name('index');
-        Route::get('/{document}', [DocumentApprovalController::class, 'show'])->name('show');
-        Route::post('/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('approve');
-        Route::post('/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('reject');
-    });
+    // // --- Document Approval Routes (Shared by Admin & Assigned Employees) ---
+    // Route::prefix('admin.document-approvals')->name('admin.document-approvals.')->group(function () {
+    //     Route::get('/', [DocumentApprovalController::class, 'index'])->name('index');
+    //     Route::get('/{document}', [DocumentApprovalController::class, 'show'])->name('show');
+    //     Route::post('/{document}/approve', [DocumentApprovalController::class, 'approve'])->name('approve');
+    //     Route::post('/{document}/reject', [DocumentApprovalController::class, 'reject'])->name('reject');
+    // });
 
     //Shared Document Routes (Admin, Employee, Client)  If this doesnot work remove prefix and name
     Route::controller(DocumentController::class)->group(function () {

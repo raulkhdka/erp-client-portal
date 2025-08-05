@@ -6,24 +6,24 @@ use Illuminate\Http\Request;
 use App\Models\DynamicForm;
 use App\Models\DynamicFormField;
 use App\Models\DynamicFormResponse;
+use App\Models\Client;
 use Illuminate\Support\Facades\Log;
-use App\Models\Client; // Required for linking responses to clients
-use App\Models\User;   // Required for finding clients by user email
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str; // For generating unique field names from labels
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use App\Models\User;
 
-class DynamicFormController extends Controller
+class EmployeeDynamicFormController extends Controller
 {
     /**
-     * Display a listing of the dynamic forms.
+     * Display a listing of the dynamic forms created by the authenticated employee.
      */
     public function index()
     {
-        $forms = DynamicForm::with('fields')->paginate(10); // Paginate for larger lists
-        return view('admin.dynamic-forms.index', compact('forms'));
+        $employeeId = Auth::id();
+        $forms = DynamicForm::where('employee_id', $employeeId)->with('fields')->paginate(10);
+        return view('employees.dynamic-forms.index', compact('forms'));
     }
 
     /**
@@ -31,7 +31,7 @@ class DynamicFormController extends Controller
      */
     public function create()
     {
-        return view('admin.dynamic-forms.create');
+        return view('employees.dynamic-forms.create');
     }
 
     /**
@@ -39,17 +39,19 @@ class DynamicFormController extends Controller
      */
     public function store(Request $request)
     {
+
         $isAjax = $request->ajax() || $request->wantsJson();
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_active' => 'sometimes|boolean', // 'sometimes' because checkbox sends value only if checked
-            'fields' => 'required|array|min:1', // Ensure at least one field is provided
+            'is_active' => 'sometimes|boolean',
+            'is_draft' => 'sometimes|boolean',
+            'fields' => 'required|array|min:1',
             'fields.*.field_label' => 'required|string|max:255',
             'fields.*.field_type' => 'required|in:text,email,number,date,select,checkbox,radio,textarea,file',
             'fields.*.is_required' => 'sometimes|boolean',
             'fields.*.sort_order' => 'required|integer|min:0',
-            'fields.*.field_options' => 'nullable|string', // Will be JSON encoded later
+            'fields.*.field_options' => 'nullable|string',
             'fields.*.placeholder' => 'nullable|string|max:255',
             'fields.*.help_text' => 'nullable|string',
         ], [
@@ -67,17 +69,14 @@ class DynamicFormController extends Controller
             $form = DynamicForm::create([
                 'name' => $request->name,
                 'description' => $request->description,
-                'is_active' => $request->has('is_active'), // Checkbox value
-                'settings' => $request->settings ?? null, // Ensure 'settings' is nullable or correctly handled
+                'is_active' => $request->has('is_active'),
+                'is_draft' => $request->boolean('is_draft'),
+                'settings' => $request->settings ?? null,
+                'employee_id' => Auth::id(), // Assign the form to the authenticated employee
             ]);
 
             foreach ($request->fields as $index => $fieldData) {
-                // Generate a field_name from the label if not provided, or normalize
-                $fieldName = Str::slug($fieldData['field_label']); // Use Str::slug for consistent field names
-
-                // Ensure uniqueness for field_name within this form (can add later as validation rule)
-                // For now, simple slugging. For very strict uniqueness, you might append index or a hash.
-
+                $fieldName = Str::slug($fieldData['field_label']);
                 DynamicFormField::create([
                     'dynamic_form_id' => $form->id,
                     'field_name' => $fieldName,
@@ -88,7 +87,7 @@ class DynamicFormController extends Controller
                         : null,
                     'is_required' => $fieldData['is_required'] ?? false,
                     'sort_order' => $fieldData['sort_order'],
-                    'validation_rules' => !empty($fieldData['validation_rules']) ? json_encode($fieldData['validation_rules']) : null, // Assuming validation_rules comes as array/JSON string
+                    'validation_rules' => !empty($fieldData['validation_rules']) ? json_encode($fieldData['validation_rules']) : null,
                     'placeholder' => $fieldData['placeholder'] ?? null,
                     'help_text' => $fieldData['help_text'] ?? null,
                 ]);
@@ -98,27 +97,23 @@ class DynamicFormController extends Controller
             if ($isAjax) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Form created successfully!',
-                    'redirect' => route('admin.dynamic-forms.index'), // Provide the redirect URL
+                    'message' => $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form created successfully!',
+                    'redirect' => route('employees.dynamic-forms.index'),
                 ]);
-            } else {
-                return redirect()->route('admin.dynamic-forms.index')->with('success', 'Form created successfully.');
             }
+            return redirect()->route('employees.dynamic-forms.index')->with('success', $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form created successfully.');
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Failed to create dynamic form: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
-
+            Log::error('Failed to create dynamic form: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             $errorMessage = 'Failed to create form. Please try again.';
-
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
                     'message' => $errorMessage,
-                    'errors' => ['general' => $e->getMessage()] // Provide more specific error in dev/debug
-                ], 500); // Return a 500 status code for server errors
-            } else {
-                return back()->withInput()->withErrors(['error' => $errorMessage . ' ' . $e->getMessage()]);
+                    'errors' => ['general' => $e->getMessage()],
+                ], 500);
             }
+            return back()->withInput()->withErrors(['error' => $errorMessage]);
         }
     }
 
@@ -127,8 +122,9 @@ class DynamicFormController extends Controller
      */
     public function show(string $id)
     {
-        $form = DynamicForm::with(['fields', 'responses.client.user'])->findOrFail($id);
-        return view('admin.dynamic-forms.show', compact('form'));
+        $employeeId = Auth::id();
+        $form = DynamicForm::where('employee_id', $employeeId)->with(['fields', 'responses.client.user'])->findOrFail($id);
+        return view('employees.dynamic-forms.show', compact('form'));
     }
 
     /**
@@ -136,8 +132,9 @@ class DynamicFormController extends Controller
      */
     public function edit(string $id)
     {
-        $form = DynamicForm::with('fields')->findOrFail($id);
-        return view('admin.dynamic-forms.edit', compact('form'));
+        $employeeId = Auth::id();
+        $form = DynamicForm::where('employee_id', $employeeId)->with('fields')->findOrFail($id);
+        return view('employees.dynamic-forms.edit', compact('form'));
     }
 
     /**
@@ -145,12 +142,10 @@ class DynamicFormController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Log incoming request data for debugging
         Log::info('Update form request data:', $request->all());
-
         $isAjax = $request->ajax() || $request->wantsJson();
 
-        // Preprocess fields to ensure valid field_options before validation
+        // Preprocess fields for select, radio, checkbox types
         $fields = $request->input('fields', []);
         foreach ($fields as $index => &$fieldData) {
             if (in_array($fieldData['field_type'] ?? '', ['select', 'radio', 'checkbox'])) {
@@ -162,19 +157,19 @@ class DynamicFormController extends Controller
                     try {
                         $options = json_decode($options, true);
                         if (!is_array($options) || count(array_filter($options, 'trim')) < 2) {
-                            Log::warning("Invalid or insufficient field_options for index {$index}, setting default", ['field_options' => $fieldData['field_options']]);
+                            Log::warning("Invalid or insufficient field_options for index {$index}, setting default");
                             $fieldData['field_options'] = json_encode(['Option 1', 'Option 2']);
                         } else {
                             $fieldData['field_options'] = json_encode(array_filter($options, 'trim'));
                         }
                     } catch (\Exception $e) {
-                        Log::warning("Error parsing field_options for index {$index}, setting default", ['error' => $e->getMessage(), 'field_options' => $fieldData['field_options']]);
+                        Log::warning("Error parsing field_options for index {$index}, setting default", ['error' => $e->getMessage()]);
                         $fieldData['field_options'] = json_encode(['Option 1', 'Option 2']);
                     }
                 }
             }
         }
-        unset($fieldData); // Unset reference
+        unset($fieldData);
         $request->merge(['fields' => $fields]);
 
         // Validation rules
@@ -208,19 +203,13 @@ class DynamicFormController extends Controller
             }],
             'fields.*.placeholder' => 'nullable|string|max:255',
             'fields.*.help_text' => 'nullable|string',
-        ], [
-            'fields.required' => 'At least one field is required for the form.',
-            'fields.min' => 'You must provide at least one field for the form.',
-            'fields.*.field_label.required' => 'Field label is required for all fields.',
-            'fields.*.field_type.required' => 'Field type is required for all fields.',
-            'fields.*.field_type.in' => 'Invalid field type selected.',
-            'fields.*.sort_order.required' => 'Field order is required for all fields.',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $form = DynamicForm::findOrFail($id);
+            $employeeId = Auth::id();
+            $form = DynamicForm::where('employee_id', $employeeId)->findOrFail($id);
 
             // Update form details
             $form->update([
@@ -228,23 +217,19 @@ class DynamicFormController extends Controller
                 'description' => $validated['description'],
                 'is_active' => $request->boolean('is_active'),
                 'is_draft' => $request->boolean('is_draft'),
+                'employee_id' => $employeeId,
             ]);
 
             $existingFieldIds = $form->fields->pluck('id')->toArray();
             $fieldsToKeepIds = [];
-
-            // Track used field names to handle duplicates
             $usedFieldNames = [];
 
             if (!empty($validated['fields'])) {
                 foreach ($validated['fields'] as $index => $fieldData) {
                     $fieldId = $fieldData['field_id'] ?? null;
-
-                    // Generate base field_name
                     $baseFieldName = Str::slug($fieldData['field_label']);
                     $fieldName = $baseFieldName;
 
-                    // Handle duplicates within the current request
                     if (in_array($fieldName, $usedFieldNames)) {
                         $suffix = 1;
                         while (in_array("{$fieldName}-{$suffix}", $usedFieldNames)) {
@@ -254,7 +239,6 @@ class DynamicFormController extends Controller
                     }
                     $usedFieldNames[] = $fieldName;
 
-                    // Prepare common field attributes
                     $attributes = [
                         'field_label' => $fieldData['field_label'],
                         'field_type' => $fieldData['field_type'],
@@ -266,25 +250,22 @@ class DynamicFormController extends Controller
                         'field_name' => $fieldName,
                     ];
 
-                    // Log attributes for debugging
                     Log::info("Field attributes for index {$index}:", $attributes);
 
                     if ($fieldId && in_array($fieldId, $existingFieldIds)) {
-                        // Update existing field
                         $formField = DynamicFormField::find($fieldId);
                         if ($formField) {
                             $formField->update($attributes);
                             $fieldsToKeepIds[] = $fieldId;
                         }
                     } else {
-                        // Create new field
                         $newField = $form->fields()->create($attributes);
                         $fieldsToKeepIds[] = $newField->id;
                     }
                 }
             }
 
-            // Delete fields that were not in the new request
+            // Delete fields not in the new request
             $fieldsToDelete = array_diff($existingFieldIds, $fieldsToKeepIds);
             if (!empty($fieldsToDelete)) {
                 DynamicFormField::whereIn('id', $fieldsToDelete)->delete();
@@ -297,84 +278,104 @@ class DynamicFormController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form updated successfully!',
-                    'redirect' => route('admin.dynamic-forms.index'),
+                    'redirect' => route('employees.dynamic-forms.index'),
                 ], 200);
             }
 
-            return redirect()->route('admin.dynamic-forms.index')->with('success', $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form updated successfully.');
+            return redirect()->route('employees.dynamic-forms.index')->with('success', $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form updated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            Log::error('Form update validation error:', ['error' => $e->getMessage(), 'errors' => $e->errors(), 'request' => $request->all()]);
-
+            Log::error('Form update validation error:', ['error' => $e->getMessage(), 'errors' => $e->errors()]);
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed. Please check your inputs.',
-                    'errors' => $e->errors()
+                    'errors' => $e->errors(),
                 ], 422);
             }
             return back()->withInput()->withErrors($e->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Form update general error:', ['error' => $e->getMessage(), 'exception' => $e, 'request' => $request->all()]);
-
+            Log::error('Form update general error:', ['error' => $e->getMessage()]);
             $errorMessage = 'An unexpected error occurred while updating the form.';
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
                     'message' => $errorMessage,
-                    'errors' => ['general' => $e->getMessage()]
+                    'errors' => ['general' => $e->getMessage()],
                 ], 500);
             }
-
             return back()->withInput()->withErrors(['error' => $errorMessage]);
         }
     }
 
     /**
-     * Show the form for sharing the dynamic form with clients.
+     * Show the form for sharing the dynamic form with assigned clients.
      */
     public function share(DynamicForm $form)
     {
         try {
-            // Eager-load clients with their emails
-            $clients = Client::with('emails')->select('id', 'name')->get();
-
-            // Verify view exists
-            if (!view()->exists('admin.dynamic-forms.share')) {
-                throw new \Exception('View dynamic-forms.share does not exist.');
+            $employeeId = Auth::id();
+            if ($form->employee_id !== $employeeId) {
+                Log::warning('Employee attempted to access unauthorized form', [
+                    'form_id' => $form->id,
+                    'employee_id' => $employeeId,
+                ]);
+                abort(403, 'Unauthorized action.');
             }
 
-            return view('admin.dynamic-forms.share', compact('form', 'clients'));
-        } catch (\Illuminate\Database\QueryException $e) {
-            Log::error('Database error in share method: ' . $e->getMessage(), [
-                'form_id' => $form->id,
-                'stack_trace' => $e->getTraceAsString(),
-            ]);
-            return redirect()->route('admin.dynamic-forms.index')->withErrors(['error' => 'Database error occurred. Please contact support.']);
+            // Fetch clients assigned to the authenticated employee
+            $clients = Client::whereHas('employees', function ($query) use ($employeeId) {
+                $query->where('employee_id', $employeeId);
+            })->with('emails')->select('id', 'name')->get();
+
+            if (!view()->exists('employee.dynamic-forms.share')) {
+                throw new \Exception('View employee.dynamic-forms.share does not exist.');
+            }
+
+            return view('employees.dynamic-forms.share', compact('form', 'clients'));
         } catch (\Exception $e) {
             Log::error('Failed to load share view for dynamic form: ' . $e->getMessage(), [
                 'form_id' => $form->id,
-                'stack_trace' => $e->getTraceAsString(),
+                'employee_id' => Auth::id(),
             ]);
-            return redirect()->route('admin.dynamic-forms.index')->withErrors(['error' => 'Failed to load share page: ' . $e->getMessage()]);
+            return redirect()->route('employees.dynamic-forms.index')->withErrors(['error' => 'Failed to load share page: ' . $e->getMessage()]);
         }
     }
+
     /**
-     * Share the dynamic form with a client and save to dynamic_form_client table.
+     * Share the dynamic form with an assigned client.
      */
     public function send(Request $request, DynamicForm $form)
     {
+        $employeeId = Auth::id();
+        if ($form->employee_id !== $employeeId) {
+            Log::warning('Employee attempted to share unauthorized form', [
+                'form_id' => $form->id,
+                'employee_id' => $employeeId,
+            ]);
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
-            'user_id' => 'required|exists:clients,id',
+            'user_id' => [
+                'required',
+                'exists:clients,id',
+                function ($attribute, $value, $fail) use ($employeeId) {
+                    $client = Client::find($value);
+                    if (!$client || !$client->employees()->where('employee_id', $employeeId)->exists()) {
+                        $fail('You can only share forms with your assigned clients.');
+                    }
+                },
+            ],
             'message' => 'nullable|string',
         ]);
 
         try {
             $client = Client::findOrFail($request->user_id);
 
-            // Save the form-client relationship in dynamic_form_client table
-            DB::table('dynamic_form_client')->updateOrInsert(   //Create or update the record in the table, preventing duplicate entries for the same client 'client_id' and dynamic_form_id.
+            // Save the form-client relationship
+            DB::table('dynamic_form_client')->updateOrInsert(
                 [
                     'client_id' => $client->id,
                     'dynamic_form_id' => $form->id,
@@ -385,16 +386,15 @@ class DynamicFormController extends Controller
                 ]
             );
 
-            // Prepare the share link (public form URL)
             $shareLink = route('admin.dynamic-forms.public-show', $form->id);
 
-            // Example: Send an email (implement Mail class if using)
+            // Example: Send email (implement Mail class if needed)
             // Mail::to($client->email)->send(new ShareFormMail($form, $shareLink, $request->message));
 
             return response()->json([
                 'success' => true,
                 'message' => 'Form shared successfully with ' . $client->name . '!',
-                'redirect' => route('admin.dynamic-forms.index'),
+                'redirect' => route('employees.dynamic-forms.index'),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('Failed to find client for sharing: ' . $e->getMessage());
@@ -419,13 +419,53 @@ class DynamicFormController extends Controller
     public function destroy(string $id)
     {
         try {
-            $form = DynamicForm::findOrFail($id);
-            $form->delete(); // This will cascade delete fields and responses due to onDelete('cascade')
+            $employeeId = Auth::id();
+            $form = DynamicForm::where('employee_id', $employeeId)->findOrFail($id);
 
-            return redirect()->route('admin.dynamic-forms.index')->with('success', 'Form deleted successfully.');
+            DB::beginTransaction();
+
+            // Delete associated fields
+            $fieldCount = DynamicFormField::where('dynamic_form_id', $form->id)->delete();
+            Log::info('Deleted associated fields for form', [
+                'form_id' => $form->id,
+                'employee_id' => $employeeId,
+                'field_count' => $fieldCount,
+            ]);
+
+            // Delete associated responses
+            $responseCount = DynamicFormResponse::where('dynamic_form_id', $form->id)->delete();
+            Log::info('Deleted associated responses for form', [
+                'form_id' => $form->id,
+                'employee_id' => $employeeId,
+                'response_count' => $responseCount,
+            ]);
+
+            // Delete associated client relationships
+            $clientCount = DB::table('dynamic_form_client')->where('dynamic_form_id', $form->id)->delete();
+            Log::info('Deleted associated client relationships for form', [
+                'form_id' => $form->id,
+                'employee_id' => $employeeId,
+                'client_count' => $clientCount,
+            ]);
+
+            // Delete the form
+            $form->delete();
+            Log::info('Form deleted successfully', [
+                'form_id' => $form->id,
+                'employee_id' => $employeeId,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('employees.dynamic-forms.index')->with('success', 'Form and associated data deleted successfully.');
         } catch (\Exception $e) {
-            Log::error('Failed to delete dynamic form: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Failed to delete form. Please try again.']);
+            DB::rollback();
+            Log::error('Failed to delete dynamic form or its associated data: ' . $e->getMessage(), [
+                'form_id' => $id,
+                'employee_id' => $employeeId,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->withErrors(['error' => 'Failed to delete form and its associated data. Please try again.']);
         }
     }
 
@@ -435,52 +475,56 @@ class DynamicFormController extends Controller
     public function showPublicForm($form)
     {
         try {
-            // Load the form with its fields and clients
-            $form = DynamicForm::with(['fields', 'clients'])->findOrFail($form);
+            $employeeId = Auth::id();
+            $form = DynamicForm::where('employee_id', $employeeId)->with(['fields', 'clients'])->findOrFail($form);
 
             // Check if user is authenticated
             if (!Auth::check()) {
                 Log::warning('Unauthenticated user attempted to access public form', [
                     'form_id' => $form->id,
+                    'employee_id' => $employeeId ?? 'unauthenticated',
                 ]);
                 abort(403, 'You must be logged in to access this form.');
             }
 
-            // Get the authenticated user
             $user = Auth::user();
-
-            // Check if the user is an admin
-            $isAdmin = $user->role === 'admin'; // Adjust this based on your admin identification logic
-
-            // Initialize variables
+            $isEmployee = $user->isEmployee(); // Use User model's isEmployee() method
             $client = null;
             $hasSubmitted = false;
 
-            if (!$isAdmin) {
-                // For non-admins, check for a client profile
-                $client = $user->client()->first();
-                if (!$client) {
-                    Log::warning('No client record found for authenticated user', [
+            if (!$isEmployee) {
+                // For non-employees (e.g., clients), check for a client profile
+                try {
+                    $client = $user->client()->first();
+                    if (!$client) {
+                        Log::warning('No client record found for authenticated user', [
+                            'form_id' => $form->id,
+                            'user_id' => $user->id,
+                        ]);
+                        abort(403, 'No client profile found. Please contact an admin to set up your client profile.');
+                    }
+
+                    // Check if the form is assigned to the client
+                    if (!$form->clients->contains($client->id)) {
+                        Log::warning('Client not authorized to access form', [
+                            'form_id' => $form->id,
+                            'client_id' => $client->id,
+                        ]);
+                        abort(403, 'You are not authorized to access this form.');
+                    }
+
+                    // Check if the client has already submitted the form
+                    $hasSubmitted = $form->responses()->where('client_id', $client->id)->exists();
+                } catch (\BadMethodCallException $e) {
+                    Log::error('Client relationship not defined on User model', [
                         'form_id' => $form->id,
                         'user_id' => $user->id,
+                        'error' => $e->getMessage(),
                     ]);
-                    return redirect()->route('admin.clients.create')->with('error', 'Please create a client profile to access this form.');
+                    abort(500, 'Internal server error: Client relationship not configured.');
                 }
-
-                // Check if the form is assigned to the client
-                if (!$form->clients->contains($client->id)) {
-                    Log::warning('Client not authorized to access form', [
-                        'form_id' => $form->id,
-                        'client_id' => $client->id,
-                    ]);
-                    abort(403, 'You are not authorized to access this form.');
-                }
-
-                // Check if the client has already submitted the form
-                $hasSubmitted = $form->responses()->where('client_id', $client->id)->exists();
             }
 
-            // Prepare view data
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -493,13 +537,13 @@ class DynamicFormController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('Form not found', [
                 'form_id' => $form,
-                'user_id' => Auth::id() ?? 'unauthenticated',
+                'employee_id' => Auth::id() ?? 'unauthenticated',
             ]);
             abort(404, 'Form not found.');
         } catch (\Exception $e) {
             Log::error('Error displaying public form', [
                 'form_id' => $form,
-                'user_id' => Auth::id() ?? 'unauthenticated',
+                'employee_id' => Auth::id() ?? 'unauthenticated',
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -513,7 +557,15 @@ class DynamicFormController extends Controller
     public function submitPublicForm(Request $request, DynamicForm $form)
     {
         try {
-            // Verify form is active
+            $employeeId = Auth::id();
+            if ($form->employee_id !== $employeeId) {
+                Log::warning('Employee attempted to access unauthorized form submission', [
+                    'form_id' => $form->id,
+                    'employee_id' => $employeeId,
+                ]);
+                abort(403, 'Unauthorized action.');
+            }
+
             if (!$form->is_active) {
                 return response()->json([
                     'success' => false,
@@ -521,51 +573,50 @@ class DynamicFormController extends Controller
                 ], 403);
             }
 
-            // Determine client_id and check for duplicates
             $clientId = null;
-            if (Auth::check() && Auth::user()) {
+            if (Auth::check()) {
                 $user = Auth::user();
                 if ($user->isClient()) {
-                    $client = $user->client()->first();
-                    if ($client) {
-                        $clientId = $client->id;
-                        // Check for existing submission
-                        $existingSubmission = DynamicFormResponse::where('dynamic_form_id', $form->id)
-                            ->where('client_id', $clientId)
-                            ->exists();
-                        if ($existingSubmission) {
-                            Log::warning('Duplicate submission attempt by client', [
-                                'form_id' => $form->id,
-                                'client_id' => $clientId,
+                    try {
+                        $client = $user->client()->first();
+                        if ($client) {
+                            $clientId = $client->id;
+                            $existingSubmission = DynamicFormResponse::where('dynamic_form_id', $form->id)
+                                ->where('client_id', $clientId)
+                                ->exists();
+                            if ($existingSubmission) {
+                                Log::warning('Duplicate submission attempt by client', [
+                                    'form_id' => $form->id,
+                                    'client_id' => $clientId,
+                                    'user_id' => $user->id,
+                                ]);
+                                return response()->json([
+                                    'success' => false,
+                                    'errors' => ['general' => 'You have already submitted this form.'],
+                                ], 422);
+                            }
+                        } else {
+                            Log::warning('No client record found for user with client role', [
                                 'user_id' => $user->id,
                             ]);
                             return response()->json([
                                 'success' => false,
-                                'errors' => ['general' => 'You have already submitted this form.'],
-                            ], 422);
+                                'errors' => ['general' => 'No client profile found for your account.'],
+                            ], 403);
                         }
-                    } else {
-                        Log::warning('No client record found for user with client role', [
+                    } catch (\BadMethodCallException $e) {
+                        Log::error('Client relationship not defined on User model', [
+                            'form_id' => $form->id,
                             'user_id' => $user->id,
+                            'error' => $e->getMessage(),
                         ]);
-                        return response()->json([
-                            'success' => false,
-                            'errors' => ['general' => 'No client profile found for your account.'],
-                        ], 403);
+                        abort(500, 'Internal server error: Client relationship not configured.');
                     }
-                } else {
-                    Log::info('Non-client user attempted form submission', [
-                        'user_id' => $user->id,
-                        'role' => $user->role,
-                    ]);
-                    // Non-clients submit with client_id = null
                 }
             }
 
-            // Start transaction
             DB::beginTransaction();
 
-            // Build validation rules
             $rules = [];
             $messages = [];
             foreach ($form->fields as $field) {
@@ -609,10 +660,8 @@ class DynamicFormController extends Controller
                 $rules[$field->field_name] = implode('|', array_unique($fieldRules));
             }
 
-            // Validate request
             $validatedData = $request->validate($rules, $messages);
 
-            // Process response data
             $responseData = [];
             foreach ($form->fields as $field) {
                 $fieldName = $field->field_name;
@@ -635,7 +684,6 @@ class DynamicFormController extends Controller
                 }
             }
 
-            // Log form data for debugging
             Log::debug('Form submission data', [
                 'form_id' => $form->id,
                 'response_data' => $responseData,
@@ -644,7 +692,6 @@ class DynamicFormController extends Controller
                 'role' => Auth::check() ? Auth::user()->role : 'none',
             ]);
 
-            // Save the response
             $response = DynamicFormResponse::create([
                 'dynamic_form_id' => $form->id,
                 'client_id' => $clientId,
@@ -652,7 +699,6 @@ class DynamicFormController extends Controller
                 'submitted_at' => now(),
             ]);
 
-            // Log successful save
             Log::info('Form response saved', [
                 'response_id' => $response->id,
                 'form_id' => $form->id,
@@ -667,7 +713,6 @@ class DynamicFormController extends Controller
             Log::warning('Validation failed for public form submission', [
                 'form_id' => $form->id,
                 'errors' => $e->errors(),
-                'request_data' => $request->all(),
             ]);
             return response()->json([
                 'success' => false,
@@ -677,9 +722,8 @@ class DynamicFormController extends Controller
             DB::rollBack();
             Log::error('Failed to submit public form: ' . $e->getMessage(), [
                 'form_id' => $form->id,
-                'user_id' => Auth::check() ? Auth::id() : 'unauthenticated',
-                'request_data' => $request->all(),
-                'stack_trace' => $e->getTraceAsString(),
+                'employee_id' => Auth::id() ?? 'unauthenticated',
+                'trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
                 'success' => false,

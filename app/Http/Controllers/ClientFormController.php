@@ -70,20 +70,20 @@ class ClientFormController extends Controller
         return view('clients.forms.show', compact('client', 'dynamicFormResponse'));
     }
 
-    public function create(DynamicForm $dynamicForm)
-    {
-        $user = Auth::user();
-        $client = $user->client;
-        if (!$client) {
-            $client = \App\Models\Client::where('user_id', $user->id)->first();
-        }
+    // public function create(DynamicForm $dynamicForm)
+    // {
+    //     $user = Auth::user();
+    //     $client = $user->client;
+    //     if (!$client) {
+    //         $client = \App\Models\Client::where('user_id', $user->id)->first();
+    //     }
 
-        if (!$client || !$dynamicForm->is_active || !$dynamicForm->responses()->where('client_id', $client->id)->exists()) {
-            abort(403, 'Unauthorized access to this form.');
-        }
+    //     if (!$client || !$dynamicForm->is_active || !$dynamicForm->responses()->where('client_id', $client->id)->exists()) {
+    //         abort(403, 'Unauthorized access to this form.');
+    //     }
 
-        return view('clients.forms.create', compact('client', 'dynamicForm'));
-    }
+    //     return view('clients.forms.create', compact('client', 'dynamicForm'));
+    // }
 
     /**
      * Store a new form submission from the client.

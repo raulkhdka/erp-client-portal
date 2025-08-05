@@ -13,6 +13,8 @@ class DynamicForm extends Model
         'name',
         'description',
         'is_active',
+        'is_draft',
+        'employee_id',
         'settings'
     ];
 

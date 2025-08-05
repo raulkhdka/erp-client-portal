@@ -9,7 +9,7 @@
 @section('actions')
     <div class="btn-group">
         @if(Auth::user()->isEmployee())
-        <a href="{{ route('tasks.my-tasks') }}" class="btn btn-outline-primary">
+        <a href="{{ route('admin.tasks.my-tasks') }}" class="btn btn-outline-primary">
             <i class="fas fa-user me-2"></i>My Tasks
         </a>
         @endif

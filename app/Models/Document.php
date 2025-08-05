@@ -78,12 +78,12 @@ class Document extends Model
 
     public function getDownloadUrlAttribute()
     {
-        return route('documents.download', $this->id);
+        return route('admin.documents.download', $this->id);
     }
 
     public function getPreviewUrlAttribute()
     {
-        return route('documents.preview', $this->id);
+        return route('admin.documents.preview', $this->id);
     }
 
     // Scopes

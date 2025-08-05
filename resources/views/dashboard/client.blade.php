@@ -63,7 +63,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1 stat-label">Your Assigned Employee</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800 stat-number">{{ $assignedEmployee->user->name ?? 'N/A' }}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 stat-number">{{ $assignedEmployees->user->name ?? 'N/A' }}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-user-tie fa-2x text-gray-300 stat-icon"></i>

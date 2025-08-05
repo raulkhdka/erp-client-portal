@@ -50,7 +50,7 @@ class ClientDocumentController extends Controller
             return redirect()->route('login')->with('error', 'Client profile not found. Please contact support.');
         }
 
-        return view('admin.documents.create', compact('client'));
+        return view('clients.documents.create', compact('client'));
     }
 
     /**
@@ -84,7 +84,7 @@ class ClientDocumentController extends Controller
 
             // Save document details to the client_documents table
             Document::create([
-                'title' => $request->name,
+                'title' => $request->title,
                 'description' => $request->description ?? '',
                 'file_name' => $fileName,
                 'file_path' => $filePath,
@@ -96,6 +96,8 @@ class ClientDocumentController extends Controller
                 'uploaded_by' => Auth::id(),
                 'is_approved' => false, // Default to false, i.e. not approved
             ]);
+            // dd($request->all(), $request->file('document_file'));
+
 
             return redirect()->route('clients.documents.index')->with('success', 'Document uploaded successfully!');
         } catch (\Exception $e) {

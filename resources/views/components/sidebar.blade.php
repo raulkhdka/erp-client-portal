@@ -6,7 +6,7 @@
             <div class="user-profile">
                 <div class="user-avatar">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=10b981&color=fff"
-                         alt="{{ Auth::user()->name }}" class="avatar-img">
+                        alt="{{ Auth::user()->name }}" class="avatar-img">
                 </div>
                 <div class="user-info">
                     <span class="user-name">{{ Auth::user()->name }}</span>
@@ -22,7 +22,7 @@
                     <!-- Dashboard - Available to all users -->
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-                            href="{{ route('dashboard') }}">
+                            href="{{ route('dashboard') }}"  title="Dashboard">
                             <i class="fas fa-home"></i>Dashboard
                         </a>
                     </li>
@@ -31,31 +31,31 @@
                     @if (Auth::user()->isAdmin())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}"
-                                href="{{ route('admin.clients.index') }}">
+                                href="{{ route('admin.clients.index') }}"  title="Clients">
                                 <i class="fas fa-users"></i>Clients
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
-                                href="{{ route('admin.employees.index') }}">
+                                href="{{ route('admin.employees.index') }}"  title="Employees">
                                 <i class="fas fa-user-tie"></i>Employees
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('services.*') ? 'active' : '' }}"
-                                href="{{ route('admin.services.index') }}">
+                                href="{{ route('admin.services.index') }}"  title="Services">
                                 <i class="fas fa-concierge-bell"></i>Services
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('call-logs.*') ? 'active' : '' }}"
-                                href="{{ route('admin.call-logs.index') }}">
+                                href="{{ route('admin.call-logs.index') }}"  title="Call Logs">
                                 <i class="fas fa-phone"></i>Call Logs
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('tasks.*') ? 'active' : '' }}"
-                                href="{{ route('admin.tasks.index') }}">
+                                href="{{ route('admin.tasks.index') }}" >
                                 <i class="fas fa-tasks"></i>Tasks
                             </a>
                         </li>
@@ -78,8 +78,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}"
-                                href="#">
+                            <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="#">
                                 <i class="fas fa-cog"></i>Settings
                             </a>
                         </li>
@@ -94,26 +93,29 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('tasks.my-tasks') ? 'active' : '' }}"
-                                href="{{ route('admin.tasks.my-tasks') }}">
+                            <a class="nav-link {{ request()->routeIs('employees.tasks.*') ? 'active' : '' }}"
+                                href="{{ route('employees.tasks.index') }}">
                                 <i class="fas fa-tasks"></i>My Tasks
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}"
-                                href="{{ route('admin.tasks.index') }}">
-                                <i class="fas fa-list"></i>All Tasks
-                            </a>
-                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('documents.*') ? 'active' : '' }}"
-                                href="{{ route('admin.documents.index') }}">
+                                href="{{ route('employee.documents.index') }}">
                                 <i class="fas fa-folder"></i>Documents
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <i class="fas fa-briefcase"></i>My Clients
+                            <a class="nav-link {{ request()->routeIs('clients*.') ? 'active' : '' }}"
+                                href="{{ route('employees.clients.index') }}">
+                                <i class="fas fa-users"></i>Clients
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('dynamic-forms*.') ? 'active' : '' }}"
+                                href="{{ route('employees.dynamic-forms.index') }}">
+                                <i class="fas fa-list"></i>Dynamic Forms
                             </a>
                         </li>
                     @endif
@@ -150,7 +152,8 @@
                     <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}" class="d-inline w-100">
                             @csrf
-                            <button type="submit" class="nav-link btn btn-link text-start w-100 border-0 p-0" style="color: inherit; text-decoration: none;">
+                            <button type="submit" class="nav-link btn btn-link text-start w-100 border-0 p-0"
+                                style="color: inherit; text-decoration: none;">
                                 <i class="fas fa-sign-out-alt"></i>Logout
                             </button>
                         </form>

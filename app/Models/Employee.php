@@ -40,10 +40,16 @@ class Employee extends Model
 
     public function accessibleClients()
     {
-        return $this->belongsToMany(Client::class, 'client_employee_accesses')
-                    ->using(ClientEmployeeAccess::class)
-                    ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
-                    ->withTimestamps();
+        return $this->belongsToMany(Client::class, 'client_employee_accesses', 'employee_id', 'client_id')
+            ->using(ClientEmployeeAccess::class)
+            ->withPivot('permissions', 'access_granted_date', 'access_expires_date', 'is_active')
+            ->wherePivot('is_active', true)
+            ->wherePivot('access_granted_date', '<=', now())
+            ->where(function ($query) {
+                $query->whereNull('access_expires_date')
+                    ->orWhere('access_expires_date', '>=', now());
+            })
+            ->withTimestamps();
     }
 
     public function callLogs()

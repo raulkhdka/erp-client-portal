@@ -247,7 +247,7 @@
     <!-- Upload Document Modal -->
     <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <form method="POST" action="{{ route('admin.documents.store') }}" enctype="multipart/form-data" class="modal-content">
+            <form method="POST" action="{{ route('clients.documents.store') }}" enctype="multipart/form-data" class="modal-content">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title" id="uploadDocumentModalLabel">Upload Document</h5>
@@ -273,8 +273,8 @@
 
                     <!-- File -->
                     <div class="mb-3">
-                        <label for="file" class="form-label">Choose File</label>
-                        <input type="file" class="form-control" id="file" name="file" required>
+                        <label for="document_file" class="form-label">Choose File</label>
+                        <input type="file" class="form-control" id="document_file" name="document_file" required>
                     </div>
 
                     <!-- Optional Description -->
