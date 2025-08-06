@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Create My Dynamic Form')
+@section('title', 'Edit Dynamic Form')
 
 @section('breadcrumb')
     <a href="{{ route('employees.dynamic-forms.index') }}">My Dynamic Forms</a>
-    <span class="breadcrumb-item active">Create</span>
+    <span class="breadcrumb-item active">Edit</span>
 @endsection
 
 @section('actions')
@@ -17,7 +17,7 @@
 
 @section('styles')
 <style>
-/* Enhanced Preview Styles */
+/* Unchanged styles from the original */
 .preview-container {
     background: #ffffff;
     border: 2px solid #e9ecef;
@@ -26,7 +26,6 @@
     min-height: 400px;
     position: relative;
 }
-
 .preview-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -34,16 +33,13 @@
     border-radius: 0.5rem 0.5rem 0 0;
     text-align: center;
 }
-
 .preview-body {
     padding: 2rem;
 }
-
 .preview-form {
     max-width: 600px;
     margin: 0 auto;
 }
-
 .preview-field {
     margin-bottom: 1.5rem;
     padding: 1rem;
@@ -52,43 +48,36 @@
     border: 1px solid #dee2e6;
     transition: all 0.2s ease;
 }
-
 .preview-field:hover {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
-
 .preview-field-label {
     font-weight: 600;
     color: #495057;
     margin-bottom: 0.5rem;
     display: block;
 }
-
 .preview-field-required {
     color: #dc3545;
     margin-left: 0.25rem;
 }
-
 .preview-field-help {
     font-size: 0.875rem;
     color: #6c757d;
     margin-top: 0.25rem;
     font-style: italic;
 }
-
 .preview-empty {
     text-align: center;
     padding: 3rem;
     color: #6c757d;
 }
-
 .preview-empty i {
     font-size: 4rem;
     opacity: 0.3;
     margin-bottom: 1rem;
 }
-
 .preview-submit-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
@@ -99,21 +88,17 @@
     transition: all 0.3s ease;
     color: white;
 }
-
 .preview-submit-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     color: white;
 }
-
-/* Device Preview Styles */
 .device-selector {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1rem;
     justify-content: center;
 }
-
 .device-btn {
     padding: 0.5rem 1rem;
     border: 1px solid #dee2e6;
@@ -122,45 +107,35 @@
     cursor: pointer;
     transition: all 0.2s ease;
 }
-
 .device-btn.active {
     background: #007bff;
     color: white;
     border-color: #007bff;
 }
-
 .device-btn:hover {
     border-color: #007bff;
     color: #007bff;
 }
-
 .device-btn.active:hover {
     color: white;
 }
-
 .preview-device-frame {
     max-width: 100%;
     margin: 0 auto;
     transition: all 0.3s ease;
 }
-
 .preview-device-frame.mobile {
     max-width: 375px;
 }
-
 .preview-device-frame.tablet {
     max-width: 768px;
 }
-
 .preview-device-frame.desktop {
     max-width: 100%;
 }
-
 #previewColumn {
     display: none;
 }
-
-/* Preview Stats */
 .preview-stats {
     display: flex;
     justify-content: space-around;
@@ -169,51 +144,40 @@
     border-radius: 0.375rem;
     margin-bottom: 1rem;
 }
-
 .preview-stat {
     text-align: center;
 }
-
 .preview-stat-number {
     font-size: 1.5rem;
     font-weight: bold;
     color: #007bff;
 }
-
 .preview-stat-label {
     font-size: 0.875rem;
     color: #6c757d;
 }
-
-/* Field Builder Styles */
 .field-item {
     transition: all 0.3s ease;
     border-left: 4px solid transparent;
 }
-
 .field-item:hover {
     border-left-color: #007bff;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
-
 .field-item.dragging {
     opacity: 0.5;
     transform: rotate(2deg);
 }
-
 .drag-handle {
     cursor: grab;
     color: #6c757d;
 }
-
 .drag-handle:active {
     cursor: grabbing;
 }
-
 .field-collapsed .collapse-content {
     display: none;
 }
-
 .field-preview {
     background: #f8f9fa;
     border: 1px dashed #dee2e6;
@@ -221,19 +185,15 @@
     padding: 1rem;
     margin-top: 0.5rem;
 }
-
 .validation-error {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
-
 .field-type-icon {
     width: 20px;
     height: 20px;
     margin-right: 8px;
 }
-
-/* Loading and Toast Styles */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -246,15 +206,12 @@
     align-items: center;
     z-index: 9999;
 }
-
 .toast-container {
     position: fixed;
     top: 20px;
     right: 20px;
     z-index: 1050;
 }
-
-/* Fullscreen Preview */
 .fullscreen-preview {
     position: fixed;
     top: 0;
@@ -267,12 +224,10 @@
     padding: 2rem;
     display: none;
 }
-
 .fullscreen-preview .preview-container {
     max-width: 800px;
     margin: 0 auto;
 }
-
 .fullscreen-close {
     position: fixed;
     top: 1rem;
@@ -288,20 +243,16 @@
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
-
 .fullscreen-close:hover {
     background: #c82333;
     transform: scale(1.1);
 }
-
-/* Live Preview Toggle */
 .preview-toggle {
     position: sticky;
     top: 20px;
     z-index: 100;
     margin-bottom: 1rem;
 }
-
 .preview-mode-indicator {
     position: absolute;
     top: 10px;
@@ -313,18 +264,14 @@
     font-size: 0.75rem;
     font-weight: bold;
 }
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .preview-stats {
         flex-direction: column;
         gap: 1rem;
     }
-
     .device-selector {
         flex-wrap: wrap;
     }
-
     .preview-body {
         padding: 1rem;
     }
@@ -356,9 +303,9 @@
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">
-        <i class="fas fa-plus-circle me-2 text-primary"></i>
-        Create My Dynamic Form
-        <span class="draft-indicator" id="draftIndicator">(Draft)</span>
+        <i class="fas fa-edit me-2 text-primary"></i>
+        Edit Dynamic Form
+        <span class="draft-indicator" id="draftIndicator">{{ $form->is_draft ? '(Draft)' : '' }}</span>
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
@@ -377,7 +324,7 @@
 
 <!-- Progress Bar -->
 <div class="progress mb-4" style="height: 4px;">
-    <div class="progress-bar bg-primary" role="progressbar" style="width: 33%" id="progressBar"></div>
+    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ 33 + (count($form->fields) * 10) }}%" id="progressBar"></div>
 </div>
 
 <!-- Error Display -->
@@ -392,6 +339,14 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 
+<!-- Unauthorized Message -->
+@if (!$form->exists || $form->employee_id !== auth()->id())
+    <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        You are not authorized to edit this form.
+        <a href="{{ route('employees.dynamic-forms.index') }}" class="alert-link">Return to My Forms</a>.
+    </div>
+@else
 <div class="row">
     <!-- Form Builder Column -->
     <div class="col-lg-6" id="builderColumn">
@@ -399,13 +354,14 @@
             <div class="card-header bg-white border-bottom">
                 <h5 class="mb-0">
                     <i class="fas fa-cogs me-2"></i>Form Builder
-                    <span class="badge bg-secondary ms-2" id="fieldCount">0 fields</span>
+                    <span class="badge bg-secondary ms-2" id="fieldCount">{{ count($form->fields) }} field{{ count($form->fields) == 1 ? '' : 's' }}</span>
                 </h5>
             </div>
 
             <div class="card-body">
-                <form id="dynamicFormCreate" novalidate>
+                <form id="dynamicFormEdit" method="POST" action="{{ route('employees.dynamic-forms.update', $form->id) }}" novalidate>
                     @csrf
+                    @method('PUT')
 
                     <!-- Basic Form Information -->
                     <div class="row mb-4">
@@ -414,16 +370,19 @@
                                 Form Name <span class="text-danger">*</span>
                             </label>
                             <input type="text" class="form-control form-control-lg" id="name" name="name"
-                                   value="{{ old('name') }}" required autocomplete="off"
+                                   value="{{ old('name', $form->name) }}" required autocomplete="off"
                                    placeholder="Enter a descriptive form name">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Status</label>
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1"
+                                       {{ old('is_active', $form->is_active) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="is_active">
-                                    <span class="badge bg-success" id="statusBadge">Active</span>
+                                    <span class="badge {{ $form->is_active ? 'bg-success' : 'bg-secondary' }}" id="statusBadge">
+                                        {{ $form->is_active ? 'Active' : 'Inactive' }}
+                                    </span>
                                 </label>
                             </div>
                         </div>
@@ -432,7 +391,7 @@
                     <div class="mb-4">
                         <label for="description" class="form-label fw-bold">Description</label>
                         <textarea class="form-control" id="description" name="description" rows="3"
-                                  placeholder="Describe what this form is for...">{{ old('description') }}</textarea>
+                                  placeholder="Describe what this form is for...">{{ old('description', $form->description) }}</textarea>
                         <div class="form-text">This will be shown to users at the top of your form</div>
                     </div>
 
@@ -462,16 +421,15 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Container for dynamic form fields -->
-                        <div id="formFieldsContainer"></div>
-
                         <!-- Fields Container -->
                         <div id="fieldsContainer" class="sortable-container">
-                            <div class="text-center py-5 text-muted" id="emptyState">
-                                <i class="fas fa-plus-circle fa-3x mb-3 opacity-50"></i>
-                                <h6>No fields added yet</h6>
-                                <p class="small">Click "Add Field" to start building your form</p>
-                            </div>
+                            @if (count($form->fields) == 0)
+                                <div class="text-center py-5 text-muted" id="emptyState">
+                                    <i class="fas fa-plus-circle fa-3x mb-3 opacity-50"></i>
+                                    <h6>No fields added yet</h6>
+                                    <p class="small">Click "Add Field" to start building your form</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -487,7 +445,7 @@
                                 <i class="fas fa-times me-2"></i>Cancel
                             </a>
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-check me-2"></i>Create Form
+                                <i class="fas fa-check me-2"></i>Update Form
                             </button>
                         </div>
                     </div>
@@ -530,19 +488,19 @@
         <!-- Preview Stats -->
         <div class="preview-stats">
             <div class="preview-stat">
-                <div class="preview-stat-number" id="previewTotalFields">0</div>
+                <div class="preview-stat-number" id="previewTotalFields">{{ count($form->fields) }}</div>
                 <div class="preview-stat-label">Total Fields</div>
             </div>
             <div class="preview-stat">
-                <div class="preview-stat-number" id="previewRequiredFields">0</div>
+                <div class="preview-stat-number" id="previewRequiredFields">{{ $form->fields->where('is_required', true)->count() }}</div>
                 <div class="preview-stat-label">Required</div>
             </div>
             <div class="preview-stat">
-                <div class="preview-stat-number" id="previewOptionalFields">0</div>
+                <div class="preview-stat-number" id="previewOptionalFields">{{ $form->fields->where('is_required', false)->count() }}</div>
                 <div class="preview-stat-label">Optional</div>
             </div>
             <div class="preview-stat">
-                <div class="preview-stat-number" id="previewEstimatedTime">0</div>
+                <div class="preview-stat-number" id="previewEstimatedTime">{{ ceil(count($form->fields) * 0.5) }}</div>
                 <div class="preview-stat-label">Est. Time (min)</div>
             </div>
         </div>
@@ -552,16 +510,18 @@
             <div class="preview-container">
                 <div class="preview-mode-indicator">LIVE PREVIEW</div>
                 <div class="preview-header">
-                    <h2 id="previewTitle">Form Preview</h2>
-                    <p id="previewDescription" class="mb-0 opacity-75">Add a description to see it here</p>
+                    <h2 id="previewTitle">{{ $form->name ?? 'Form Preview' }}</h2>
+                    <p id="previewDescription" class="mb-0 opacity-75">{{ $form->description ?? 'Add a description to see it here' }}</p>
                 </div>
                 <div class="preview-body">
                     <div id="previewContent" class="preview-form">
-                        <div class="preview-empty">
-                            <i class="fas fa-eye"></i>
-                            <h5>No preview available</h5>
-                            <p>Add some fields to see the live preview</p>
-                        </div>
+                        @if (count($form->fields) == 0)
+                            <div class="preview-empty">
+                                <i class="fas fa-eye"></i>
+                                <h5>No preview available</h5>
+                                <p>Add some fields to see the live preview</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -580,15 +540,15 @@
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-4">
-                        <div class="h4 mb-0 text-primary" id="totalFields">0</div>
+                        <div class="h4 mb-0 text-primary" id="totalFields">{{ count($form->fields) }}</div>
                         <small class="text-muted">Fields</small>
                     </div>
                     <div class="col-4">
-                        <div class="h4 mb-0 text-success" id="requiredFields">0</div>
+                        <div class="h4 mb-0 text-success" id="requiredFields">{{ $form->fields->where('is_required', true)->count() }}</div>
                         <small class="text-muted">Required</small>
                     </div>
                     <div class="col-4">
-                        <div class="h4 mb-0 text-info" id="optionalFields">0</div>
+                        <div class="h4 mb-0 text-info" id="optionalFields">{{ $form->fields->where('is_required', false)->count() }}</div>
                         <small class="text-muted">Optional</small>
                     </div>
                 </div>
@@ -642,6 +602,7 @@
         </div>
     </div>
 </div>
+@endif
 
 <!-- Field Template -->
 <template id="fieldTemplate">
@@ -671,7 +632,7 @@
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Field Label <span class="text-danger">*</span></label>
                     <input type="text" class="form-control field-label" name="fields[__INDEX__][field_label]" placeholder="Enter field label" required autocomplete="off">
-                    <div class="invalid-feedback"></div>
+                    <div class="invalid-feedback">Field label is required</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Field Type <span class="text-danger">*</span></label>
@@ -691,6 +652,7 @@
                         <option value="time">Time</option>
                         <option value="datetime-local">Date & Time</option>
                     </select>
+                    <div class="invalid-feedback">Field type is required</div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-check mt-2">
@@ -699,14 +661,17 @@
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Field Order</label>
-                    <input type="number" class="form-control field-order" name="fields[__INDEX__][sort_order]" value="__INDEX__" min="1" autocomplete="off">
+                    <label class="form-label">Field Order <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control field-order" name="fields[__INDEX__][sort_order]" value="__INDEX__" min="1" required autocomplete="off">
+                    <div class="invalid-feedback">Field order must be a positive number</div>
                 </div>
                 <div class="col-md-12 mb-3 field-options-group" style="display: none;">
+                    <label for="fields[__INDEX__][field_options]" class="form-label fw-bold">Current Options</label>
+                    <ul class="field-options-list" data-options-field="fields[__INDEX__][field_options]"></ul>
                     <label for="fields[__INDEX__][field_options]" class="form-label fw-bold">Field Options (one per line) <span class="text-danger">*</span></label>
                     <textarea class="form-control field-options" name="fields[__INDEX__][field_options]" rows="3" placeholder="Option 1\nOption 2\nOption 3" autocomplete="off"></textarea>
                     <small class="form-text text-muted">Enter each option on a new line (e.g., Option 1, Option 2)</small>
-                    <div class="invalid-feedback"></div>
+                    <div class="invalid-feedback">At least 2 options are required</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Placeholder (optional)</label>
@@ -730,24 +695,24 @@
 <script>
 class DynamicFormBuilder {
     constructor() {
-        this.fieldIndex = {{ old('fields') ? count(old('fields')) : 0 }};
+        this.fieldIndex = {{ old('fields') ? count(old('fields')) : count($form->fields) }};
         this.fields = [];
         this.sortable = null;
         this.currentDevice = 'desktop';
         this.previewVisible = false;
-        this.isDraft = false; // Default to false for new forms
-        this.isSavingAsDraft = false; // Track explicit draft save action
+        this.isDraft = {{ $form->is_draft ? 'true' : 'false' }};
 
         this.init();
         this.bindEvents();
-        this.loadOldFields();
+        this.loadFormFields();
         this.initSortable();
-        this.updatePreview(); // Initial preview update
+        this.updateStatistics();
+        this.updatePreview();
     }
 
     init() {
         this.elements = {
-            form: document.getElementById('dynamicFormCreate'),
+            form: document.getElementById('dynamicFormEdit'),
             fieldsContainer: document.getElementById('fieldsContainer'),
             addFieldBtn: document.getElementById('addField'),
             templateElement: document.getElementById('fieldTemplate'),
@@ -771,82 +736,52 @@ class DynamicFormBuilder {
             previewColumn: document.getElementById('previewColumn'),
             sidebarColumn: document.getElementById('sidebarColumn'),
             togglePreviewBtn: document.getElementById('togglePreview'),
-            draftIndicator: document.getElementById('draftIndicator'),
-            saveAsDraftBtn: document.getElementById('saveAsDraft')
+            draftIndicator: document.getElementById('draftIndicator')
         };
 
-        // Configure Axios defaults
         axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     }
 
     bindEvents() {
-        // Add field button
         this.elements.addFieldBtn?.addEventListener('click', () => this.addField());
-
-        // Quick action buttons in dropdown
         document.querySelectorAll('[data-field-type]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.addField(e.target.closest('[data-field-type]').dataset.fieldType);
             });
         });
-
-        // Quick action buttons in sidebar
         document.querySelectorAll('.quick-add-field').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.addField(e.target.dataset.fieldType);
             });
         });
-
-        // Form submission
-        this.elements.form?.addEventListener('submit', (e) => {
-            console.log('Form submit triggered, isSavingAsDraft:', this.isSavingAsDraft, 'is_active:', this.elements.form.querySelector('#is_active')?.checked);
-            this.handleSubmit(e);
-        });
-
-        // Save as draft
-        this.elements.saveAsDraftBtn?.addEventListener('click', () => {
-            this.isSavingAsDraft = true;
-            console.log('Save as Draft clicked, isSavingAsDraft:', this.isSavingAsDraft);
-            this.saveAsDraft();
-        });
-
-        // Preview toggle
+        this.elements.form?.addEventListener('submit', (e) => this.handleSubmit(e));
+        document.getElementById('saveAsDraft')?.addEventListener('click', () => this.saveAsDraft());
         this.elements.togglePreviewBtn?.addEventListener('click', () => this.togglePreview());
         document.getElementById('hidePreview')?.addEventListener('click', () => this.hidePreview());
         document.getElementById('refreshPreview')?.addEventListener('click', () => this.updatePreview());
-
-        // Fullscreen preview
         document.getElementById('fullscreenBtn')?.addEventListener('click', () => this.showFullscreenPreview());
         document.getElementById('fullscreenClose')?.addEventListener('click', () => this.hideFullscreenPreview());
-
-        // Device selector
         document.querySelectorAll('.device-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.changeDevice(e.target.closest('.device-btn').dataset.device));
         });
-
-        // Form name and description changes
         document.getElementById('name')?.addEventListener('input', () => this.updatePreview());
         document.getElementById('description')?.addEventListener('input', () => this.updatePreview());
-
-        // Status toggle
         document.getElementById('is_active')?.addEventListener('change', (e) => {
             const badge = document.getElementById('statusBadge');
             if (e.target.checked) {
                 badge.textContent = 'Active';
                 badge.className = 'badge bg-success';
+                this.isDraft = false;
                 this.elements.draftIndicator.textContent = '';
             } else {
                 badge.textContent = 'Inactive';
                 badge.className = 'badge bg-secondary';
+                this.isDraft = true;
                 this.elements.draftIndicator.textContent = '(Draft)';
             }
-            console.log('is_active changed, checked:', e.target.checked);
-            this.updatePreview();
         });
-
-        // Escape key to close fullscreen
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.elements.fullscreenPreview.style.display !== 'none') {
                 this.hideFullscreenPreview();
@@ -925,6 +860,19 @@ class DynamicFormBuilder {
             return;
         }
 
+        // Default field data
+        if (!fieldData) {
+            fieldData = {
+                field_label: `Field ${this.fieldIndex + 1}`,
+                field_type: type,
+                sort_order: this.fieldIndex + 1,
+                is_required: false,
+                placeholder: '',
+                help_text: '',
+                field_options: ['select', 'radio', 'checkbox'].includes(type) ? ['Option 1', 'Option 2'] : []
+            };
+        }
+
         let templateContent = this.elements.templateElement.innerHTML;
         templateContent = templateContent.replace(/__INDEX__/g, this.fieldIndex);
 
@@ -940,14 +888,11 @@ class DynamicFormBuilder {
 
         const typeSelect = fieldCard.querySelector('.field-type');
         if (typeSelect) {
-            typeSelect.value = type;
+            typeSelect.value = fieldData.field_type || type;
             this.handleFieldTypeChange(typeSelect);
         }
 
-        if (fieldData) {
-            this.populateField(fieldCard, fieldData);
-        }
-
+        this.populateField(fieldCard, fieldData);
         this.attachFieldListeners(fieldCard);
 
         this.fieldIndex++;
@@ -963,14 +908,45 @@ class DynamicFormBuilder {
     }
 
     populateField(fieldCard, fieldData) {
+        const optionsList = fieldCard.querySelector('.field-options-list');
+        let cleanedOptions = '';
+
+        // Handle field options for select, radio, checkbox
+        if (fieldData.field_options) {
+            try {
+                let options = typeof fieldData.field_options === 'string'
+                    ? JSON.parse(fieldData.field_options)
+                    : fieldData.field_options;
+                options = Array.isArray(options) ? options.map(opt => opt.trim()).filter(opt => opt) : [];
+                if (['select', 'radio', 'checkbox'].includes(fieldData.field_type) && options.length < 2) {
+                    options = ['Option 1', 'Option 2'];
+                }
+                if (optionsList && options.length > 0) {
+                    optionsList.innerHTML = options.map(opt => `<li>${opt}</li>`).join('');
+                } else if (optionsList) {
+                    optionsList.innerHTML = '<li class="text-muted">No options defined</li>';
+                }
+                cleanedOptions = options.join('\n');
+            } catch (e) {
+                console.error('Error parsing field_options:', e, fieldData.field_options);
+                if (optionsList) {
+                    optionsList.innerHTML = '<li class="text-muted">Invalid options format</li>';
+                }
+                cleanedOptions = ['select', 'radio', 'checkbox'].includes(fieldData.field_type) ? 'Option 1\nOption 2' : '';
+            }
+        } else if (optionsList && ['select', 'radio', 'checkbox'].includes(fieldData.field_type)) {
+            optionsList.innerHTML = '<li>Option 1</li><li>Option 2</li>';
+            cleanedOptions = 'Option 1\nOption 2';
+        } else if (optionsList) {
+            optionsList.innerHTML = '<li class="text-muted">No options defined</li>';
+        }
+
         const selectors = {
-            '.field-id': fieldData.field_id || '',
-            '.field-label': fieldData.field_label || '',
+            '.field-id': fieldData.field_id || fieldData.id || '',
+            '.field-label': fieldData.field_label || `Field ${this.fieldIndex + 1}`,
             '.field-type': fieldData.field_type || 'text',
-            '.field-order': fieldData.sort_order || this.fieldIndex,
-            '.field-options': Array.isArray(fieldData.field_options)
-                ? fieldData.field_options.join('\n')
-                : (fieldData.field_options || ''),
+            '.field-order': fieldData.sort_order !== undefined ? fieldData.sort_order : (this.fieldIndex + 1),
+            '.field-options': cleanedOptions,
             '.field-placeholder': fieldData.placeholder || '',
             '.field-help-text': fieldData.help_text || ''
         };
@@ -989,7 +965,7 @@ class DynamicFormBuilder {
 
         const titleElement = fieldCard.querySelector('.field-title');
         if (titleElement) {
-            titleElement.textContent = fieldData.field_label || 'New Field';
+            titleElement.textContent = fieldData.field_label || `Field ${this.fieldIndex + 1}`;
         }
 
         this.handleFieldTypeChange(fieldCard.querySelector('.field-type'));
@@ -1009,7 +985,7 @@ class DynamicFormBuilder {
         labelInput?.addEventListener('input', (e) => {
             const title = fieldCard.querySelector('.field-title');
             if (title) {
-                title.textContent = e.target.value || 'New Field';
+                title.textContent = e.target.value || `Field ${this.fieldIndex + 1}`;
             }
             this.updatePreview();
         });
@@ -1027,6 +1003,22 @@ class DynamicFormBuilder {
             this.updateStatistics();
             this.updatePreview();
         });
+
+        const optionsTextarea = fieldCard.querySelector('.field-options');
+        if (optionsTextarea) {
+            optionsTextarea.addEventListener('input', () => {
+                const options = optionsTextarea.value.split('\n')
+                    .map(opt => opt.replace(/[\x00-\x1F\x7F]/g, '').trim())
+                    .filter(opt => opt);
+                const optionsList = fieldCard.querySelector('.field-options-list');
+                if (optionsList) {
+                    optionsList.innerHTML = options.length > 0
+                        ? options.map(opt => `<li>${opt}</li>`).join('')
+                        : '<li class="text-muted">No options defined</li>';
+                }
+                this.updatePreview();
+            });
+        }
     }
 
     handleFieldTypeChange(selectElement) {
@@ -1043,6 +1035,13 @@ class DynamicFormBuilder {
             const optionsTextarea = optionsContainer.querySelector('.field-options');
             if (optionsTextarea) {
                 optionsTextarea.required = needsOptions;
+                if (needsOptions && !optionsTextarea.value.trim()) {
+                    optionsTextarea.value = 'Option 1\nOption 2';
+                    const optionsList = fieldCard.querySelector('.field-options-list');
+                    if (optionsList) {
+                        optionsList.innerHTML = '<li>Option 1</li><li>Option 2</li>';
+                    }
+                }
             }
         }
 
@@ -1098,9 +1097,10 @@ class DynamicFormBuilder {
     removeField(fieldCard) {
         if (confirm('Are you sure you want to remove this field?')) {
             fieldCard.remove();
+            this.reorderFields();
             this.updateStatistics();
             this.updatePreview();
-            if (this.elements.fieldsContainer.children.length === 0) {
+            if (this.elements.fieldsContainer.querySelectorAll('.field-item').length === 0) {
                 this.elements.emptyState.style.display = 'block';
             }
             this.showToast('Field removed successfully!', 'warning');
@@ -1110,6 +1110,17 @@ class DynamicFormBuilder {
     duplicateField(fieldCard) {
         const fieldData = this.extractFieldData(fieldCard);
         fieldData.field_label = fieldData.field_label + ' (Copy)';
+        fieldData.field_id = '';
+        if (['select', 'radio', 'checkbox'].includes(fieldData.field_type)) {
+            let options = fieldData.field_options;
+            if (typeof options === 'string') {
+                options = options.split('\n').map(opt => opt.trim()).filter(opt => opt);
+            }
+            if (!Array.isArray(options) || options.length < 2) {
+                options = ['Option 1', 'Option 2'];
+            }
+            fieldData.field_options = options;
+        }
         this.addField(fieldData.field_type, fieldData);
     }
 
@@ -1128,13 +1139,22 @@ class DynamicFormBuilder {
     }
 
     extractFieldData(fieldCard) {
+        const optionsTextarea = fieldCard.querySelector('.field-options');
+        let fieldOptions = optionsTextarea
+            ? optionsTextarea.value.split('\n')
+                .map(opt => opt.replace(/[\x00-\x1F\x7F]/g, '').trim())
+                .filter(opt => opt)
+            : [];
+        if (['select', 'radio', 'checkbox'].includes(fieldCard.querySelector('.field-type')?.value) && fieldOptions.length < 2) {
+            fieldOptions = ['Option 1', 'Option 2'];
+        }
         return {
             field_id: fieldCard.querySelector('.field-id')?.value || '',
-            field_label: fieldCard.querySelector('.field-label')?.value || '',
+            field_label: fieldCard.querySelector('.field-label')?.value || `Field ${this.fieldIndex + 1}`,
             field_type: fieldCard.querySelector('.field-type')?.value || 'text',
             is_required: fieldCard.querySelector('.field-required')?.checked || false,
-            sort_order: fieldCard.querySelector('.field-order')?.value || 0,
-            field_options: fieldCard.querySelector('.field-options')?.value || '',
+            sort_order: parseInt(fieldCard.querySelector('.field-order')?.value) || this.fieldIndex + 1,
+            field_options: fieldOptions,
             placeholder: fieldCard.querySelector('.field-placeholder')?.value || '',
             help_text: fieldCard.querySelector('.field-help-text')?.value || ''
         };
@@ -1144,11 +1164,13 @@ class DynamicFormBuilder {
         const fields = this.elements.fieldsContainer.querySelectorAll('.field-item');
         const total = fields.length;
         let required = 0;
+
         fields.forEach(field => {
             if (field.querySelector('.field-required')?.checked) {
                 required++;
             }
         });
+
         const optional = total - required;
         const estimatedTime = Math.ceil(total * 0.5);
 
@@ -1252,41 +1274,47 @@ class DynamicFormBuilder {
 
         switch (field_type) {
             case 'textarea':
-                fieldHTML += `<textarea class="form-control" placeholder="${placeholder}" ${requiredAttr} rows="4"></textarea>`;
+                fieldHTML += `<textarea class="form-control" placeholder="${placeholder || ''}" ${requiredAttr} rows="4"></textarea>`;
                 break;
             case 'select':
-                const selectOptions = field_options ? field_options.split('\n').filter(opt => opt.trim()) : ['Option 1', 'Option 2'];
+                const selectOptions = Array.isArray(field_options)
+                    ? field_options
+                    : (field_options ? field_options.split('\n').map(opt => opt.trim()).filter(opt => opt) : ['Option 1', 'Option 2']);
                 fieldHTML += `<select class="form-select" ${requiredAttr}>
                     <option value="">${placeholder || 'Choose...'}</option>
-                    ${selectOptions.map(opt => `<option value="${opt.trim()}">${opt.trim()}</option>`).join('')}
+                    ${selectOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
                 </select>`;
                 break;
             case 'radio':
-                const radioOptions = field_options ? field_options.split('\n').filter(opt => opt.trim()) : ['Option 1', 'Option 2'];
+                const radioOptions = Array.isArray(field_options)
+                    ? field_options
+                    : (field_options ? field_options.split('\n').map(opt => opt.trim()).filter(opt => opt) : ['Option 1', 'Option 2']);
                 const radioName = (field_label || 'field').toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
                 radioOptions.forEach((opt, index) => {
                     fieldHTML += `
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="${radioName}" id="radio_${radioName}_${index}" ${requiredAttr}>
-                            <label class="form-check-label" for="radio_${radioName}_${index}">${opt.trim()}</label>
+                            <label class="form-check-label" for="radio_${radioName}_${index}">${opt}</label>
                         </div>
                     `;
                 });
                 break;
             case 'checkbox':
-                const checkboxOptions = field_options ? field_options.split('\n').filter(opt => opt.trim()) : ['Option 1', 'Option 2'];
+                const checkboxOptions = Array.isArray(field_options)
+                    ? field_options
+                    : (field_options ? field_options.split('\n').map(opt => opt.trim()).filter(opt => opt) : ['Option 1', 'Option 2']);
                 checkboxOptions.forEach((opt, index) => {
                     const checkboxId = `checkbox_${(field_label || 'field').toLowerCase().replace(/\s+/g, '_')}_${index}_${Date.now()}`;
                     fieldHTML += `
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="${checkboxId}">
-                            <label class="form-check-label" for="${checkboxId}">${opt.trim()}</label>
+                            <label class="form-check-label" for="${checkboxId}">${opt}</label>
                         </div>
                     `;
                 });
                 break;
             default:
-                fieldHTML += `<input type="${field_type}" class="form-control" placeholder="${placeholder}" ${requiredAttr}>`;
+                fieldHTML += `<input type="${field_type}" class="form-control" placeholder="${placeholder || ''}" ${requiredAttr}>`;
         }
 
         if (help_text) {
@@ -1316,27 +1344,40 @@ class DynamicFormBuilder {
             const labelInput = field.querySelector('.field-label');
             const typeSelect = field.querySelector('.field-type');
             const optionsTextarea = field.querySelector('.field-options');
+            const orderInput = field.querySelector('.field-order');
 
             if (!labelInput.value.trim()) {
-                errors[`field_${index}_label`] = `Field ${index + 1} label is required`;
+                errors[`field_${index}_label`] = `Field ${index + 1}: Label is required`;
                 labelInput.classList.add('validation-error');
             } else {
                 labelInput.classList.remove('validation-error');
             }
 
             if (!typeSelect.value) {
-                errors[`field_${index}_type`] = `Field ${index + 1} type is required`;
+                errors[`field_${index}_type`] = `Field ${index + 1}: Type is required`;
                 typeSelect.classList.add('validation-error');
             } else {
                 typeSelect.classList.remove('validation-error');
             }
 
+            if (orderInput && (!orderInput.value || parseInt(orderInput.value) < 1)) {
+                errors[`field_${index}_order`] = `Field ${index + 1}: Order must be a positive number`;
+                orderInput.classList.add('validation-error');
+            } else if (orderInput) {
+                orderInput.classList.remove('validation-error');
+            }
+
             const needsOptions = ['select', 'radio', 'checkbox'].includes(typeSelect.value);
-            if (needsOptions && (!optionsTextarea.value.trim() || optionsTextarea.value.split('\n').filter(opt => opt.trim()).length < 2)) {
-                errors[`field_${index}_options`] = `Field ${index + 1} requires at least 2 options`;
-                optionsTextarea.classList.add('validation-error');
-            } else if (optionsTextarea) {
-                optionsTextarea.classList.remove('validation-error');
+            if (needsOptions && optionsTextarea) {
+                const options = optionsTextarea.value.split('\n')
+                    .map(opt => opt.replace(/[\x00-\x1F\x7F]/g, '').trim())
+                    .filter(opt => opt);
+                if (options.length < 2) {
+                    errors[`field_${index}_options`] = `Field ${index + 1}: At least 2 options are required`;
+                    optionsTextarea.classList.add('validation-error');
+                } else {
+                    optionsTextarea.classList.remove('validation-error');
+                }
             }
         });
 
@@ -1349,7 +1390,7 @@ class DynamicFormBuilder {
 
         if (errorList && errorAlert) {
             errorList.innerHTML = '';
-            Object.values(errors).forEach(error => {
+            Object.entries(errors).forEach(([key, error]) => {
                 const li = document.createElement('li');
                 li.textContent = error;
                 errorList.appendChild(li);
@@ -1413,9 +1454,17 @@ class DynamicFormBuilder {
     }
 
     saveAsDraft() {
-        this.isSavingAsDraft = true;
-        console.log('Save as Draft clicked, isSavingAsDraft:', this.isSavingAsDraft);
-        this.elements.form.dispatchEvent(new Event('submit')); // Trigger form submission
+        this.isDraft = true;
+        this.elements.form.querySelector('button[type="submit"]').click();
+    }
+
+    loadFormFields() {
+        const existingFields = @json($form->fields);
+        if (existingFields && existingFields.length > 0) {
+            existingFields.forEach(field => {
+                this.addField(field.field_type, field);
+            });
+        }
     }
 
     async handleSubmit(e) {
@@ -1429,60 +1478,45 @@ class DynamicFormBuilder {
         }
 
         this.hideErrors();
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'flex';
-        }
+        const formData = new FormData(this.elements.form);
+        formData.append('is_draft', this.isDraft ? '1' : '0');
+
+        // Clean field_options before submission
+        const fieldItems = this.elements.fieldsContainer.querySelectorAll('.field-item');
+        fieldItems.forEach((item, index) => {
+            const type = item.querySelector('.field-type').value;
+            if (['select', 'radio', 'checkbox'].includes(type)) {
+                const optionsInput = item.querySelector('.field-options');
+                if (optionsInput) {
+                    const cleanedOptions = optionsInput.value
+                        .split('\n')
+                        .map(opt => opt.replace(/[\x00-\x1F\x7F]/g, '').trim())
+                        .filter(opt => opt)
+                        .join('\n');
+                    formData.set(`fields[${index}][field_options]`, cleanedOptions || 'Option 1\nOption 2');
+                }
+            }
+        });
 
         try {
-            const formData = new FormData(this.elements.form);
-            const isActiveChecked = this.elements.form.querySelector('#is_active')?.checked || false;
-            const isDraftValue = this.isSavingAsDraft || !isActiveChecked;
-            formData.append('is_draft', isDraftValue ? '1' : '0');
-
-            console.log('Submitting form, is_draft:', isDraftValue, 'is_active:', isActiveChecked, 'isSavingAsDraft:', this.isSavingAsDraft);
-
-            // Clean field options for select, radio, checkbox
-            const fieldItems = this.elements.fieldsContainer.querySelectorAll('.field-item');
-            fieldItems.forEach((item, index) => {
-                const type = item.querySelector('.field-type').value;
-                if (['select', 'radio', 'checkbox'].includes(type)) {
-                    const optionsInput = item.querySelector('.field-options');
-                    if (optionsInput) {
-                        const cleanedOptions = optionsInput.value
-                            .split('\n')
-                            .map(opt => opt.replace(/[\x00-\x1F\x7F]/g, '').trim())
-                            .filter(opt => opt)
-                            .join('\n');
-                        formData.set(`fields[${index}][field_options]`, cleanedOptions || 'Option 1\nOption 2');
-                    }
-                }
-            });
-
-            const response = await axios.post('{{ route("employees.dynamic-forms.store") }}', formData, {
+            const response = await axios.post('{{ route("employees.dynamic-forms.update", $form->id) }}', formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    'X-HTTP-Method-Override': 'PUT'
                 }
             });
-
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
 
             if (response.data.success) {
-                this.showSuccess(response.data.message);
-                this.showToast(response.data.message, 'success');
+                this.showSuccess(response.data.message || 'Form updated successfully!');
+                this.showToast(response.data.message || 'Form updated successfully!', 'success');
                 setTimeout(() => {
                     window.location.href = response.data.redirect || '{{ route("employees.dynamic-forms.index") }}';
                 }, 2000);
             } else {
-                this.showErrors(response.data.errors || { general: 'An error occurred while creating the form' });
-                this.showToast('Form creation failed.', 'error');
+                this.showErrors(response.data.errors || { general: 'An error occurred while updating the form' });
+                this.showToast('Form update failed.', 'error');
             }
         } catch (error) {
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
             console.error('Form submission error:', error);
             let errors = { general: 'An unexpected error occurred. Please try again.' };
             if (error.response?.status === 422) {
@@ -1498,19 +1532,11 @@ class DynamicFormBuilder {
             }
         }
     }
-
-    loadOldFields() {
-        @if (old('fields'))
-            const oldFields = @json(old('fields'));
-            oldFields.forEach((fieldData, index) => {
-                this.addField(fieldData.field_type, fieldData);
-            });
-        @endif
-    }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    window.formBuilder = new DynamicFormBuilder();
+// Initialize the form builder
+document.addEventListener('DOMContentLoaded', () => {
+    new DynamicFormBuilder();
 });
 </script>
 @endpush

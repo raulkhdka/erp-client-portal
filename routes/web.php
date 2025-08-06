@@ -152,7 +152,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::put('/{task}', 'update')->name('update');
                 Route::delete('/{task}', 'destroy')->name('destroy');
                 Route::get('/{task}', 'show')->name('show');
-                Route::get('/my-tasks', 'myTasks')->name('my-tasks'); // Admin's view of all tasks
+                // Route::get('/my-tasks', 'myTasks')->name('my-tasks'); // Admin's view of all tasks
             });
 
         //Blended Documents Routes Management
@@ -167,12 +167,12 @@ Route::middleware(['auth'])->group(function () {
                 Route::put('/{document}', 'update')->name('update');
                 Route::delete('/{document}', 'destroy')->name('destroy');
                 Route::get('/{document}', 'show')->name('show');
-                Route::get('/{document}/download', 'download')->name('download');
-                Route::get('/{document}/preview', 'preview')->name('preview');
+                //Route::get('/{document}/download', 'download')->name('download');
+                // Route::get('/{document}/preview', 'preview')->name('preview');
                 Route::get('/{document}/manage-access', 'manageAccess')->name('manage-access');
                 Route::patch('/{document}/access', 'updateAccess')->name('update-access');
-                Route::post('/{document}/approve', 'approve')->name('approve');
-                Route::post('/{document}/reject', 'reject')->name('reject');
+                // Route::post('/{document}/approve', 'approve')->name('approve');
+                // Route::post('/{document}/reject', 'reject')->name('reject');
             });
 
 
@@ -272,14 +272,17 @@ Route::middleware(['auth'])->group(function () {
             ->controller(App\Http\Controllers\EmployeeDynamicFormController::class)
             ->group(function () {
                 Route::get('/', 'index')->name('index');
+                Route::get('/{form}/share', 'share')->name('share');
+                Route::post('/{form}/send', 'send')->name('send');
+                Route::post('/{form}/submit', 'submitPreviewForm')->name('submit');
+                Route::get('/{form}/preview', 'preview')->name('preview');
                 Route::get('/create', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
                 Route::get('/{form}/edit', 'edit')->name('edit');
                 Route::put('/{form}', 'update')->name('update');
                 Route::delete('/{form}', 'destroy')->name('destroy');
                 Route::get('/{form}', 'show')->name('show');
-                Route::get('/{form}/share', 'share')->name('share');
-                Route::post('/{form}/send', 'send')->name('send');
+                
             });
     });
 

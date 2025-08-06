@@ -410,7 +410,7 @@
     </div>
 
     <!-- Alerts -->
-    @if (session('success'))
+    {{-- @if (session('success'))
         <div class="alert alert-success alert-modern alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>
             {{ session('success') }}
@@ -424,7 +424,7 @@
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    @endif
+    @endif --}}
 
     <!-- Search and Filter -->
     <div class="search-filter-container">
@@ -543,8 +543,8 @@
                                            data-bs-toggle="tooltip">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{{ route('admin.dynamic-forms.public-show', $form->id) }}"
-                                           target="_blank"
+                                        <a href="{{ route('employees.dynamic-forms.preview', $form->id) }}"
+                                           {{-- target="_blank" --}}
                                            class="btn btn-secondary btn-action"
                                            title="View Public Form"
                                            data-bs-toggle="tooltip">
