@@ -21,12 +21,12 @@ class EmployeeTaskController extends Controller
         Log::info('Employee ID: ' . $employee->id); // Debug log
 
         $query = Task::with(['client', 'assignedTo.user', 'createdBy', 'callLog'])
-            ->where('assigned_to', $employee->id)
-            ->orderByRaw('CASE
-            WHEN status IN (7,8) THEN 2
-            WHEN due_date < CURDATE() THEN 0
-            ELSE 1 END')
-            ->orderBy('due_date', 'asc');
+               ->where('assigned_to', $employee->id)
+               ->orderByRaw('CASE
+               WHEN status IN (7,8) THEN 2
+               WHEN due_date < CURDATE() THEN 0
+               ELSE 1 END')
+               ->orderBy('due_date', 'asc');
 
         // Debug log the raw query
         Log::info('Task Query: ' . $query->toSql());

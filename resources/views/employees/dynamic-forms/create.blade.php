@@ -17,7 +17,7 @@
 
 @section('styles')
 <style>
-/* Enhanced Preview Styles */
+/* Existing styles remain unchanged */
 .preview-container {
     background: #ffffff;
     border: 2px solid #e9ecef;
@@ -106,7 +106,6 @@
     color: white;
 }
 
-/* Device Preview Styles */
 .device-selector {
     display: flex;
     gap: 0.5rem;
@@ -160,7 +159,6 @@
     display: none;
 }
 
-/* Preview Stats */
 .preview-stats {
     display: flex;
     justify-content: space-around;
@@ -185,7 +183,6 @@
     color: #6c757d;
 }
 
-/* Field Builder Styles */
 .field-item {
     transition: all 0.3s ease;
     border-left: 4px solid transparent;
@@ -233,7 +230,6 @@
     margin-right: 8px;
 }
 
-/* Loading and Toast Styles */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -254,7 +250,6 @@
     z-index: 1050;
 }
 
-/* Fullscreen Preview */
 .fullscreen-preview {
     position: fixed;
     top: 0;
@@ -294,7 +289,6 @@
     transform: scale(1.1);
 }
 
-/* Live Preview Toggle */
 .preview-toggle {
     position: sticky;
     top: 20px;
@@ -314,7 +308,6 @@
     font-weight: bold;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .preview-stats {
         flex-direction: column;
@@ -335,6 +328,13 @@
 @section('content')
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
 
 <!-- Fullscreen Preview -->
 <div class="fullscreen-preview" id="fullscreenPreview">
@@ -680,16 +680,12 @@
                         <option value="text">Text</option>
                         <option value="email">Email</option>
                         <option value="number">Number</option>
-                        <option value="tel">Phone</option>
-                        <option value="url">URL</option>
+                        <option value="date">Date</option>
                         <option value="textarea">Textarea</option>
                         <option value="select">Select</option>
                         <option value="radio">Radio</option>
                         <option value="checkbox">Checkbox</option>
                         <option value="file">File</option>
-                        <option value="date">Date</option>
-                        <option value="time">Time</option>
-                        <option value="datetime-local">Date & Time</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -735,14 +731,14 @@ class DynamicFormBuilder {
         this.sortable = null;
         this.currentDevice = 'desktop';
         this.previewVisible = false;
-        this.isDraft = false; // Default to false for new forms
-        this.isSavingAsDraft = false; // Track explicit draft save action
+        this.isDraft = false;
+        this.isSavingAsDraft = false;
 
         this.init();
         this.bindEvents();
         this.loadOldFields();
         this.initSortable();
-        this.updatePreview(); // Initial preview update
+        this.updatePreview();
     }
 
     init() {
@@ -775,62 +771,42 @@ class DynamicFormBuilder {
             saveAsDraftBtn: document.getElementById('saveAsDraft')
         };
 
-        // Configure Axios defaults
         axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     }
 
     bindEvents() {
-        // Add field button
         this.elements.addFieldBtn?.addEventListener('click', () => this.addField());
-
-        // Quick action buttons in dropdown
         document.querySelectorAll('[data-field-type]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.addField(e.target.closest('[data-field-type]').dataset.fieldType);
             });
         });
-
-        // Quick action buttons in sidebar
         document.querySelectorAll('.quick-add-field').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.addField(e.target.dataset.fieldType);
             });
         });
-
-        // Form submission
         this.elements.form?.addEventListener('submit', (e) => {
             console.log('Form submit triggered, isSavingAsDraft:', this.isSavingAsDraft, 'is_active:', this.elements.form.querySelector('#is_active')?.checked);
             this.handleSubmit(e);
         });
-
-        // Save as draft
         this.elements.saveAsDraftBtn?.addEventListener('click', () => {
             this.isSavingAsDraft = true;
             console.log('Save as Draft clicked, isSavingAsDraft:', this.isSavingAsDraft);
             this.saveAsDraft();
         });
-
-        // Preview toggle
         this.elements.togglePreviewBtn?.addEventListener('click', () => this.togglePreview());
         document.getElementById('hidePreview')?.addEventListener('click', () => this.hidePreview());
         document.getElementById('refreshPreview')?.addEventListener('click', () => this.updatePreview());
-
-        // Fullscreen preview
         document.getElementById('fullscreenBtn')?.addEventListener('click', () => this.showFullscreenPreview());
         document.getElementById('fullscreenClose')?.addEventListener('click', () => this.hideFullscreenPreview());
-
-        // Device selector
         document.querySelectorAll('.device-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.changeDevice(e.target.closest('.device-btn').dataset.device));
         });
-
-        // Form name and description changes
         document.getElementById('name')?.addEventListener('input', () => this.updatePreview());
         document.getElementById('description')?.addEventListener('input', () => this.updatePreview());
-
-        // Status toggle
         document.getElementById('is_active')?.addEventListener('change', (e) => {
             const badge = document.getElementById('statusBadge');
             if (e.target.checked) {
@@ -845,8 +821,6 @@ class DynamicFormBuilder {
             console.log('is_active changed, checked:', e.target.checked);
             this.updatePreview();
         });
-
-        // Escape key to close fullscreen
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.elements.fullscreenPreview.style.display !== 'none') {
                 this.hideFullscreenPreview();
@@ -1062,16 +1036,12 @@ class DynamicFormBuilder {
             'text': 'Text',
             'email': 'Email',
             'number': 'Number',
-            'tel': 'Phone',
-            'url': 'URL',
+            'date': 'Date',
             'textarea': 'Textarea',
             'select': 'Select',
             'radio': 'Radio',
             'checkbox': 'Checkbox',
-            'file': 'File',
-            'date': 'Date',
-            'time': 'Time',
-            'datetime-local': 'DateTime'
+            'file': 'File'
         };
         return labels[type] || 'Text';
     }
@@ -1081,16 +1051,12 @@ class DynamicFormBuilder {
             'text': '📝',
             'email': '📧',
             'number': '🔢',
-            'tel': '📞',
-            'url': '🔗',
+            'date': '📅',
             'textarea': '📄',
             'select': '📋',
             'radio': '🔘',
             'checkbox': '☑️',
-            'file': '📎',
-            'date': '📅',
-            'time': '🕐',
-            'datetime-local': '📅'
+            'file': '📎'
         };
         return icons[type] || '📝';
     }
@@ -1316,6 +1282,7 @@ class DynamicFormBuilder {
             const labelInput = field.querySelector('.field-label');
             const typeSelect = field.querySelector('.field-type');
             const optionsTextarea = field.querySelector('.field-options');
+            const orderInput = field.querySelector('.field-order');
 
             if (!labelInput.value.trim()) {
                 errors[`field_${index}_label`] = `Field ${index + 1} label is required`;
@@ -1331,6 +1298,13 @@ class DynamicFormBuilder {
                 typeSelect.classList.remove('validation-error');
             }
 
+            if (!orderInput.value || isNaN(orderInput.value) || parseInt(orderInput.value) < 0) {
+                errors[`field_${index}_order`] = `Field ${index + 1} order must be a valid number ≥ 0`;
+                orderInput.classList.add('validation-error');
+            } else {
+                orderInput.classList.remove('validation-error');
+            }
+
             const needsOptions = ['select', 'radio', 'checkbox'].includes(typeSelect.value);
             if (needsOptions && (!optionsTextarea.value.trim() || optionsTextarea.value.split('\n').filter(opt => opt.trim()).length < 2)) {
                 errors[`field_${index}_options`] = `Field ${index + 1} requires at least 2 options`;
@@ -1340,6 +1314,10 @@ class DynamicFormBuilder {
             }
         });
 
+        console.log('Frontend validation result:', {
+            isValid: Object.keys(errors).length === 0,
+            errors: errors
+        });
         return { isValid: Object.keys(errors).length === 0, errors };
     }
 
@@ -1349,7 +1327,7 @@ class DynamicFormBuilder {
 
         if (errorList && errorAlert) {
             errorList.innerHTML = '';
-            Object.values(errors).forEach(error => {
+            Object.entries(errors).forEach(([key, error]) => {
                 const li = document.createElement('li');
                 li.textContent = error;
                 errorList.appendChild(li);
@@ -1415,7 +1393,7 @@ class DynamicFormBuilder {
     saveAsDraft() {
         this.isSavingAsDraft = true;
         console.log('Save as Draft clicked, isSavingAsDraft:', this.isSavingAsDraft);
-        this.elements.form.dispatchEvent(new Event('submit')); // Trigger form submission
+        this.elements.form.dispatchEvent(new Event('submit'));
     }
 
     async handleSubmit(e) {
@@ -1440,24 +1418,33 @@ class DynamicFormBuilder {
             const isDraftValue = this.isSavingAsDraft || !isActiveChecked;
             formData.append('is_draft', isDraftValue ? '1' : '0');
 
-            console.log('Submitting form, is_draft:', isDraftValue, 'is_active:', isActiveChecked, 'isSavingAsDraft:', this.isSavingAsDraft);
+            // Log FormData contents
+            const formDataEntries = {};
+            for (let [key, value] of formData.entries()) {
+                formDataEntries[key] = value instanceof File ? `[File: ${value.name}]` : value;
+            }
+            console.log('FormData being sent:', JSON.stringify(formDataEntries, null, 2));
 
-            // Clean field options for select, radio, checkbox
             const fieldItems = this.elements.fieldsContainer.querySelectorAll('.field-item');
             fieldItems.forEach((item, index) => {
                 const type = item.querySelector('.field-type').value;
                 if (['select', 'radio', 'checkbox'].includes(type)) {
                     const optionsInput = item.querySelector('.field-options');
-                    if (optionsInput) {
+                    if (optionsInput && optionsInput.value.trim()) {
                         const cleanedOptions = optionsInput.value
                             .split('\n')
                             .map(opt => opt.replace(/[\x00-\x1F\x7F]/g, '').trim())
                             .filter(opt => opt)
                             .join('\n');
-                        formData.set(`fields[${index}][field_options]`, cleanedOptions || 'Option 1\nOption 2');
+                        formData.set(`fields[${index}][field_options]`, cleanedOptions);
                     }
                 }
             });
+
+            console.log('Cleaned FormData for submission:', JSON.stringify([...formData.entries()].reduce((obj, [key, value]) => {
+                obj[key] = value instanceof File ? `[File: ${value.name}]` : value;
+                return obj;
+            }, {}), null, 2));
 
             const response = await axios.post('{{ route("employees.dynamic-forms.store") }}', formData, {
                 headers: {
@@ -1469,6 +1456,8 @@ class DynamicFormBuilder {
                 loadingOverlay.style.display = 'none';
             }
 
+            console.log('Server response:', JSON.stringify(response.data, null, 2));
+
             if (response.data.success) {
                 this.showSuccess(response.data.message);
                 this.showToast(response.data.message, 'success');
@@ -1476,6 +1465,7 @@ class DynamicFormBuilder {
                     window.location.href = response.data.redirect || '{{ route("employees.dynamic-forms.index") }}';
                 }, 2000);
             } else {
+                console.error('Server returned failure:', response.data);
                 this.showErrors(response.data.errors || { general: 'An error occurred while creating the form' });
                 this.showToast('Form creation failed.', 'error');
             }
@@ -1484,15 +1474,20 @@ class DynamicFormBuilder {
                 loadingOverlay.style.display = 'none';
             }
             console.error('Form submission error:', error);
+            console.log('Full server response:', JSON.stringify(error.response?.data, null, 2));
             let errors = { general: 'An unexpected error occurred. Please try again.' };
             if (error.response?.status === 422) {
                 errors = error.response.data.errors || { general: 'Validation failed. Please check your inputs.' };
+                console.log('Validation errors from server:', JSON.stringify(errors, null, 2));
                 this.showErrors(errors);
                 this.showToast('Validation failed. Please check your inputs.', 'error');
             } else if (error.response?.status === 500) {
-                this.showErrors({ general: 'Server error. Please try again later.' });
+                errors = { general: 'Server error. Please try again later.' };
+                console.log('Server error details:', error.response?.data);
+                this.showErrors(errors);
                 this.showToast('Server error. Please try again later.', 'error');
             } else {
+                console.error('Unexpected error:', error.message);
                 this.showErrors(errors);
                 this.showToast('An unexpected error occurred.', 'error');
             }

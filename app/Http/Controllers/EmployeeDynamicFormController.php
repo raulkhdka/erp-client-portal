@@ -41,9 +41,12 @@ class EmployeeDynamicFormController extends Controller
      */
     public function store(Request $request)
     {
-
         $isAjax = $request->ajax() || $request->wantsJson();
-        $request->validate([
+
+        // Log the entire request data
+        Log::info('Store form request data:', $request->all());
+
+        $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
@@ -56,14 +59,48 @@ class EmployeeDynamicFormController extends Controller
             'fields.*.field_options' => 'nullable|string',
             'fields.*.placeholder' => 'nullable|string|max:255',
             'fields.*.help_text' => 'nullable|string',
-        ], [
+        ];
+
+        $messages = [
             'fields.required' => 'At least one field is required for the form.',
             'fields.min' => 'You must provide at least one field for the form.',
             'fields.*.field_label.required' => 'Field label is required for all fields.',
             'fields.*.field_type.required' => 'Field type is required for all fields.',
             'fields.*.field_type.in' => 'Invalid field type selected.',
             'fields.*.sort_order.required' => 'Field order is required for all fields.',
-        ]);
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        // Custom validation for field_options
+        $fields = $request->input('fields', []);
+        foreach ($fields as $index => $field) {
+            if (in_array($field['field_type'] ?? null, ['select', 'radio', 'checkbox'])) {
+                $fieldOptions = $field['field_options'] ?? '';
+                Log::info("Validating field_options for field {$index}:", ['field_options' => $fieldOptions]);
+                if (empty($fieldOptions)) {
+                    $validator->errors()->add("fields.$index.field_options", "The field_options field is required for select, radio, or checkbox fields.");
+                } else {
+                    $options = array_filter(array_map('trim', explode("\n", str_replace(["\r", "\n\n"], ["", "\n"], $fieldOptions))), 'strlen');
+                    Log::info("Parsed options for field {$index}:", ['options' => $options, 'count' => count($options)]);
+                    if (count($options) < 2) {
+                        $validator->errors()->add("fields.$index.field_options", "The field_options field must contain at least 2 valid options.");
+                    }
+                }
+            }
+        }
+
+        if ($validator->fails()) {
+            Log::error('Form store validation failed:', ['errors' => $validator->errors()->toArray()]);
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed. Please check your inputs.',
+                    'errors' => $validator->errors()->toArray(),
+                ], 422);
+            }
+            return back()->withInput()->withErrors($validator->errors());
+        }
 
         try {
             DB::beginTransaction();
@@ -74,19 +111,27 @@ class EmployeeDynamicFormController extends Controller
                 'is_active' => $request->has('is_active'),
                 'is_draft' => $request->boolean('is_draft'),
                 'settings' => $request->settings ?? null,
-                'employee_id' => Auth::id(), // Assign the form to the authenticated employee
+                'employee_id' => Auth::id(),
             ]);
 
             foreach ($request->fields as $index => $fieldData) {
                 $fieldName = Str::slug($fieldData['field_label']);
+                $options = !empty($fieldData['field_options'])
+                    ? json_encode(array_map('trim', explode("\n", str_replace(["\r", "\n\n"], ["", "\n"], $fieldData['field_options']))))
+                    : null;
+                Log::info("Creating field {$index} for form {$form->id}:", [
+                    'field_name' => $fieldName,
+                    'field_label' => $fieldData['field_label'],
+                    'field_type' => $fieldData['field_type'],
+                    'field_options' => $options,
+                ]);
+
                 DynamicFormField::create([
                     'dynamic_form_id' => $form->id,
                     'field_name' => $fieldName,
                     'field_label' => $fieldData['field_label'],
                     'field_type' => $fieldData['field_type'],
-                    'field_options' => !empty($fieldData['field_options'])
-                        ? json_encode(array_map('trim', explode("\n", $fieldData['field_options'])))
-                        : null,
+                    'field_options' => $options,
                     'is_required' => $fieldData['is_required'] ?? false,
                     'sort_order' => $fieldData['sort_order'],
                     'validation_rules' => !empty($fieldData['validation_rules']) ? json_encode($fieldData['validation_rules']) : null,
@@ -96,6 +141,7 @@ class EmployeeDynamicFormController extends Controller
             }
 
             DB::commit();
+            Log::info('Form created successfully:', ['form_id' => $form->id, 'employee_id' => Auth::id()]);
             if ($isAjax) {
                 return response()->json([
                     'success' => true,
@@ -106,7 +152,11 @@ class EmployeeDynamicFormController extends Controller
             return redirect()->route('employees.dynamic-forms.index')->with('success', $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form created successfully.');
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Failed to create dynamic form: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('Failed to create dynamic form:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
             $errorMessage = 'Failed to create form. Please try again.';
             if ($isAjax) {
                 return response()->json([
@@ -147,14 +197,12 @@ class EmployeeDynamicFormController extends Controller
         Log::info('Update form request data:', $request->all());
         $isAjax = $request->ajax() || $request->wantsJson();
 
-        // Filter complete fields
         $fields = $request->input('fields', []);
         $completeFields = array_filter($fields, function ($field) {
             return !empty($field['field_label']) && !empty($field['field_type']) && isset($field['sort_order']);
         });
-        $request->merge(['fields' => $completeFields]);
+        $request->merge(['fields' => array_values($completeFields)]);
 
-        // Preprocess fields for select, radio, checkbox types
         $fields = $request->input('fields', []);
         foreach ($fields as $index => &$fieldData) {
             if (in_array($fieldData['field_type'] ?? '', ['select', 'radio', 'checkbox'])) {
@@ -164,7 +212,6 @@ class EmployeeDynamicFormController extends Controller
                     Log::warning("Missing field_options for index {$index}, setting default");
                     $fieldData['field_options'] = json_encode(['Option 1', 'Option 2']);
                 } else {
-                    // Normalize line endings and remove control characters
                     $cleanedOptions = str_replace(["\r", "\n\n"], ["", "\n"], $options);
                     $optionsArray = array_filter(array_map('trim', explode("\n", $cleanedOptions)), 'strlen');
                     Log::info("Parsed options for index {$index}:", ['options' => $optionsArray]);
@@ -180,7 +227,6 @@ class EmployeeDynamicFormController extends Controller
         unset($fieldData);
         $request->merge(['fields' => $fields]);
 
-        // Validation rules integrated into update method
         $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -207,7 +253,6 @@ class EmployeeDynamicFormController extends Controller
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
-        // Custom validation for field_options
         foreach ($fields as $index => $field) {
             if (in_array($field['field_type'] ?? null, ['select', 'radio', 'checkbox'])) {
                 $fieldOptions = $field['field_options'] ?? '';
@@ -232,7 +277,7 @@ class EmployeeDynamicFormController extends Controller
         }
 
         if ($validator->fails()) {
-            Log::error('Form update validation error:', ['errors' => $validator->errors()->all()]);
+            Log::error('Form update validation error:', ['errors' => $validator->errors()->toArray()]);
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
@@ -249,7 +294,6 @@ class EmployeeDynamicFormController extends Controller
             $employeeId = Auth::id();
             $form = DynamicForm::where('employee_id', $employeeId)->findOrFail($id);
 
-            // Update form details
             $form->update([
                 'name' => $request->name,
                 'description' => $request->description,
@@ -262,69 +306,72 @@ class EmployeeDynamicFormController extends Controller
             $fieldsToKeepIds = [];
             $usedFieldNames = [];
 
-            if (!empty($request->fields)) {
-                foreach ($request->fields as $index => $fieldData) {
-                    $fieldId = $fieldData['field_id'] ?? null;
-                    $baseFieldName = Str::slug($fieldData['field_label']);
-                    $fieldName = $baseFieldName;
+            foreach ($request->fields as $index => $fieldData) {
+                $fieldName = Str::slug($fieldData['field_label']);
+                if (in_array($fieldName, $usedFieldNames)) {
+                    $fieldName .= '_' . $index;
+                }
+                $usedFieldNames[] = $fieldName;
 
-                    if (in_array($fieldName, $usedFieldNames)) {
-                        $suffix = 1;
-                        while (in_array("{$fieldName}-{$suffix}", $usedFieldNames)) {
-                            $suffix++;
-                        }
-                        $fieldName = "{$fieldName}-{$suffix}";
-                    }
-                    $usedFieldNames[] = $fieldName;
+                $options = !empty($fieldData['field_options'])
+                    ? (is_array($fieldData['field_options'])
+                        ? json_encode($fieldData['field_options'])
+                        : $fieldData['field_options'])
+                    : null;
 
-                    $attributes = [
-                        'field_label' => $fieldData['field_label'],
-                        'field_type' => $fieldData['field_type'],
-                        'is_required' => $request->boolean("fields.{$index}.is_required"),
-                        'sort_order' => $fieldData['sort_order'],
-                        'placeholder' => $fieldData['placeholder'] ?? null,
-                        'help_text' => $fieldData['help_text'] ?? null,
-                        'field_options' => $fieldData['field_options'] ?? null,
-                        'field_name' => $fieldName,
-                    ];
+                $fieldAttributes = [
+                    'dynamic_form_id' => $form->id,
+                    'field_name' => $fieldName,
+                    'field_label' => $fieldData['field_label'],
+                    'field_type' => $fieldData['field_type'],
+                    'field_options' => $options,
+                    'is_required' => $fieldData['is_required'] ?? false,
+                    'sort_order' => $fieldData['sort_order'],
+                    'validation_rules' => !empty($fieldData['validation_rules']) ? json_encode($fieldData['validation_rules']) : null,
+                    'placeholder' => $fieldData['placeholder'] ?? null,
+                    'help_text' => $fieldData['help_text'] ?? null,
+                ];
 
-                    Log::info("Field attributes for index {$index}:", $attributes);
+                Log::info("Updating/creating field {$index} for form {$form->id}:", [
+                    'field_name' => $fieldName,
+                    'field_label' => $fieldData['field_label'],
+                    'field_type' => $fieldData['field_type'],
+                    'field_options' => $options,
+                ]);
 
-                    if ($fieldId && in_array($fieldId, $existingFieldIds)) {
-                        $formField = DynamicFormField::find($fieldId);
-                        if ($formField) {
-                            $formField->update($attributes);
-                            $fieldsToKeepIds[] = $fieldId;
-                        }
-                    } else {
-                        $newField = $form->fields()->create($attributes);
-                        $fieldsToKeepIds[] = $newField->id;
-                    }
+                if (!empty($fieldData['field_id']) && in_array($fieldData['field_id'], $existingFieldIds)) {
+                    $field = DynamicFormField::find($fieldData['field_id']);
+                    $field->update($fieldAttributes);
+                    $fieldsToKeepIds[] = $fieldData['field_id'];
+                } else {
+                    $field = DynamicFormField::create($fieldAttributes);
+                    $fieldsToKeepIds[] = $field->id;
                 }
             }
 
-            // Delete fields not in the new request
-            $fieldsToDelete = array_diff($existingFieldIds, $fieldsToKeepIds);
-            if (!empty($fieldsToDelete)) {
-                DynamicFormField::whereIn('id', $fieldsToDelete)->delete();
-                Log::info('Deleted fields with IDs:', $fieldsToDelete);
-            }
+            // Delete fields that are no longer in the request
+            DynamicFormField::where('dynamic_form_id', $form->id)
+                ->whereNotIn('id', $fieldsToKeepIds)
+                ->delete();
 
             DB::commit();
-
+            Log::info('Form updated successfully:', ['form_id' => $form->id, 'employee_id' => $employeeId]);
             if ($isAjax) {
                 return response()->json([
                     'success' => true,
                     'message' => $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form updated successfully!',
                     'redirect' => route('employees.dynamic-forms.index'),
-                ], 200);
+                ]);
             }
-
             return redirect()->route('employees.dynamic-forms.index')->with('success', $request->boolean('is_draft') ? 'Form saved as draft successfully!' : 'Form updated successfully.');
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Form update general error:', ['error' => $e->getMessage()]);
-            $errorMessage = 'An unexpected error occurred while updating the form.';
+            DB::rollback();
+            Log::error('Failed to update dynamic form:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+            $errorMessage = 'Failed to update form. Please try again.';
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
