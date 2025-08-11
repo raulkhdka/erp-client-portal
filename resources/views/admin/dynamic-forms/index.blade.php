@@ -7,15 +7,21 @@
 @endsection
 
 @section('actions')
-    <div class="btn-group">
-        <a href="{{ route('admin.dynamic-forms.create') }}" class="btn btn-primary">
+    <div class="d-flex">
+        <a href="{{ route('admin.dynamic-forms.create') }}" class="btn btn-primary me-2">
             <i class="fas fa-plus me-2"></i>New Form
+        </a>
+        <a href="{{ route('admin.dynamic-forms.response') }}" class="btn btn-primary">
+            <i class="fas fa-list me-2"></i>View Responses
         </a>
     </div>
 @endsection
 
 @section('styles')
 <style>
+    .btn-primary {
+        border-radius: 25px;
+    }
     .stats-card {
         display: flex;
         justify-content: space-between;

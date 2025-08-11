@@ -15,7 +15,7 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $employees = Employee::with('user')->paginate(15);
+        $employees = Employee::with('user')->paginate(4);
         return view('admin.employees.index', compact('employees'));
     }
 
@@ -33,13 +33,14 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_name'=> 'required|string|max:255',
+            'user_name' => 'required|string|max:255',
             'employee_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
             'employee_id' => 'required|string|unique:employees',
             'department' => 'nullable|string',
             'position' => 'required|string',
+            'phone' => 'nullable|string|max:15',
             'hire_date' => 'required|date',
             'salary' => 'nullable|numeric',
         ]);
@@ -47,9 +48,13 @@ class EmployeeController extends Controller
         try {
             DB::beginTransaction();
 
+            // Generate username from user_name
+            $cleanName = str_replace(' ', '', $request->user_name);
+            $username = substr($cleanName, 0, 5) . mt_rand(10, 99);
+
             // Create new user
             $user = User::create([
-                'name' => $request->user_name,
+                'name' => $username,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => User::ROLE_EMPLOYEE,
@@ -62,6 +67,7 @@ class EmployeeController extends Controller
                 'employee_id' => $request->employee_id,
                 'department' => $request->department,
                 'position' => $request->position,
+                'phone' => $request->phone,
                 'hire_date' => $request->hire_date,
                 'salary' => $request->salary,
                 'status' => 'active',
@@ -69,11 +75,10 @@ class EmployeeController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('admin.employees.index')->with('success', 'Employee created successfully.');
-
+            return redirect()->route('admin.employees.index')->with('status_update_success', 'Employee created successfully.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Failed to create employee: ' . $e->getMessage()]);
+            return back()->withErrors(['status_update_error' => 'Failed to create employee: ' . $e->getMessage()]);
         }
     }
 
@@ -108,9 +113,10 @@ class EmployeeController extends Controller
             'employee_id' => 'required|string|unique:employees,employee_id,' . $id,
             'department' => 'nullable|string',
             'position' => 'required|string',
+            'phone' => 'nullable|string|max:15',
             'hire_date' => 'required|date',
             'salary' => 'nullable|numeric',
-            'status' => 'required|in:active,inactive,terminated',
+            'status' => 'nullable|in:active,inactive,terminated',
         ]);
 
         try {
@@ -118,7 +124,6 @@ class EmployeeController extends Controller
 
             // Update user
             $employee->user->update([
-                'name' => $request->name,
                 'email' => $request->email,
             ]);
 
@@ -127,18 +132,75 @@ class EmployeeController extends Controller
                 'employee_id' => $request->employee_id,
                 'department' => $request->department,
                 'position' => $request->position,
+                'phone' => $request->phone,
                 'hire_date' => $request->hire_date,
                 'salary' => $request->salary,
-                'status' => $request->status,
+                'status' => $request->status ?? $employee->status, //Use existing status if not provided
                 'permissions' => $request->permissions ?? [],
             ]);
 
             DB::commit();
             return redirect()->route('admin.employees.index', $employee->id)->with('success', 'Employee updated successfully.');
-
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to update employee: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Update the status of the specified employee.
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            // Validate the status input
+            $request->validate([
+                'status' => 'required|in:active,inactive,terminated'
+            ]);
+
+            $employee = Employee::findOrFail($id);
+            $employee->status = $request->input('status');
+            $employee->save();
+
+            // Check for AJAX request using multiple methods
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Status updated to ' . ucfirst($employee->status),
+                    'new_status' => $employee->status,
+                ]);
+            }
+
+            return redirect()->route('admin.employees.index')
+                ->with('status_update_success', 'Status updated to ' . ucfirst($employee->status));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Employee not found.',
+                ], 404);
+            }
+
+            return redirect()->back()->with('status_update_error', 'Employee not found.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid status provided.',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+
+            return redirect()->back()->with('status_update_error', 'Invalid status provided.');
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to update status. Please try again.',
+                ], 500);
+            }
+
+            return redirect()->back()->with('status_update_error', 'Failed to update status. Please try again.');
         }
     }
 
@@ -147,19 +209,20 @@ class EmployeeController extends Controller
      */
     public function destroy(string $id)
     {
-        $employee = Employee::findOrFail($id);
-
         try {
+            $employee = Employee::findOrFail($id);
+
             DB::beginTransaction();
 
-            $employee->user->delete(); // This will cascade delete the employee
+            // Delete the associated user, which cascades to the employee
+            $employee->user->delete();
 
             DB::commit();
-            return redirect()->route('admin.employees.index')->with('success', 'Employee deleted successfully.');
 
+            return response()->json(['status' => 'success']);
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Failed to delete employee: ' . $e->getMessage()]);
+            return response()->json(['status' => 'error', 'message' => 'Failed to delete employee: ' . $e->getMessage()], 500);
         }
     }
 }

@@ -17,598 +17,542 @@
     </a>
 @endsection
 
+@section('styles')
+    {{-- Tom Select CSS --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+
+    <style>
+        /* Page background */
+        body {
+            background: #f1f5f9; /* light grey background */
+        }
+        .modal-content {
+            background: #f8fafc;
+        }
+
+        /* Modern card with performant hover + slightly grey background */
+        .card-modern {
+            position: relative;
+            border: 1px solid #eef2f6;
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(2, 6, 23, 0.06);
+            overflow: hidden;
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+            will-change: transform, box-shadow;
+            backface-visibility: hidden;
+            background: #f8fafc; /* slightly grey form background */
+        }
+        .card-modern:hover,
+        .card-modern:focus-within {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(2, 6, 23, 0.08);
+            border-color: #e3eaf2;
+        }
+        .card-modern .card-body {
+            padding: 1.25rem;
+        }
+        @media (min-width: 992px) {
+            .card-modern .card-body {
+                padding: 1.5rem 1.5rem;
+            }
+        }
+        .card-modern::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: 18px;
+        }
+        .card-modern:hover::before,
+        .card-modern:focus-within::before {
+            box-shadow: inset 0 0 0 1px rgba(16,185,129,.15);
+        }
+
+        /* Independent scroll shell for the form area (desktop) */
+        .form-shell {
+            --stack-offset: 160px; /* adjust to your header/breadcrumb/actions total height if needed */
+        }
+        @media (min-width: 992px) {
+            .form-col { min-height: 0; }
+            .form-shell {
+                height: calc(100dvh - var(--stack-offset));
+                display: flex;
+                min-height: 0; /* required for child overflow */
+            }
+            .form-scroll {
+                flex: 1 1 auto;
+                height: 100%;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 1rem;
+                min-height: 0; /* required for overflow */
+            }
+        }
+
+        /* Section title */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+        }
+        .section-title .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #eafaf3;
+            color: #10b981;
+            display: grid;
+            place-items: center;
+        }
+        .section-subtext {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        /* Inputs with icons and focus ring */
+        .input-group-text {
+            background: #f8fafc;
+            border: 1px solid #eef2f6;
+            color: #64748b;
+            min-width: 42px;
+            justify-content: center;
+        }
+        .form-control, .form-select, textarea.form-control {
+            border-radius: 12px;
+            border: 2px solid #eef2f6;
+            background: #f8fafc;
+            transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+        }
+        .form-control:focus, .form-select:focus, textarea.form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 .2rem rgba(16, 185, 129, 0.15);
+            background: #fff;
+        }
+
+        /* Sub-cards inside form */
+        .subcard {
+            border: 1px dashed #e5e7eb;
+            border-radius: 14px;
+            padding: 1rem;
+            background: #f8fafc; /* slightly grey background */
+        }
+
+        /* Buttons */
+        .btn-ghost-danger {
+            border: 1px solid #fee2e2;
+            color: #dc2626;
+            background: #f8fafc;
+        }
+        .btn-ghost-danger:hover { background: #ffeaea; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0ea5a0 0%, #047857 100%);
+        }
+
+        /* Form width: a bit bigger, centered */
+        .form-wrap {
+            margin-inline: auto;
+        }
+        @media (min-width: 992px) {
+            .form-col {
+                /* 10/12 columns (83.3333%) - wider */
+                flex: 0 0 auto;
+                width: 83.333333%;
+            }
+        }
+
+        /* Tom Select theming to match cards/inputs */
+        .ts-wrapper.form-select .ts-control,
+        .ts-wrapper .ts-control {
+            border-radius: 12px;
+            border: 2px solid #eef2f6;
+            background: #f8fafc;
+            min-height: calc(1.5em + .75rem + 2px);
+            padding-block: .25rem;
+            padding-inline: .5rem;
+        }
+        .ts-wrapper.single.input-active .ts-control,
+        .ts-wrapper.multi.input-active .ts-control,
+        .ts-wrapper .ts-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 .2rem rgba(16,185,129,.15);
+        }
+        .ts-dropdown {
+            border: 2px solid #eef2f6;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+            overflow: hidden;
+            background: #f8fafc;
+        }
+        .ts-dropdown .active {
+            background: #f0fdf4;
+            color: #065f46;
+        }
+        .ts-control .item {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            border-radius: 10px;
+            padding: .25rem .5rem;
+            margin: .125rem .125rem;
+        }
+        .ts-control .remove {
+            color: #047857;
+            opacity: .8;
+        }
+
+        /* Respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .card-modern { transition: none; }
+            .form-control, .form-select, textarea.form-control { transition: none; }
+        }
+    </style>
+@endsection
+
 @section('content')
+<div class="container-fluid form-wrap">
+    <div class="row g-4 justify-content-center">
+        <div class="col-12 form-col">
+            <div class="form-shell">
+                <div class="form-scroll">
+                    <div class="card card-modern">
+                        <div class="card-body">
+                            <form method="POST" action="{{ route('admin.clients.update', $client->id) }}">
+                                @csrf
+                                @method('PUT')
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card shadow">
-            <div class="card-body">
-                <form method="POST" action="{{ route('admin.clients.update', $client->id) }}">
-                    @csrf
-                    @method('PUT')
-
-                    <!-- User Information -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Contact Person Information</h5>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="name" class="form-label">Contact Person Name *</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                   id="name" name="name" value="{{ old('name', $client->user->name) }}" required>
-                            @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label for="email" class="form-label">Email Address *</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                   id="email" name="email" value="{{ old('email', $client->user->email) }}" required>
-                            @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- Company Information -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Company Information</h5>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="company_name" class="form-label">Company Name *</label>
-                            <input type="text" class="form-control @error('company_name') is-invalid @enderror"
-                                   id="company_name" name="company_name" value="{{ old('company_name', $client->company_name) }}" required>
-                            @error('company_name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label for="status" class="form-label">Status *</label>
-                            <select class="form-control @error('status') is-invalid @enderror" id="status" name="status" required>
-                                <option value="active" {{ old('status', $client->status) === 'active' ? 'selected' : '' }}>Active</option>
-                                <option value="inactive" {{ old('status', $client->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                <option value="suspended" {{ old('status', $client->status) === 'suspended' ? 'selected' : '' }}>Suspended</option>
-                            </select>
-                            @error('status')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label for="tax_id" class="form-label">Tax ID</label>
-                            <input type="text" class="form-control @error('tax_id') is-invalid @enderror"
-                                   id="tax_id" name="tax_id" value="{{ old('tax_id', $client->tax_id) }}">
-                            @error('tax_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label for="business_license" class="form-label">Business License</label>
-                            <input type="text" class="form-control @error('business_license') is-invalid @enderror"
-                                   id="business_license" name="business_license" value="{{ old('business_license', $client->business_license) }}">
-                            @error('business_license')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-12">
-                            <label for="address" class="form-label">Address</label>
-                            <textarea class="form-control @error('address') is-invalid @enderror"
-                                      id="address" name="address" rows="3">{{ old('address', $client->address) }}</textarea>
-                            @error('address')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- Phone Numbers -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                                <h5 class="mb-0">Phone Numbers</h5>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="addPhone">
-                                    <i class="fas fa-plus me-1"></i>Add Phone
-                                </button>
-                            </div>
-                            <div id="phoneContainer">
-                                @forelse($client->phones as $index => $phone)
-                                    <div class="row phone-item mb-3">
-                                        <input type="hidden" name="phones[{{ $index }}][id]" value="{{ $phone->id }}">
-                                        <div class="col-md-6">
-                                            <input type="text" class="form-control" name="phones[{{ $index }}][phone]"
-                                                   placeholder="Phone number" value="{{ old('phones.'.$index.'.phone', $phone->phone) }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="text" class="form-control" name="phones[{{ $index }}][type]"
-                                                   placeholder="Type (e.g., Primary, Mobile)"
-                                                   list="phoneTypes"
-                                                   value="{{ old('phones.'.$index.'.type', $phone->type) }}">
-                                            <datalist id="phoneTypes">
-                                                <option value="Primary">
-                                                <option value="Mobile">
-                                                <option value="Office">
-                                                <option value="Fax">
-                                                <option value="Home">
-                                                <option value="Work">
-                                                <option value="Emergency">
-                                            </datalist>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button type="button" class="btn btn-outline-danger btn-sm remove-phone" {{ $client->phones->count() <= 1 ? 'style=display:none;' : '' }}>
-                                                <i class="fas fa-times"></i>
-                                            </button>
+                                {{-- Client Information --}}
+                                <div class="mb-4">
+                                    <div class="section-title">
+                                        <div class="icon"><i class="fas fa-user-plus"></i></div>
+                                        <div>
+                                            <div>Client Information</div>
+                                            <div class="section-subtext">Update the client profile details.</div>
                                         </div>
                                     </div>
-                                @empty
-                                    <div class="row phone-item mb-3">
-                                        <div class="col-md-6">
-                                            <input type="text" class="form-control" name="phones[0][phone]" placeholder="Phone number" value="{{ old('phones.0.phone') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="text" class="form-control" name="phones[0][type]"
-                                                   placeholder="Type (e.g., Primary, Mobile)"
-                                                   list="phoneTypes"
-                                                   value="{{ old('phones.0.type', 'Primary') }}">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button type="button" class="btn btn-outline-danger btn-sm remove-phone" style="display: none;">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Email Addresses -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                                <h5 class="mb-0">Additional Email Addresses</h5>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="addEmail">
-                                    <i class="fas fa-plus me-1"></i>Add Email
-                                </button>
-                            </div>
-                            <div id="emailContainer">
-                                @forelse($client->emails as $index => $email)
-                                    <div class="row email-item mb-3">
-                                        <input type="hidden" name="emails[{{ $index }}][id]" value="{{ $email->id }}">
-                                        <div class="col-md-6">
-                                            <input type="email" class="form-control" name="emails[{{ $index }}][email]"
-                                                   placeholder="Additional email address" value="{{ old('emails.'.$index.'.email', $email->email) }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="text" class="form-control" name="emails[{{ $index }}][type]"
-                                                   placeholder="Type (e.g., Secondary, Billing)"
-                                                   list="emailTypes"
-                                                   value="{{ old('emails.'.$index.'.type', $email->type) }}">
-                                            <datalist id="emailTypes">
-                                                <option value="Secondary">
-                                                <option value="Billing">
-                                                <option value="Support">
-                                                <option value="Personal">
-                                                <option value="Finance">
-                                                <option value="Legal">
-                                                <option value="HR">
-                                                <option value="Technical">
-                                            </datalist>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button type="button" class="btn btn-outline-danger btn-sm remove-email" {{ $client->emails->count() <= 1 ? 'style=display:none;' : '' }}>
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <div class="row email-item mb-3">
-                                        <div class="col-md-6">
-                                            <input type="email" class="form-control" name="emails[0][email]" placeholder="Additional email address" value="{{ old('emails.0.email') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="text" class="form-control" name="emails[0][type]"
-                                                   placeholder="Type (e.g., Secondary, Billing)"
-                                                   list="emailTypes"
-                                                   value="{{ old('emails.0.type', 'Secondary') }}">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button type="button" class="btn btn-outline-danger btn-sm remove-email" style="display: none;">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Services -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                                <h5 class="mb-0">Services</h5>
-                                <div class="btn-group">
-                                    <a href="{{ route('admin.services.index') }}" class="btn btn-sm btn-outline-info" target="_blank">
-                                        <i class="fas fa-external-link-alt me-1"></i>Manage Services
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickServiceModal">
-                                        <i class="fas fa-plus me-1"></i>Quick Add Service
-                                    </button>
-                                </div>
-                            </div>
-                            @if($services->count() > 0)
-                                <div class="row" id="servicesContainer">
-                                    @php
-                                        $currentServiceIds = old('services', $client->services->pluck('id')->toArray());
-                                    @endphp
-                                    @foreach($services as $service)
-                                        <div class="col-md-4 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="services[]"
-                                                       value="{{ $service->id }}" id="service_{{ $service->id }}"
-                                                       {{ in_array($service->id, $currentServiceIds) ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="service_{{ $service->id }}" title="{{ $service->detail }}">
-                                                    {{ $service->name }}
-                                                    @if($service->detail)
-                                                        <i class="fas fa-info-circle text-muted ms-1" data-bs-toggle="tooltip" title="{{ $service->detail }}"></i>
-                                                    @endif
-                                                </label>
+                                    <div class="subcard">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label for="client_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                                    <input type="text" class="form-control @error('client_name') is-invalid @enderror"
+                                                        id="client_name" name="client_name" value="{{ old('client_name', $client->name) }}" required placeholder="e.g. Jane Cooper">
+                                                    @error('client_name')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
                                             </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="alert alert-info" id="noServicesAlert">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    No services available. You can <button type="button" class="btn btn-link p-0 align-baseline" data-bs-toggle="modal" data-bs-target="#quickServiceModal">create a service</button> or <a href="{{ route('admin.services.index') }}" class="alert-link" target="_blank">manage all services</a>.
-                                </div>
-                            @endif
-                        </div>
-                    </div>
 
-                    <!-- Notes -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <label for="notes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="3"
-                                      placeholder="Any additional notes about this client...">{{ old('notes', $client->notes) }}</textarea>
-                        </div>
-                    </div>
+                                            <div class="col-md-6">
+                                                <label for="company_name" class="form-label">Company Name <span class="text-danger">*</span></label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                                    <input type="text" class="form-control @error('company_name') is-invalid @enderror"
+                                                        id="company_name" name="company_name" value="{{ old('company_name', $client->company_name) }}" required placeholder="e.g. Acme Inc.">
+                                                    @error('company_name')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
 
-                    <!-- Employee Assignment -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Employee Assignment</h5>
-                            <p class="text-muted small mb-3">Select employees who will have access to this client's information</p>
-                            @if($employees->count() > 0)
-                                @php
-                                    $assignedEmployeeIds = old('assigned_employees', $client->assignedEmployees->pluck('id')->toArray());
-                                @endphp
-                                <div class="row">
-                                    @foreach($employees as $employee)
-                                        <div class="col-md-6 col-lg-4 mb-3">
-                                            <div class="card border {{ in_array($employee->id, $assignedEmployeeIds) ? 'border-primary' : '' }}">
-                                                <div class="card-body p-3">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox"
-                                                               name="assigned_employees[]" value="{{ $employee->id }}"
-                                                               id="employee_{{ $employee->id }}"
-                                                               {{ in_array($employee->id, $assignedEmployeeIds) ? 'checked' : '' }}>
-                                                        <label class="form-check-label w-100" for="employee_{{ $employee->id }}">
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="flex-shrink-0">
-                                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                                        <i class="fas fa-user"></i>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="flex-grow-1 ms-3">
-                                                                    <h6 class="mb-0">{{ $employee->user->name }}</h6>
-                                                                    <small class="text-muted">{{ $employee->position }}</small>
-                                                                    @if($employee->department)
-                                                                        <br><small class="text-muted">{{ $employee->department }}</small>
-                                                                    @endif
-                                                                    @if(in_array($employee->id, $assignedEmployeeIds))
-                                                                        <br><span class="badge bg-success">Currently Assigned</span>
-                                                                    @endif
-                                                                </div>
-                                                            </div>
-                                                        </label>
-                                                    </div>
+                                            <div class="col-md-6">
+                                                <label for="tax_id" class="form-label">Tax ID</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-file-invoice-dollar"></i></span>
+                                                    <input type="text" class="form-control @error('tax_id') is-invalid @enderror"
+                                                        id="tax_id" name="tax_id" value="{{ old('tax_id', $client->tax_id) }}" placeholder="Optional">
+                                                    @error('tax_id')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label for="business_license" class="form-label">Business License</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                                                    <input type="text" class="form-control @error('business_license') is-invalid @enderror"
+                                                        id="business_license" name="business_license" value="{{ old('business_license', $client->business_license) }}" placeholder="Optional">
+                                                    @error('business_license')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label for="address" class="form-label">Address</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                                    <textarea class="form-control @error('address') is-invalid @enderror"
+                                                        id="address" name="address" rows="3" placeholder="Street, City, State, ZIP">{{ old('address', $client->address) }}</textarea>
+                                                    @error('address')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                             </div>
                                         </div>
-                                    @endforeach
+                                    </div>
                                 </div>
-                            @else
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    No active employees available for assignment. <a href="{{ route('admin.employees.create') }}">Create an employee</a> first.
+
+                                {{-- Email Addresses --}}
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="section-title mb-0">
+                                            <div class="icon"><i class="fas fa-envelope"></i></div>
+                                            <div>Email Addresses</div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="addEmail">
+                                            <i class="fas fa-plus me-1"></i>Add Email
+                                        </button>
+                                    </div>
+
+                                    <div id="emailContainer" class="subcard">
+                                        @php $emailIndex = 0; @endphp
+                                        <!-- First email from users table -->
+                                        <div class="row email-item align-items-end g-3 mb-2">
+                                            <div class="col-md-6">
+                                                <label class="form-label visually-hidden">Email</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                                    <input type="email" class="form-control @error('emails.0.email') is-invalid @enderror"
+                                                        name="emails[0][email]" placeholder="Email address"
+                                                        value="{{ old('emails.0.email', $client->user->email) }}" required>
+                                                    @error('emails.0.email')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label visually-hidden">Type</label>
+                                                <select class="form-select" name="emails[0][type]">
+                                                    <option value="primary" {{ old('emails.0.type', 'primary') == 'primary' ? 'selected' : '' }}>Primary</option>
+                                                    <option value="billing" {{ old('emails.0.type') == 'billing' ? 'selected' : '' }}>Billing</option>
+                                                    <option value="support" {{ old('emails.0.type') == 'support' ? 'selected' : '' }}>Support</option>
+                                                    <option value="personal" {{ old('emails.0.type') == 'personal' ? 'selected' : '' }}>Personal</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2 text-end">
+                                                <button type="button" class="btn btn-ghost-danger btn-sm remove-email" style="display:none;">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <!-- Additional emails from client_emails table -->
+                                        @foreach($client->emails as $index => $email)
+                                            <div class="row email-item align-items-end g-3 mb-2">
+                                                <input type="hidden" name="emails[{{ $index + 1 }}][id]" value="{{ $email->id }}">
+                                                <div class="col-md-6">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                                        <input type="email" class="form-control @error('emails.'.($index + 1).'.email') is-invalid @enderror"
+                                                            name="emails[{{ $index + 1 }}][email]" placeholder="Email address"
+                                                            value="{{ old('emails.'.($index + 1).'.email', $email->email) }}">
+                                                        @error('emails.'.($index + 1).'.email')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <select class="form-select" name="emails[{{ $index + 1 }}][type]">
+                                                        <option value="primary" {{ old('emails.'.($index + 1).'.type', $email->type) == 'primary' ? 'selected' : '' }}>Primary</option>
+                                                        <option value="billing" {{ old('emails.'.($index + 1).'.type', $email->type) == 'billing' ? 'selected' : '' }}>Billing</option>
+                                                        <option value="support" {{ old('emails.'.($index + 1).'.type', $email->type) == 'support' ? 'selected' : '' }}>Support</option>
+                                                        <option value="personal" {{ old('emails.'.($index + 1).'.type', $email->type) == 'personal' ? 'selected' : '' }}>Personal</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2 text-end">
+                                                    <button type="button" class="btn btn-ghost-danger btn-sm remove-email">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                            @endif
+
+                                {{-- Phone Numbers --}}
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="section-title mb-0">
+                                            <div class="icon"><i class="fas fa-phone"></i></div>
+                                            <div>Phone Numbers</div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="addPhone">
+                                            <i class="fas fa-plus me-1"></i>Add Phone
+                                        </button>
+                                    </div>
+
+                                    <div id="phoneContainer" class="subcard">
+                                        @forelse($client->phones as $index => $phone)
+                                            <div class="row phone-item align-items-end g-3 mb-2">
+                                                <input type="hidden" name="phones[{{ $index }}][id]" value="{{ $phone->id }}">
+                                                <div class="col-md-6">
+                                                    <label class="form-label visually-hidden">Phone</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                                        <input type="text" class="form-control" name="phones[{{ $index }}][phone]"
+                                                            placeholder="Phone number" value="{{ old('phones.'.$index.'.phone', $phone->phone) }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label visually-hidden">Type</label>
+                                                    <select class="form-select" name="phones[{{ $index }}][type]">
+                                                        <option value="mobile" {{ old('phones.'.$index.'.type', $phone->type) == 'mobile' ? 'selected' : '' }}>Mobile</option>
+                                                        <option value="office" {{ old('phones.'.$index.'.type', $phone->type) == 'office' ? 'selected' : '' }}>Office</option>
+                                                        <option value="home" {{ old('phones.'.$index.'.type', $phone->type) == 'home' ? 'selected' : '' }}>Home</option>
+                                                        <option value="fax" {{ old('phones.'.$index.'.type', $phone->type) == 'fax' ? 'selected' : '' }}>Fax</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2 text-end">
+                                                    <button type="button" class="btn btn-ghost-danger btn-sm remove-phone" {{ $client->phones->count() <= 1 ? 'style=display:none;' : '' }}>
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="row phone-item align-items-end g-3 mb-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label visually-hidden">Phone</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                                        <input type="text" class="form-control" name="phones[0][phone]" placeholder="Phone number" value="{{ old('phones.0.phone') }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label visually-hidden">Type</label>
+                                                    <select class="form-select" name="phones[0][type]">
+                                                        <option value="mobile" {{ old('phones.0.type', 'mobile') == 'mobile' ? 'selected' : '' }}>Mobile</option>
+                                                        <option value="office" {{ old('phones.0.type') == 'office' ? 'selected' : '' }}>Office</option>
+                                                        <option value="home" {{ old('phones.0.type') == 'home' ? 'selected' : '' }}>Home</option>
+                                                        <option value="fax" {{ old('phones.0.type') == 'fax' ? 'selected' : '' }}>Fax</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2 text-end">
+                                                    <button type="button" class="btn btn-ghost-danger btn-sm remove-phone" style="display:none;">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </div>
+
+                                {{-- Services (Tom Select multi-select) --}}
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="section-title mb-0">
+                                            <div class="icon"><i class="fas fa-toolbox"></i></div>
+                                            <div>Services</div>
+                                        </div>
+                                        <div class="btn-group">
+                                            <a href="{{ route('admin.services.index') }}" class="btn btn-sm btn-outline-info" target="_blank">
+                                                <i class="fas fa-external-link-alt me-1"></i>Manage Services
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickServiceModal">
+                                                <i class="fas fa-plus me-1"></i>Quick Add Service
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    @if($services->count() === 0)
+                                        <div class="alert alert-info" id="noServicesAlert">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No services available. You can <button type="button" class="btn btn-link p-0 align-baseline" data-bs-toggle="modal" data-bs-target="#quickServiceModal">create a service</button> or
+                                            <a href="{{ route('admin.services.index') }}" class="alert-link" target="_blank">manage all services</a>.
+                                        </div>
+                                    @endif
+
+                                    <div class="subcard">
+                                        <label for="servicesSelect" class="form-label">Select Services</label>
+                                        <select id="servicesSelect" name="services[]" multiple class="form-select" data-placeholder="Select services...">
+                                            @foreach($services as $service)
+                                                <option
+                                                    value="{{ $service->id }}"
+                                                    {{ in_array($service->id, old('services', $client->services->pluck('id')->toArray())) ? 'selected' : '' }}
+                                                    data-detail="{{ $service->detail }}"
+                                                >
+                                                    {{ $service->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('services')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                        <small class="text-muted">Type to search and select multiple services.</small>
+                                    </div>
+                                </div>
+
+                                {{-- Notes --}}
+                                <div class="mb-4">
+                                    <div class="section-title">
+                                        <div class="icon"><i class="fas fa-sticky-note"></i></div>
+                                        <div>Notes</div>
+                                    </div>
+                                    <div class="subcard">
+                                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional notes about this client...">{{ old('notes', $client->notes) }}</textarea>
+                                    </div>
+                                </div>
+
+                                {{-- Employee Assignment --}}
+                                <div class="mb-4">
+                                    <div class="section-title">
+                                        <div class="icon"><i class="fas fa-user-tag"></i></div>
+                                        <div>Employee Assignment</div>
+                                    </div>
+                                    <p class="text-muted small mb-3">Select an employee who will have access to this client's information.</p>
+                                    <div class="subcard">
+                                        @if($employees->count() > 0)
+                                            <div class="mb-2">
+                                                <label for="assigned_employee" class="form-label visually-hidden">Assign Employee</label>
+                                                <select class="form-select @error('assigned_employee') is-invalid @enderror"
+                                                        id="assigned_employee" name="assigned_employee" aria-label="Select employee">
+                                                    <option value="">Select an employee...</option>
+                                                    @foreach($employees as $employee)
+                                                        <option value="{{ $employee->id }}"
+                                                                {{ old('assigned_employee', $client->assignedEmployees->first()->id ?? '') == $employee->id ? 'selected' : '' }}>
+                                                            {{ $employee->name }} ({{ $employee->position }}{{ $employee->department ? ' - ' . $employee->department : '' }})
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('assigned_employee')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        @else
+                                            <div class="alert alert-info m-0">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                No active employees available for assignment. <a href="{{ route('admin.employees.create') }}">Create an employee</a> first.
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                {{-- Actions --}}
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ route('admin.clients.show', $client->id) }}" class="btn btn-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Update Client
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-
-                    <!-- Submit Buttons -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ route('admin.clients.show', $client->id) }}" class="btn btn-secondary">Cancel</a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-2"></i>Update Client
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
-        <!-- Current Contact Methods -->
-        @if($client->phones->count() > 0 || $client->emails->count() > 0)
-        <div class="card shadow mb-4">
-            <div class="card-header bg-info text-white">
-                <h6 class="mb-0"><i class="fas fa-address-book me-2"></i>Current Contact Methods</h6>
-            </div>
-            <div class="card-body">
-                @if($client->phones->count() > 0)
-                <h6>Phone Numbers</h6>
-                @foreach($client->phones as $phone)
-                <p class="mb-1 small">
-                    <i class="fas fa-phone me-2"></i>{{ $phone->phone }}
-                    <span class="badge bg-secondary ms-2">{{ ucfirst($phone->type) }}</span>
-                </p>
-                @endforeach
-                <hr>
-                @endif
-
-                @if($client->emails->count() > 0)
-                <h6>Additional Emails</h6>
-                @foreach($client->emails as $email)
-                <p class="mb-1 small">
-                    <i class="fas fa-envelope me-2"></i>{{ $email->email }}
-                    <span class="badge bg-secondary ms-2">{{ ucfirst($email->type) }}</span>
-                </p>
-                @endforeach
-                @endif
-            </div>
-        </div>
-        @endif
-
-        <!-- Help Information -->
-        <div class="card shadow">
-            <div class="card-header bg-warning text-dark">
-                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Edit Information</h6>
-            </div>
-            <div class="card-body">
-                <h6>Editing Client</h6>
-                <p class="small text-muted mb-3">
-                    Update the client's information using this form. Changes will be saved immediately.
-                </p>
-
-                <h6>Employee Assignment</h6>
-                <p class="small text-muted mb-3">
-                    Modify employee assignments to control who has access to this client's information.
-                    Changes will update employee permissions immediately.
-                </p>
-
-                <h6>Required Fields</h6>
-                <ul class="small text-muted mb-3">
-                    <li>Contact Person Name</li>
-                    <li>Email Address</li>
-                    <li>Company Name</li>
-                    <li>Status</li>
-                </ul>
-
-                <h6>Services</h6>
-                <p class="small text-muted">
-                    Update the services that this client is using. You can select multiple services.
-                </p>
+                </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
 
-@push('scripts')
-<script>
-// Employee assignment visual feedback
-document.addEventListener('DOMContentLoaded', function() {
-    const employeeCheckboxes = document.querySelectorAll('input[name="assigned_employees[]"]');
-
-    employeeCheckboxes.forEach(checkbox => {
-        // Set initial state
-        const card = checkbox.closest('.card');
-        if (checkbox.checked) {
-            card.classList.add('border-primary');
-            card.style.backgroundColor = '#f8f9ff';
-        }
-
-        // Add change listener
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                card.classList.add('border-primary');
-                card.style.backgroundColor = '#f8f9ff';
-            } else {
-                card.classList.remove('border-primary');
-                card.style.backgroundColor = '';
-            }
-        });
-    });
-
-    // Phone and Email Management
-    let phoneIndex = {{ $client->phones->count() }}; // Start from current count
-    let emailIndex = {{ $client->emails->count() }}; // Start from current count
-
-    // Add phone functionality
-    document.getElementById('addPhone').addEventListener('click', function() {
-        const phoneContainer = document.getElementById('phoneContainer');
-        const phoneHTML = `
-            <div class="row phone-item mb-3">
-                <div class="col-md-6">
-                    <input type="text" class="form-control" name="phones[${phoneIndex}][phone]" placeholder="Phone number">
-                </div>
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="phones[${phoneIndex}][type]"
-                           placeholder="Type (e.g., Primary, Mobile)"
-                           list="phoneTypes"
-                           value="Primary">
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-outline-danger btn-sm remove-phone">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-        phoneContainer.insertAdjacentHTML('beforeend', phoneHTML);
-        phoneIndex++;
-        updateRemoveButtons('phone');
-    });
-
-    // Add email functionality
-    document.getElementById('addEmail').addEventListener('click', function() {
-        const emailContainer = document.getElementById('emailContainer');
-        const emailHTML = `
-            <div class="row email-item mb-3">
-                <div class="col-md-6">
-                    <input type="email" class="form-control" name="emails[${emailIndex}][email]" placeholder="Additional email address">
-                </div>
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="emails[${emailIndex}][type]"
-                           placeholder="Type (e.g., Secondary, Billing)"
-                           list="emailTypes"
-                           value="Secondary">
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-outline-danger btn-sm remove-email">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-        emailContainer.insertAdjacentHTML('beforeend', emailHTML);
-        emailIndex++;
-        updateRemoveButtons('email');
-    });
-
-    // Remove phone/email functionality
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-phone')) {
-            e.target.closest('.phone-item').remove();
-            updateRemoveButtons('phone');
-        }
-        if (e.target.closest('.remove-email')) {
-            e.target.closest('.email-item').remove();
-            updateRemoveButtons('email');
-        }
-    });
-
-    // Update remove buttons visibility
-    function updateRemoveButtons(type) {
-        const items = document.querySelectorAll(`.${type}-item`);
-        items.forEach((item, index) => {
-            const removeBtn = item.querySelector(`.remove-${type}`);
-            if (items.length > 1) {
-                removeBtn.style.display = 'block';
-            } else {
-                removeBtn.style.display = 'none';
-            }
-        });
-    }
-
-    // Initialize remove buttons on page load
-    updateRemoveButtons('phone');
-    updateRemoveButtons('email');
-});
-
-// Quick Service Creation
-function createQuickService() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('quickServiceModal'));
-    const formData = new FormData(document.getElementById('quickServiceForm'));
-
-    fetch('{{ route("admin.services.store") }}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Add new service to the services list
-            const servicesContainer = document.getElementById('servicesContainer');
-            const noServicesAlert = document.getElementById('noServicesAlert');
-
-            if (noServicesAlert) {
-                noServicesAlert.style.display = 'none';
-            }
-
-            if (!servicesContainer) {
-                // If no services container exists, create one
-                const parentDiv = noServicesAlert.parentNode;
-                const newContainer = document.createElement('div');
-                newContainer.className = 'row';
-                newContainer.id = 'servicesContainer';
-                parentDiv.insertBefore(newContainer, noServicesAlert);
-            }
-
-            const serviceHtml = `
-                <div class="col-md-4 mb-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="services[]"
-                               value="${data.service.id}" id="service_${data.service.id}" checked>
-                        <label class="form-check-label" for="service_${data.service.id}" title="${data.service.detail || ''}">
-                            ${data.service.name}
-                            ${data.service.detail ? `<i class="fas fa-info-circle text-muted ms-1" data-bs-toggle="tooltip" title="${data.service.detail}"></i>` : ''}
-                        </label>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('servicesContainer').insertAdjacentHTML('beforeend', serviceHtml);
-
-            // Reset form and close modal
-            document.getElementById('quickServiceForm').reset();
-            modal.hide();
-
-            // Show success message
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-2';
-            alertDiv.innerHTML = `
-                Service "${data.service.name}" created successfully and selected!
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
-
-            // Auto-dismiss after 3 seconds
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 3000);
-        } else {
-            // Show error messages
-            const errorDiv = document.getElementById('quickServiceErrors');
-            errorDiv.innerHTML = '';
-            if (data.errors) {
-                Object.values(data.errors).forEach(error => {
-                    errorDiv.innerHTML += `<div class="text-danger small">${error[0]}</div>`;
-                });
-            } else {
-                errorDiv.innerHTML = '<div class="text-danger small">An error occurred while creating the service.</div>';
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('quickServiceErrors').innerHTML = '<div class="text-danger small">Network error occurred.</div>';
-    });
-}
-</script>
-@endpush
-
-<!-- Quick Service Creation Modal -->
+{{-- Quick Add Service Modal --}}
 <div class="modal fade" id="quickServiceModal" tabindex="-1" aria-labelledby="quickServiceModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -662,3 +606,202 @@ function createQuickService() {
         </div>
     </div>
 </div>
+@endsection
+
+@push('scripts')
+    {{-- Tom Select JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tooltips
+            var tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            [].slice.call(tooltipTriggerList).map(function (el) { return new bootstrap.Tooltip(el); });
+
+            // Services multi-select (Tom Select)
+            var servicesSelectEl = document.getElementById('servicesSelect');
+            if (servicesSelectEl) {
+                var ts = new TomSelect(servicesSelectEl, {
+                    plugins: {
+                        remove_button: { title: 'Remove' }
+                    },
+                    create: false,
+                    persist: false,
+                    maxOptions: 10000,
+                    closeAfterSelect: false,
+                    placeholder: servicesSelectEl.getAttribute('data-placeholder') || 'Select services...',
+                    render: {
+                        option: function(data, escape) {
+                            var detail = data.detail || (data.$option && data.$option.dataset ? data.$option.dataset.detail : '');
+                            return '<div>' +
+                                    '<div>' + escape(data.text) + '</div>' +
+                                    (detail ? '<div class="text-muted small">' + escape(detail) + '</div>' : '') +
+                                    '</div>';
+                        }
+                    },
+                    onInitialize: function() {
+                        servicesSelectEl.tomselect = this;
+                    }
+                });
+            }
+
+            // Phone and Email Management
+            var phoneIndex = {{ $client->phones->count() }};
+            var emailIndex = {{ $client->emails->count() + 1 }};
+
+            // Add phone
+            document.getElementById('addPhone').addEventListener('click', function() {
+                var phoneContainer = document.getElementById('phoneContainer');
+                var phoneHTML =
+                    '      <div class="row phone-item align-items-end g-3 mb-2">' +
+                    '        <div class="col-md-6">' +
+                    '          <div class="input-group">' +
+                    '            <span class="input-group-text"><i class="fas fa-hashtag"></i></span>' +
+                    '            <input type="text" class="form-control" name="phones[' + phoneIndex + '][phone]" placeholder="Phone number">' +
+                    '          </div>' +
+                    '        </div>' +
+                    '        <div class="col-md-4">' +
+                    '          <select class="form-select" name="phones[' + phoneIndex + '][type]">' +
+                    '            <option value="mobile" selected>Mobile</option>' +
+                    '            <option value="office">Office</option>' +
+                    '            <option value="home">Home</option>' +
+                    '            <option value="fax">Fax</option>' +
+                    '          </select>' +
+                    '        </div>' +
+                    '        <div class="col-md-2 text-end">' +
+                    '          <button type="button" class="btn btn-ghost-danger btn-sm remove-phone">' +
+                    '            <i class="fas fa-times"></i>' +
+                    '          </button>' +
+                    '        </div>' +
+                    '      </div>';
+                phoneContainer.insertAdjacentHTML('beforeend', phoneHTML);
+                phoneIndex++;
+                updateRemoveButtons('phone');
+            });
+
+            // Add email
+            document.getElementById('addEmail').addEventListener('click', function() {
+                var emailContainer = document.getElementById('emailContainer');
+                var emailHTML =
+                    '      <div class="row email-item align-items-end g-3 mb-2">' +
+                    '        <div class="col-md-6">' +
+                    '          <div class="input-group">' +
+                    '            <span class="input-group-text"><i class="fas fa-at"></i></span>' +
+                    '            <input type="email" class="form-control" name="emails[' + emailIndex + '][email]" placeholder="Email address" required>' +
+                    '          </div>' +
+                    '        </div>' +
+                    '        <div class="col-md-4">' +
+                    '          <select class="form-select" name="emails[' + emailIndex + '][type]">' +
+                    '            <option value="primary" selected>Primary</option>' +
+                    '            <option value="billing">Billing</option>' +
+                    '            <option value="support">Support</option>' +
+                    '            <option value="personal">Personal</option>' +
+                    '          </select>' +
+                    '        </div>' +
+                    '        <div class="col-md-2 text-end">' +
+                    '          <button type="button" class="btn btn-ghost-danger btn-sm remove-email">' +
+                    '            <i class="fas fa-times"></i>' +
+                    '          </button>' +
+                    '        </div>' +
+                    '      </div>';
+                emailContainer.insertAdjacentHTML('beforeend', emailHTML);
+                emailIndex++;
+                updateRemoveButtons('email');
+            });
+
+            // Remove phone/email
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-phone')) {
+                    e.target.closest('.phone-item').remove();
+                    updateRemoveButtons('phone');
+                }
+                if (e.target.closest('.remove-email')) {
+                    e.target.closest('.email-item').remove();
+                    updateRemoveButtons('email');
+                }
+            });
+
+            // Update remove buttons visibility
+            function updateRemoveButtons(type) {
+                var items = document.querySelectorAll('.' + type + '-item');
+                items.forEach(function(item) {
+                    var removeBtn = item.querySelector('.remove-' + type);
+                    if (!removeBtn) return;
+                    if (items.length > 1) {
+                        removeBtn.style.display = 'inline-block';
+                    } else {
+                        removeBtn.style.display = 'none';
+                    }
+                });
+            }
+
+            updateRemoveButtons('phone');
+            updateRemoveButtons('email');
+
+            // Quick Service Creation
+            function createQuickService() {
+                var modal = bootstrap.Modal.getInstance(document.getElementById('quickServiceModal'));
+                var formData = new FormData(document.getElementById('quickServiceForm'));
+
+                fetch('{{ route("admin.services.store") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        // Hide info alert if present
+                        var noServicesAlert = document.getElementById('noServicesAlert');
+                        if (noServicesAlert) noServicesAlert.style.display = 'none';
+
+                        // Add the new service to the Tom Select and select it
+                        var selectEl = document.getElementById('servicesSelect');
+                        if (selectEl && selectEl.tomselect) {
+                            var ts = selectEl.tomselect;
+
+                            if (!ts.options[data.service.id]) {
+                                ts.addOption({
+                                    value: String(data.service.id),
+                                    text: data.service.name,
+                                    detail: data.service.detail || ''
+                                });
+                            }
+                            ts.addItem(String(data.service.id));
+                        }
+
+                        document.getElementById('quickServiceForm').reset();
+                        modal.hide();
+
+                        // Success alert
+                        var alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show mt-2';
+                        alertDiv.innerHTML =
+                            'Service "' + data.service.name + '" created successfully and selected!' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                        var body = document.querySelector('.card-modern .card-body');
+                        body.insertBefore(alertDiv, body.firstChild);
+                        setTimeout(function() { alertDiv.remove(); }, 3000);
+                    } else {
+                        var errorDiv = document.getElementById('quickServiceErrors');
+                        errorDiv.innerHTML = '';
+                        if (data.errors) {
+                            Object.values(data.errors).forEach(function(error) {
+                                errorDiv.innerHTML += '<div class="text-danger small">' + error[0] + '</div>';
+                            });
+                        } else {
+                            errorDiv.innerHTML = '<div class="text-danger small">An error occurred while creating the service.</div>';
+                        }
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    document.getElementById('quickServiceErrors').innerHTML = '<div class="text-danger small">Network error occurred.</div>';
+                });
+            }
+        });
+    </script>
+@endpush

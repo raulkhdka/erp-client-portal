@@ -10,6 +10,7 @@ use App\Models\Employee;
 use App\Models\CallLog;
 use App\Models\Task;
 use App\Models\Document;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -43,18 +44,29 @@ class DashboardController extends Controller
         $totalClients = Client::count();
         $totalEmployees = Employee::count();
         $activeClients = Client::where('status', 'active')->count();
-        $recentClients = Client::with('Phones')->latest()->take(5)->get();
+        $recentClients = Client::with('phones')->latest()->take(5)->get();
 
         // Call logs statistics
         $totalCallLogs = CallLog::count();
         $pendingCallLogs = CallLog::where('status', CallLog::STATUS_PENDING)->count();
-        $recentCallLogs = CallLog::with(['client', 'employee.user'])->latest()->take(5)->get();
+        $recentCallLogs = CallLog::with(['client', 'employee'])->latest()->take(5)->get();
 
         // Tasks statistics
         $totalTasks = Task::count();
         $pendingTasks = Task::where('status', Task::STATUS_PENDING)->count();
         $inProgressTasks = Task::where('status', Task::STATUS_IN_PROGRESS)->count();
         $recentTasks = Task::with(['client', 'assignedTo'])->latest()->take(5)->get();
+
+        // Debug: Add some logging to see what data we're getting
+        Log::info('Dashboard Data:', [
+            'totalCallLogs' => $totalCallLogs,
+            'pendingCallLogs' => $pendingCallLogs,
+            'recentCallLogs_count' => $recentCallLogs->count(),
+            'totalTasks' => $totalTasks,
+            'pendingTasks' => $pendingTasks,
+            'inProgressTasks' => $inProgressTasks,
+            'recentTasks_count' => $recentTasks->count()
+    ]);
 
         return view('dashboard.admin', compact(
             'totalClients',

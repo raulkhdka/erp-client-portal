@@ -9,82 +9,369 @@
 
 @section('actions')
     <div class="btn-group">
-        <a href="{{ route('admin.call-logs.edit', $callLog) }}" class="btn btn-warning">
+        <a href="{{ route('admin.call-logs.edit', $callLog) }}" class="btn btn-primary">
             <i class="fas fa-edit me-2"></i>Edit Call Log
         </a>
-        <a href="{{ route('admin.call-logs.index') }}" class="btn btn-secondary">
+        <a href="{{ route('admin.call-logs.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i>Back to Call Logs
         </a>
     </div>
 @endsection
 
+@push('styles')
+    <style>
+        :root {
+            --primary-color: #10b981;
+        }
+
+        .modern-card {
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            background: #f7f7f7;
+            overflow: hidden;
+            position: relative;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1.5rem !important;
+        }
+
+        .modern-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .modern-card .card-header {
+            padding: 1.5rem;
+            border-bottom: none;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            z-index: 1;
+        }
+
+        .modern-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgb(187, 34, 187) 0%, rgb(42, 42, 209) 100%);
+            -webkit-mask:
+                linear-gradient(rgb(179, 39, 179) 0 0) content-box,
+                linear-gradient(rgb(41, 41, 218) 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modern-card .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .modern-card .card-header:hover::before {
+            left: 100%;
+        }
+
+        .modern-card:hover::before {
+            opacity: 1;
+        }
+
+        .modern-card .card-body {
+            padding: 2rem;
+            flex-grow: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #e5e7eb;
+        }
+
+        .modern-card .card-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modern-card .card-body::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .modern-card .card-body::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .modern-card h5,
+        .modern-card h6 {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .modern-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #000000;
+            background: #f7f7f7;
+        }
+
+        .modern-table thead th {
+            background: #e5e7eb;
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            padding: 1rem;
+            text-align: left;
+            border-right: 1px solid #000000;
+            border-bottom: 1px solid #000000;
+        }
+
+        .modern-table thead th:last-child {
+            border-right: none;
+        }
+
+        .modern-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .modern-table tbody tr:hover {
+            background-color: #e5e7eb;
+        }
+
+        .modern-table tbody td {
+            padding: 1rem;
+            font-size: 0.875rem;
+            border-right: 1px solid #000000;
+            border-bottom: 1px solid #000000;
+        }
+
+        .modern-table tbody td:last-child {
+            border-right: none;
+        }
+
+        .modern-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .modern-table thead th:first-child {
+            border-top-left-radius: 10px;
+        }
+
+        .modern-table thead th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+        .modern-table tbody tr:last-child td:first-child {
+            border-bottom-left-radius: 10px;
+        }
+
+        .modern-table tbody tr:last-child td:last-child {
+            border-bottom-right-radius: 10px;
+        }
+
+        a.text-decoration-none {
+            color: #2563eb;
+            transition: color 0.2s ease;
+        }
+
+        a.text-decoration-none:hover {
+            color: #1e40af;
+            text-decoration: underline;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+
+        .badge:hover {
+            transform: scale(1.05);
+        }
+
+        .side-panel {
+            position: sticky;
+            top: 1.5rem;
+            max-height: calc(100vh - 3rem);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #e5e7eb;
+            z-index: 0;
+        }
+
+        .side-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .side-panel::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .side-panel::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 992px) {
+            .modern-card {
+                border-radius: 12px;
+            }
+
+            .modern-card .card-body {
+                padding: 1.5rem;
+            }
+
+            .modern-table thead th,
+            .modern-table tbody td {
+                padding: 0.75rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modern-card {
+                border-radius: 8px;
+            }
+
+            .modern-card .card-header {
+                padding: 1rem;
+            }
+
+            .modern-card .card-body {
+                padding: 1rem;
+            }
+
+            .modern-table thead th,
+            .modern-table tbody td {
+                padding: 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+@endpush
+
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-12">
-            <div class="card">
-
+    <div class="row">
+        <div class="col-lg-8 main-content">
+            <!-- Call Information -->
+            <div class="card modern-card mb-4 fade-in">
+                <div class="card-header">
+                    <h5><i class="fas fa-phone me-2"></i>Call Information</h5>
+                </div>
                 <div class="card-body">
                     <div class="row">
-                        <!-- Left Column -->
-                        <div class="col-md-6">
-                            <h5 class="mb-3">Call Information</h5>
-
-                            <div class="mb-3">
-                                <strong>Client:</strong><br>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-user me-2"></i>Client:</strong>
+                            <p class="text-muted">
                                 @if($callLog->client)
-                                    <span class="text-primary">{{ $callLog->client->name }}</span>
+                                    <a href="{{ route('admin.clients.show', $callLog->client->id) }}" class="text-decoration-none">{{ $callLog->client->name }}</a>
                                 @else
-                                    <span class="text-muted">No client assigned</span>
+                                    No client assigned
                                 @endif
-                            </div>
-
-                            <div class="mb-3">
-                                <strong>Employee:</strong><br>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-user-tie me-2"></i>Employee:</strong>
+                            <p class="text-muted">
                                 @if($callLog->employee)
-                                    {{ $callLog->employee->name }}
+                                    <a href="{{ route('admin.employees.show', $callLog->employee->id) }}" class="text-decoration-none">{{ $callLog->employee->name }}</a>
                                 @else
-                                    <span class="text-muted">No employee assigned</span>
+                                    No employee assigned
                                 @endif
-                            </div>
-
-                            <div class="mb-3">
-                                <strong>Caller Name:</strong><br>
-                                {{ $callLog->caller_name ?? 'N/A' }}
-                            </div>
-
-                            <div class="mb-3">
-                                <strong>Caller Phone:</strong><br>
-                                {{ $callLog->caller_phone ?? 'N/A' }}
-                            </div>
-
-                            <!-- Call Type -->
-                            <div class="mb-3">
-                                <strong>Call Type:</strong><br>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-user me-2"></i>Caller Name:</strong>
+                            <p class="text-muted">{{ $callLog->caller_name ?? 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-phone me-2"></i>Caller Phone:</strong>
+                            <p class="text-muted">
+                                @if($callLog->caller_phone)
+                                    <a href="tel:{{ $callLog->caller_phone }}" class="text-decoration-none">{{ $callLog->caller_phone }}</a>
+                                @else
+                                    N/A
+                                @endif
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-tag me-2"></i>Call Type:</strong>
+                            <p class="text-muted">
                                 @if($callLog->call_type)
                                     <span class="badge bg-info">{{ ucfirst($callLog->call_type) }}</span>
                                 @else
-                                    <span class="text-muted">N/A</span>
+                                    N/A
                                 @endif
-                            </div>
-
-                            <div class="mb-3">
-                                <strong>Call Date:</strong><br>
-                                {{ $callLog->call_date ? $callLog->call_date->format('M d, Y H:i') : 'N/A' }}
-                            </div>
-
-                            <div class="mb-3">
-                                <strong>Duration:</strong><br>
-                                {{ $callLog->duration_minutes ?? 0 }} minutes
-                            </div>
+                            </p>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-calendar-alt me-2"></i>Call Date:</strong>
+                            <p class="text-muted">{{ $callLog->call_date ? $callLog->call_date->format('M d, Y H:i') : 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-clock me-2"></i>Duration:</strong>
+                            <p class="text-muted">{{ $callLog->duration_minutes ?? 0 }} minutes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Right Column -->
-                        <div class="col-md-6">
-                            <h5 class="mb-3">Call Details</h5>
-
-                            <div class="mb-3">
-                                <strong>Status:</strong><br>
+            <!-- Call Details -->
+            <div class="card modern-card mb-4 fade-in">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Call Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-toggle-on me-2"></i>Status:</strong>
+                            <p class="text-muted">
                                 @if($callLog->status !== null && $callLog->status_label && $callLog->status_color)
                                     <span class="badge bg-{{ $callLog->status_color }}">
                                         {{ $callLog->status_label }}
@@ -93,24 +380,25 @@
                                         Change Status
                                     </button>
                                 @else
-                                    <span class="text-muted">N/A</span>
+                                    N/A
                                 @endif
-                            </div>
-
-                            <!-- Priority -->
-                            <div class="mb-3">
-                                <strong>Priority:</strong><br>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-exclamation-circle me-2"></i>Priority:</strong>
+                            <p class="text-muted">
                                 @if($callLog->priority && $callLog->priority_color)
                                     <span class="badge bg-{{ $callLog->priority_color }}">
                                         {{ ucfirst($callLog->priority) }}
                                     </span>
                                 @else
-                                    <span class="text-muted">N/A</span>
+                                    N/A
                                 @endif
-                            </div>
-
-                            <div class="mb-3">
-                                <strong>Follow-up Required:</strong><br>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-bell me-2"></i>Follow-up Required:</strong>
+                            <p class="text-muted">
                                 @if($callLog->follow_up_required)
                                     <span class="badge bg-warning">Yes</span>
                                     @if($callLog->follow_up_date)
@@ -119,60 +407,64 @@
                                 @else
                                     <span class="badge bg-success">No</span>
                                 @endif
-                            </div>
-
-                            <div class="mb-3">
-                                <strong>Created:</strong><br>
-                                {{ $callLog->created_at->format('M d, Y H:i') }}
-                            </div>
-
-                            <div class="mb-3">
-                                <strong>Last Updated:</strong><br>
-                                {{ $callLog->updated_at->format('M d, Y H:i') }}
-                            </div>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-calendar-plus me-2"></i>Created:</strong>
+                            <p class="text-muted">{{ $callLog->created_at->format('M d, Y H:i') }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-sync-alt me-2"></i>Last Updated:</strong>
+                            <p class="text-muted">{{ $callLog->updated_at->format('M d, Y H:i') }}</p>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <hr>
-
-                    <!-- Subject -->
+            <!-- Subject and Description -->
+            <div class="card modern-card mb-4 fade-in">
+                <div class="card-header">
+                    <h5><i class="fas fa-file-alt me-2"></i>Subject and Description</h5>
+                </div>
+                <div class="card-body">
                     <div class="mb-3">
-                        <strong>Subject:</strong><br>
-                        <p class="mb-0">{{ $callLog->subject ?? 'No subject provided' }}</p>
+                        <strong>Subject:</strong>
+                        <p class="text-muted">{{ $callLog->subject ?? 'No subject provided' }}</p>
                     </div>
-
-                    <!-- Description -->
                     <div class="mb-3">
-                        <strong>Description:</strong><br>
+                        <strong>Description:</strong>
                         <div class="bg-light p-3 rounded">
                             {!! nl2br(e($callLog->description ?? 'No description provided')) !!}
                         </div>
                     </div>
-
-                    <!-- Notes -->
                     @if($callLog->notes)
                     <div class="mb-3">
-                        <strong>Notes:</strong><br>
+                        <strong>Notes:</strong>
                         <div class="bg-light p-3 rounded">
                             {!! nl2br(e($callLog->notes)) !!}
                         </div>
                     </div>
                     @endif
+                </div>
+            </div>
 
-                    <!-- Related Tasks -->
-                    <hr>
-                    <h5>Related Tasks</h5>
+            <!-- Related Tasks -->
+            <div class="card modern-card mb-4 fade-in">
+                <div class="card-header">
+                    <h5><i class="fas fa-tasks me-2"></i>Related Tasks</h5>
+                </div>
+                <div class="card-body">
                     @if($callLog->tasks->count() > 0)
                         <div class="table-responsive">
-                            <table class="table table-sm">
+                            <table class="table modern-table">
                                 <thead>
                                     <tr>
-                                        <th>Title</th>
-                                        <th>Assigned To</th>
-                                        <th>Priority</th>
-                                        <th>Status</th>
-                                        <th>Due Date</th>
-                                        <th>Actions</th>
+                                        <th><i class="fas fa-file-alt me-2"></i>Title</th>
+                                        <th><i class="fas fa-user me-2"></i>Assigned To</th>
+                                        <th><i class="fas fa-exclamation-circle me-2"></i>Priority</th>
+                                        <th><i class="fas fa-toggle-on me-2"></i>Status</th>
+                                        <th><i class="fas fa-calendar-alt me-2"></i>Due Date</th>
+                                        <th><i class="fas fa-cog me-2"></i>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -181,7 +473,7 @@
                                         <td>{{ $task->title }}</td>
                                         <td>
                                             @if($task->assignedTo && $task->assignedTo->name)
-                                                {{ $task->assignedTo->name }}
+                                                <a href="{{ route('admin.employees.show', $task->assignedTo->id) }}" class="text-decoration-none">{{ $task->assignedTo->name }}</a>
                                             @else
                                                 <span class="text-muted">Unassigned</span>
                                             @endif
@@ -204,9 +496,7 @@
                                                 <span class="text-muted">N/A</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            {{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}
-                                        </td>
+                                        <td>{{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}</td>
                                         <td>
                                             <a href="{{ route('admin.tasks.show', $task) }}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-eye"></i>
@@ -220,6 +510,28 @@
                     @else
                         <p class="text-muted">No tasks created for this call log yet.</p>
                     @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 side-panel">
+            <!-- Quick Actions -->
+            <div class="card modern-card fade-in">
+                <div class="card-header">
+                    <h6><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('admin.call-logs.edit', $callLog) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit me-2"></i>Edit Call Log
+                        </a>
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="updateStatus()">
+                            <i class="fas fa-toggle-on me-2"></i>Change Status
+                        </button>
+                        <a href="{{ route('admin.call-logs.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Call Logs
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

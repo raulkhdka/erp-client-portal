@@ -21,7 +21,9 @@ class ClientController extends Controller
      */
     public function index()
     {
-        $clients = Client::with(['user', 'phones', 'emails', 'services'])->paginate(15);
+        $clients = Client::with(['user', 'phones', 'emails', 'services'])
+                 ->orderBy('created_at', 'desc')
+                 ->paginate(4);
         return view('admin.clients.index', compact('clients'));
     }
 
@@ -41,9 +43,10 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_name' => 'required|string|max:255',
             'client_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
+            'emails' => 'required|array|min:1',
+            'emails.*.email' => 'nullable|email',
+            'emails.*.type' => 'nullable|string|max:50',
             'password' => 'required|min:8',
             'company_name' => 'required|string|max:255',
             'address' => 'nullable|string',
@@ -51,23 +54,33 @@ class ClientController extends Controller
             'business_license' => 'nullable|string',
             'services' => 'nullable|array',
             'services.*' => 'exists:services,id',
-            'assigned_employees' => 'nullable|array',
-            'assigned_employees.*' => 'exists:employees,id',
+            'assigned_employee' => 'nullable|exists:employees,id',
             'phones' => 'nullable|array',
             'phones.*.phone' => 'nullable|string|max:20',
             'phones.*.type' => 'nullable|string|max:50',
-            'emails' => 'nullable|array',
-            'emails.*.email' => 'nullable|email',
-            'emails.*.type' => 'nullable|string|max:50',
         ]);
+
+        // Validate that the first email is provided and unique
+        if (empty($request->emails[0]['email']) || !filter_var($request->emails[0]['email'], FILTER_VALIDATE_EMAIL)) {
+            return back()->withErrors(['emails.0.email' => 'The first email address is required and must be a valid email.']);
+        }
+        $userEmail = $request->emails[0]['email'];
+        $user = User::where('email', $userEmail)->first();
+        if ($user) {
+            return back()->withErrors(['emails.0.email' => 'The first email address has already been taken.']);
+        }
 
         try {
             DB::beginTransaction();
 
-            // Create user
+            // Generate username from client_name
+            $cleanName = str_replace(' ', '', $request->client_name);
+            $username = substr($cleanName, 0, 5) . mt_rand(10, 99);
+
+            // Create user with the first email
             $user = User::create([
-                'name' => $request->user_name,
-                'email' => $request->email,
+                'name' => $username,
+                'email' => $userEmail,
                 'password' => Hash::make($request->password),
                 'role' => User::ROLE_CLIENT,
             ]);
@@ -83,27 +96,37 @@ class ClientController extends Controller
                 'notes' => $request->notes,
             ]);
 
-            // Assign employees if any
-            if ($request->assigned_employees) {
-                foreach ($request->assigned_employees as $employeeId) {
-                    ClientEmployeeAccess::create([
-                        'client_id' => $client->id,
-                        'employee_id' => $employeeId,
-                        'permissions' => ['view_basic_info'],
-                        'access_granted_date' => now(),
-                        'is_active' => true,
-                    ]);
+            // Create additional email addresses (skip the first email)
+            if ($request->emails) {
+                foreach ($request->emails as $index => $emailData) {
+                    if ($index > 0 && !empty($emailData['email'])) {
+                        $client->emails()->create([
+                            'email' => $emailData['email'],
+                            'type' => $emailData['type'] ?? 'primary',
+                        ]);
+                    }
                 }
             }
 
-             // Assign services if any
-             if ($request->services) {
+            // Assign employee if selected
+            if ($request->assigned_employee) {
+                ClientEmployeeAccess::create([
+                    'client_id' => $client->id,
+                    'employee_id' => $request->assigned_employee,
+                    'permissions' => ['view_basic_info'],
+                    'access_granted_date' => now(),
+                    'is_active' => true,
+                ]);
+            }
+
+            // Assign services if any
+            if ($request->services) {
                 $client->services()->sync(array_map(function ($serviceId) {
                     return [
                         'service_id' => $serviceId,
                         'status' => 'active',
-                        'description' => null, // Adjust based on your form input
-                        'assigned_by' => Auth::id(), // Set the current admin/employee as assigner
+                        'description' => null,
+                        'assigned_by' => Auth::id(),
                     ];
                 }, $request->services));
             }
@@ -115,18 +138,6 @@ class ClientController extends Controller
                         $client->phones()->create([
                             'phone' => $phoneData['phone'],
                             'type' => $phoneData['type'],
-                        ]);
-                    }
-                }
-            }
-
-            // Create email addresses
-            if ($request->emails) {
-                foreach ($request->emails as $emailData) {
-                    if (!empty($emailData['email'])) {
-                        $client->emails()->create([
-                            'email' => $emailData['email'],
-                            'type' => $emailData['type'],
                         ]);
                     }
                 }
@@ -169,90 +180,99 @@ class ClientController extends Controller
         $client = Client::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $client->user_id,
+            'client_name' => 'required|string|max:255',
+            'emails' => 'required|array|min:1',
+            'emails.*.email' => 'nullable|email',
+            'emails.*.type' => 'nullable|string|max:50',
             'company_name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive,suspended',
+            'address' => 'nullable|string',
+            'tax_id' => 'nullable|string',
+            'business_license' => 'nullable|string',
             'services' => 'nullable|array',
             'services.*' => 'exists:services,id',
-            'assigned_employees' => 'nullable|array',
-            'assigned_employees.*' => 'exists:employees,id',
+            'assigned_employee' => 'nullable|exists:employees,id',
             'phones' => 'nullable|array',
             'phones.*.phone' => 'nullable|string|max:20',
             'phones.*.type' => 'nullable|string|max:50',
-            'emails' => 'nullable|array',
-            'emails.*.email' => 'nullable|email',
-            'emails.*.type' => 'nullable|string|max:50',
         ]);
+
+        // Validate that the first email is provided and unique
+        if (empty($request->emails[0]['email']) || !filter_var($request->emails[0]['email'], FILTER_VALIDATE_EMAIL)) {
+            return back()->withErrors(['emails.0.email' => 'The first email address is required and must be a valid email.']);
+        }
+        $userEmail = $request->emails[0]['email'];
+        $user = User::where('email', $userEmail)->where('id', '!=', $client->user_id)->first();
+        if ($user) {
+            return back()->withErrors(['emails.0.email' => 'The first email address has already been taken.']);
+        }
 
         try {
             DB::beginTransaction();
 
-            // Update user
+            // Update user (only email, username remains unchanged)
             $client->user->update([
-                'name' => $request->name,
-                'email' => $request->email,
+                'email' => $userEmail,
             ]);
 
             // Update client
             $client->update([
+                'name' => $request->client_name,
                 'company_name' => $request->company_name,
                 'address' => $request->address,
                 'tax_id' => $request->tax_id,
                 'business_license' => $request->business_license,
-                'status' => $request->status,
                 'notes' => $request->notes,
             ]);
 
-            // Update services
-            if ($request->has('services')) {
-                $client->services()->sync(array_map(function ($serviceId) {
-                    return [
-                        'service_id' => $serviceId,
-                        'status' => 'active',
-                        'description' => null, // Adjust based on your form input
-                        'assigned_by' => Auth::id(), // Set the current admin/employee as assigner
-                    ];
-                }, $request->services));
-            } else {
-                $client->services()->detach();
-            }
-
-            // Update employee assignments
-            ClientEmployeeAccess::where('client_id', $client->id)->delete(); // Remove existing assignments
-            if ($request->assigned_employees) {
-                foreach ($request->assigned_employees as $employeeId) {
-                    ClientEmployeeAccess::create([
-                        'client_id' => $client->id,
-                        'employee_id' => $employeeId,
-                        'permissions' => ['view_basic_info'],
-                        'access_granted_date' => now(),
-                        'is_active' => true,
-                    ]);
+            // Update additional email addresses (skip the first email)
+            $client->emails()->delete();
+            if ($request->emails) {
+                foreach ($request->emails as $index => $emailData) {
+                    if ($index > 0 && !empty($emailData['email'])) {
+                        $client->emails()->create([
+                            'email' => $emailData['email'],
+                            'type' => $emailData['type'] ?? 'primary',
+                        ]);
+                    }
                 }
             }
 
+            // Update employee assignment
+            ClientEmployeeAccess::where('client_id', $client->id)->delete();
+            if ($request->assigned_employee) {
+                ClientEmployeeAccess::create([
+                    'client_id' => $client->id,
+                    'employee_id' => $request->assigned_employee,
+                    'permissions' => ['view_basic_info'],
+                    'access_granted_date' => now(),
+                    'is_active' => true,
+                ]);
+            }
+
+            // Update services
+            if ($request->has('services')) {
+                $services = array_unique($request->services); // Remove duplicates
+                $syncData = [];
+                foreach ($services as $serviceId) {
+                    $syncData[$serviceId] = [
+                        'status' => 'active',
+                        'description' => null,
+                        'assigned_by' => Auth::id(),
+                    ];
+                }
+                $client->services()->syncWithoutDetaching($syncData); // Use syncWithoutDetaching to add new services
+            } else {
+                $client->services()->detach(); // Remove all services if none are selected
+            }
+
             // Update phone numbers
-            $client->phones()->delete(); // Remove existing phones
+            $client->phones()->delete();
             if ($request->phones) {
                 foreach ($request->phones as $phoneData) {
                     if (!empty($phoneData['phone'])) {
                         $client->phones()->create([
                             'phone' => $phoneData['phone'],
                             'type' => $phoneData['type'],
-                        ]);
-                    }
-                }
-            }
-
-            // Update email addresses
-            $client->emails()->delete(); // Remove existing emails
-            if ($request->emails) {
-                foreach ($request->emails as $emailData) {
-                    if (!empty($emailData['email'])) {
-                        $client->emails()->create([
-                            'email' => $emailData['email'],
-                            'type' => $emailData['type'],
                         ]);
                     }
                 }
@@ -276,7 +296,7 @@ class ClientController extends Controller
         try {
             DB::beginTransaction();
 
-            $client->user->delete(); // This will cascade delete the client
+            $client->user->delete();
 
             DB::commit();
             return redirect()->route('admin.clients.index')->with('success', 'Client deleted successfully.');
@@ -285,5 +305,4 @@ class ClientController extends Controller
             return back()->withErrors(['error' => 'Failed to delete client: ' . $e->getMessage()]);
         }
     }
-
 }

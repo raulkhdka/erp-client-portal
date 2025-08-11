@@ -8,11 +8,11 @@
 }
 
 .sidebar-wrapper {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    padding: 0;
+    height: 100%;
+    /* display: flex; */
+    /* flex-direction: column; */
+    /* overflow-y: auto; */
+    /* padding: 0;*/
 }
 
 /* Sidebar Header */

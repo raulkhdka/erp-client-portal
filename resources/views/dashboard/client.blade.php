@@ -417,16 +417,32 @@
 @endsection
 
 @push('scripts')
-    <!-- AOS Animation Library -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
     <script>
-        // Initialize AOS animations
+        // Initialize AOS with custom settings for your layout
         AOS.init({
             duration: 800,
             easing: 'ease-in-out',
             once: true,
-            offset: 100
+            offset: 50, // Reduced offset
+            disable: false,
+            startEvent: 'DOMContentLoaded',
+            initClassName: 'aos-init',
+            animatedClassName: 'aos-animate',
+            useClassNames: false,
+            disableMutationObserver: false,
+            debounceDelay: 50,
+            throttleDelay: 99,
         });
+
+        // Force AOS to detect elements immediately
+        setTimeout(function() {
+            AOS.refresh();
+            // Force all elements to animate immediately for dashboard
+            document.querySelectorAll('[data-aos]').forEach(function(el) {
+                el.classList.add('aos-animate');
+            });
+        }, 100);
 
         // Add smooth number counting animation
         document.addEventListener('DOMContentLoaded', function() {

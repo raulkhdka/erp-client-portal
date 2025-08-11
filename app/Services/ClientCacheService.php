@@ -29,7 +29,7 @@ class ClientCacheService
     public static function getClientsCollection()
     {
         return Cache::remember(self::CACHE_KEY . '_collection', self::CACHE_DURATION, function () {
-            return Client::select('id', 'name', 'contact_person')
+            return Client::select('id', 'name')
                 ->orderBy('name')
                 ->get();
         });
@@ -42,7 +42,7 @@ class ClientCacheService
     {
         return Cache::remember(self::CACHE_KEY . '_with_user', self::CACHE_DURATION, function () {
             return Client::with('user:id,name')
-                ->select('id', 'name','company_name', 'contact_person', 'user_id')
+                ->select('id', 'name','company_name', 'user_id')
                 ->orderBy('name')
                 ->get();
         });

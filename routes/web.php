@@ -81,7 +81,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Client management routes
         // Using a prefix and controller grouping for cleaner routes
-        Route::prefix('clients')
+        Route::prefix('admin/clients')
             ->name('admin.clients.')
             ->controller(App\Http\Controllers\ClientController::class)
             ->group(function () {
@@ -97,7 +97,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Route::resource('clients', ClientController::class);
         // Employee Management Routes
-        Route::prefix('employees')
+        Route::prefix('admin/employees')
             ->name('admin.employees.')
             ->controller(App\Http\Controllers\EmployeeController::class)
             ->group(function () {
@@ -106,11 +106,12 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/', 'store')->name('store');
                 Route::get('/{id}/edit', 'edit')->name('edit');
                 Route::put('/{id}', 'update')->name('update');
+                Route::patch('/{id}/status', 'updateStatus')->name('update-status');
                 Route::delete('/{id}', 'destroy')->name('destroy');
                 Route::get('/{id}', 'show')->name('show');
             });
         // Blended routes for services management
-        Route::prefix('services')
+        Route::prefix('admin/services')
             ->name('admin.services.')
             ->controller(App\Http\Controllers\ServiceController::class)
             ->group(function () {
@@ -125,7 +126,7 @@ Route::middleware(['auth'])->group(function () {
             });
 
         //Call Logs management blended route
-        Route::prefix('call-logs')
+        Route::prefix('admin/call-logs')
             ->name('admin.call-logs.')
             ->controller(App\Http\Controllers\CallLogController::class)
             ->group(function () {
@@ -135,28 +136,39 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{callLog}/edit', 'edit')->name('edit');
                 Route::put('/{callLog}', 'update')->name('update');
                 Route::delete('/{callLog}', 'destroy')->name('destroy');
+                Route::get('/history', 'history')->name('call-history');
                 Route::get('/{callLog}', 'show')->name('show');
                 Route::patch('/{callLog}/status', 'updateStatus')->name('update-status');
                 Route::get('/{callLog}/contacts', 'getClientContacts')->name('client-contacts');
+
             });
 
-        // Tasks Management Routes blended
-        Route::prefix('tasks')
+
+            // Tasks Management Routes - Fixed Order
+            Route::prefix('admin/tasks')
             ->name('admin.tasks.')
             ->controller(App\Http\Controllers\TaskController::class)
             ->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::get('/create', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
+
+                // Put specific named routes BEFORE parameterized routes
+                Route::get('all', 'showAll')->name('all'); // Show all tasks
+                // Route::get('my-tasks', 'myTasks')->name('my-tasks'); // If you have this route
+
+                // Parameterized routes come last
+                Route::get('/{task}', 'show')->name('show');
                 Route::get('/{task}/edit', 'edit')->name('edit');
                 Route::put('/{task}', 'update')->name('update');
+                Route::patch('/{task}/status', 'updateStatus')->name('update-status');
+                Route::patch('/{task}/all', 'updateStatusAll')->name('update-all');
                 Route::delete('/{task}', 'destroy')->name('destroy');
-                Route::get('/{task}', 'show')->name('show');
-                // Route::get('/my-tasks', 'myTasks')->name('my-tasks'); // Admin's view of all tasks
             });
 
+           // Route::get('/my-tasks', 'myTasks')->name('my-tasks'); // Admin's view of all tasks
         //Blended Documents Routes Management
-        Route::prefix('documents')
+        Route::prefix('admin/documents')
             ->name('admin.documents.')
             ->controller(App\Http\Controllers\DocumentController::class)
             ->group(function () {
@@ -177,7 +189,7 @@ Route::middleware(['auth'])->group(function () {
 
 
         // Blended Dynamic Forms Management
-        Route::prefix('dynamic-forms')
+        Route::prefix('admin/dynamic-forms')
             ->name('admin.dynamic-forms.')
             ->controller(App\Http\Controllers\DynamicFormController::class)
             ->group(function () {
@@ -187,24 +199,26 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/{form}/edit', 'edit')->name('edit');
                 Route::put('/{form}', 'update')->name('update');
                 Route::delete('/{form}', 'destroy')->name('destroy');
+                Route::get('/response', 'responses')->name('response');
                 Route::get('/{form}', 'show')->name('show');
                 Route::get('/{form}/share', 'share')->name('share');
                 Route::post('/{form}/send', 'send')->name('send');
+
             });
 
         // Blended Document Categories Management
-        Route::prefix('document-categories')
-            ->name('admin.document-categories.')
-            ->controller(App\Http\Controllers\DocumentCategoryController::class)
-            ->group(function () {
-                Route::get('/', 'index')->name('index');
-                Route::get('/create', 'create')->name('create');
-                Route::post('/', 'store')->name('store');
-                Route::get('/{id}/edit', 'edit')->name('edit');
-                Route::put('/{id}', 'update')->name('update');
-                Route::delete('/{id}', 'destroy')->name('destroy');
-                Route::get('/{id}', 'show')->name('show');
-            });
+                Route::prefix('admin/document-categories')
+                    ->name('admin.document-categories.')
+                    ->controller(App\Http\Controllers\DocumentCategoryController::class)
+                    ->group(function () {
+                        Route::get('/', 'index')->name('index');
+                        Route::get('/create', 'create')->name('create');
+                        Route::post('/', 'store')->name('store');
+                        Route::get('/{documentCategory}/edit', 'edit')->name('edit');
+                        Route::put('/{documentCategory}', 'update')->name('update');
+                        Route::delete('/{documentCategory}', 'destroy')->name('destroy');
+                        Route::get('/{documentCategory}', 'show')->name('show');
+                    });
 
         // Admin-specific routes
 
@@ -282,7 +296,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::put('/{form}', 'update')->name('update');
                 Route::delete('/{form}', 'destroy')->name('destroy');
                 Route::get('/{form}', 'show')->name('show');
-                
+
             });
     });
 

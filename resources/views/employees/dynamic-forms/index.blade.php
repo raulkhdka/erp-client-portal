@@ -432,7 +432,8 @@
             <div class="col-md-6">
                 <div class="position-relative">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="form-control search-input" placeholder="Search forms by name or description..." id="searchInput">
+                    <!-- Modified: Changed placeholder to remove reference to description -->
+                    <input type="text" class="form-control search-input" placeholder="Search forms by name..." id="searchInput">
                 </div>
             </div>
             <div class="col-md-6">
@@ -485,7 +486,8 @@
                             <tr>
                                 <th>S.N.</th>
                                 <th class="sortable" data-sort="name"><i class="fas fa-file-signature me-2"></i>Form Name</th>
-                                <th><i class="fas fa-align-left me-2"></i>Description</th>
+                                <!-- Modified: Replaced Description with Is Draft column -->
+                                <th class="sortable" data-sort="is_draft"><i class="fas fa-file-alt me-2"></i>Draft</th>
                                 <th class="sortable" data-sort="status"><i class="fas fa-toggle-on me-2"></i>Status</th>
                                 <th class="sortable" data-sort="fields"><i class="fas fa-list-ul me-2"></i>Fields</th>
                                 <th class="sortable" data-sort="created_at"><i class="fas fa-calendar me-2"></i>Created</th>
@@ -495,7 +497,7 @@
                         <tbody>
                             @foreach ($forms as $index => $form)
                             <tr data-form-name="{{ strtolower($form->name) }}"
-                                data-form-description="{{ strtolower($form->description ?? '') }}"
+                                data-form-is-draft="{{ $form->is_draft ? 'draft' : 'published' }}"
                                 data-form-status="{{ $form->is_active ? 'active' : 'inactive' }}"
                                 data-form-fields="{{ $form->fields->count() }}"
                                 data-form-created="{{ $form->created_at->timestamp }}">
@@ -505,8 +507,17 @@
                                 <td>
                                     <div class="fw-bold">{{ $form->name }}</div>
                                 </td>
+                                <!-- Modified: Replaced description display with is_draft status -->
                                 <td>
-                                    <span class="text-muted">{{ Str::limit($form->description, 50) ?? 'No description' }}</span>
+                                    @if ($form->is_draft)
+                                        <span class="badge badge-modern bg-warning">
+                                            <i class="fas fa-file-alt me-1"></i>Draft
+                                        </span>
+                                    @else
+                                        <span class="badge badge-modern bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Published
+                                        </span>
+                                    @endif
                                 </td>
                                 <td>
                                     @if ($form->is_active)
@@ -544,7 +555,6 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a href="{{ route('employees.dynamic-forms.preview', $form->id) }}"
-                                           {{-- target="_blank" --}}
                                            class="btn btn-secondary btn-action"
                                            title="View Public Form"
                                            data-bs-toggle="tooltip">
@@ -614,7 +624,8 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">{{ $form->name }}</h6>
-                            <small class="text-muted">{{ $form->fields->count() }} fields • Created {{ $form->created_at->diffForHumans() }}</small>
+                            <!-- Modified: Replaced fields count with is_draft status -->
+                            <small class="text-muted">{{ $form->is_draft ? 'Draft' : 'Published' }} • Created {{ $form->created_at->diffForHumans() }}</small>
                         </div>
                         <div>
                             @if ($form->is_active)
@@ -645,7 +656,8 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">{{ $form->name }}</h6>
-                            <small class="text-muted">{{ $form->fields->count() }} fields • Created {{ $form->created_at->diffForHumans() }}</small>
+                            <!-- Modified: Replaced fields count with is_draft status -->
+                            <small class="text-muted">{{ $form->is_draft ? 'Draft' : 'Published' }} • Created {{ $form->created_at->diffForHumans() }}</small>
                         </div>
                         <span class="badge bg-success">Active</span>
                     </div>
@@ -670,7 +682,8 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">{{ $form->name }}</h6>
-                            <small class="text-muted">{{ $form->fields->count() }} fields • Created {{ $form->created_at->diffForHumans() }}</small>
+                            <!-- Modified: Replaced fields count with is_draft status -->
+                            <small class="text-muted">{{ $form->is_draft ? 'Draft' : 'Published' }} • Created {{ $form->created_at->diffForHumans() }}</small>
                         </div>
                         <span class="badge bg-danger">Inactive</span>
                     </div>
@@ -695,7 +708,8 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">{{ $form->name }}</h6>
-                            <small class="text-muted">{{ $form->fields->count() }} fields • Created {{ $form->created_at->diffForHumans() }}</small>
+                            <!-- Modified: Replaced fields count with is_draft status -->
+                            <small class="text-muted">{{ $form->is_draft ? 'Draft' : 'Published' }} • Created {{ $form->created_at->diffForHumans() }}</small>
                         </div>
                         <div>
                             @if ($form->is_active)
@@ -734,10 +748,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         tableRows.forEach(row => {
             const formName = row.dataset.formName;
-            const formDescription = row.dataset.formDescription;
+            // Modified: Removed formDescription, added formIsDraft for search filtering
+            const formIsDraft = row.dataset.formIsDraft;
             const formStatus = row.dataset.formStatus;
 
-            const matchesSearch = formName.includes(searchTerm) || formDescription.includes(searchTerm);
+            // Modified: Updated search to only include formName
+            const matchesSearch = formName.includes(searchTerm);
             const matchesStatus = !statusValue || formStatus === statusValue;
 
             if (matchesSearch && matchesStatus) {
@@ -782,6 +798,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     aValue = parseInt(a.dataset.formFields);
                     bValue = parseInt(b.dataset.formFields);
                     return bValue - aValue;
+                // Added: Sorting for is_draft column
+                case 'is_draft_asc':
+                    aValue = a.dataset.formIsDraft;
+                    bValue = b.dataset.formIsDraft;
+                    return aValue.localeCompare(bValue);
+                case 'is_draft_desc':
+                    aValue = a.dataset.formIsDraft;
+                    bValue = b.dataset.formIsDraft;
+                    return bValue.localeCompare(aValue);
                 default:
                     return 0;
             }

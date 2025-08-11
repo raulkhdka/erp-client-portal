@@ -13,9 +13,9 @@ class DocumentCategoryController extends Controller
      */
     public function index()
     {
-        $categories = DocumentCategory::withCount('documents')
-                                    ->ordered()
-                                    ->get();
+        $categories = DocumentCategory::withCount('documents')->paginate(10);
+
+
 
 
         return view('admin.document-categories.index', compact('categories'));

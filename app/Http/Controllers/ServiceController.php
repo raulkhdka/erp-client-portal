@@ -14,8 +14,8 @@ class ServiceController extends Controller
     public function index()
     {
         $services = Service::withCount('clients')
-            ->orderBy('name')
-            ->paginate(15);
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('admin.services.index', compact('services'));
     }
@@ -55,15 +55,24 @@ class ServiceController extends Controller
             }
 
             return redirect()->route('admin.services.index')
-                ->with('success', 'Service created successfully.');
+                ->with('status_update_success', 'Service created successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
-                    'success' => false,
+                    'status' => 'error',
+                    'message' => 'Validation failed.',
                     'errors' => $e->errors()
                 ], 422);
             }
             throw $e;
+        } catch (\Exception $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to create service: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->back()->with('status_update_error', 'Failed to create service: ' . $e->getMessage());
         }
     }
 
@@ -89,19 +98,46 @@ class ServiceController extends Controller
      */
     public function update(Request $request, Service $service)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:services,name,' . $service->id,
-            'detail' => 'nullable|string|max:1000',
-            'type' => 'required|integer|min:0|max:10',
-            'is_active' => 'boolean'
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:services,name,' . $service->id,
+                'detail' => 'nullable|string|max:1000',
+                'type' => 'required|integer|min:0|max:10',
+                'is_active' => 'boolean'
+            ]);
 
-        $validated['is_active'] = $request->has('is_active');
+            $validated['is_active'] = $request->has('is_active');
 
-        $service->update($validated);
+            $service->update($validated);
 
-        return redirect()->route('admin.services.index')
-            ->with('success', 'Service updated successfully.');
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'success',
+                    'service' => $service,
+                    'message' => 'Service updated successfully.'
+                ]);
+            }
+
+            return redirect()->route('admin.services.index')
+                ->with('status_update_success', 'Service updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed.',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to update service: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->back()->with('status_update_error', 'Failed to update service: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -112,13 +148,13 @@ class ServiceController extends Controller
         // Check if service has any clients
         if ($service->clients()->count() > 0) {
             return redirect()->route('admin.services.index')
-                ->with('error', 'Cannot delete service that is assigned to clients. Please remove all client assignments first.');
+                ->with('status_update_error', 'Cannot delete service that is assigned to clients. Please remove all client assignments first.');
         }
 
         $service->delete();
 
         return redirect()->route('admin.services.index')
-            ->with('success', 'Service deleted successfully.');
+            ->with('status_update_success', 'Service deleted successfully.');
     }
 
     /**
@@ -126,12 +162,31 @@ class ServiceController extends Controller
      */
     public function toggleStatus(Service $service)
     {
-        $service->update(['is_active' => !$service->is_active]);
+        try {
+            $service->update(['is_active' => !$service->is_active]);
 
-        $status = $service->is_active ? 'activated' : 'deactivated';
+            $status = $service->is_active ? 'activated' : 'deactivated';
 
-        return redirect()->back()
-            ->with('success', "Service {$status} successfully.");
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => "Service {$status} successfully.",
+                    'is_active' => $service->is_active
+                ]);
+            }
+
+            return redirect()->back()
+                ->with('status_update_success', "Service {$status} successfully.");
+        } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to toggle service status: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->back()
+                ->with('status_update_error', 'Failed to toggle service status: ' . $e->getMessage());
+        }
     }
     // public function quickAdd(Request $request)
     // {

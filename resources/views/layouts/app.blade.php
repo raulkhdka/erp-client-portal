@@ -12,20 +12,61 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <!-- Custom Application Styles -->
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/sidebar.css') }}" rel="stylesheet">
 
     <style>
-        /* Additional inline styles if needed */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-size: 0.975rem;
+        }
+
+        .container-fluid,
+        .row {
+            /* min-height: 100vh; */
+            */
+            /* full viewport height */
+            margin: 50px 0;
+            padding: 0;
+        }
+
+        .container-fluid>.row {
+            display: flex;
+            flex-wrap: nowrap;
+            /* no wrapping */
+        }
+
+        .sidebar {
+            flex: 0 0 250px;
+            /* adjust to your sidebar width */
+            height: 100vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+        }
+
+        main.main-content {
+            flex: 1 1 auto;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 0 1rem;
+        }
     </style>
     @yield('styles')
     @stack('styles')
 </head>
 
 <body class="m-0 p-0">
-   <div class="container-fluid">
+    <div class="container-fluid">
         <div class="row">
             <!-- Include Sidebar Component -->
             @include('components.sidebar')
@@ -34,18 +75,28 @@
             <main class="col-md-9 ms-sm-auto col-lg-10 p-0 main-content">
 
                 <!-- Flash Messages -->
-                @if (session('success'))
+                {{-- @if (session('success'))
                     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                         {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
+                @endif --}}
+
+                @if (session('status_update_success'))
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showToast('success', @json(session('status_update_success')));
+                        });
+                    </script>
                 @endif
 
-                @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                        {{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+
+                @if (session('status_update_error'))
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showToast('error', @json(session('status_update_error')));
+                        });
+                    </script>
                 @endif
 
                 @if ($errors->any())
@@ -81,8 +132,23 @@
 
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Axios CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- FontAwesome CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 
-    <!-- Custom Application Scripts -->
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Tom Select JS -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <!-- Custom Helper Scripts-->
+    <script src="{{ asset('assets/js/helpers/toastHelper.js') }}" > </script>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    {{-- <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script> --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
     <script src="{{ asset('assets/js/utils.js') }}"></script>
     <script src="{{ asset('assets/js/sidebar.js') }}"></script>
 
@@ -103,11 +169,13 @@
 
                 // Set warning timer
                 warningTimer = setTimeout(function() {
-                    if (!isModalActive && confirm('Your session will expire in 5 minutes. Click OK to extend your session.')) {
+                    if (!isModalActive && confirm(
+                            'Your session will expire in 5 minutes. Click OK to extend your session.')) {
                         fetch('/csrf-token')
                             .then(response => response.json())
                             .then(data => {
-                                document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.csrf_token);
+                                document.querySelector('meta[name="csrf-token"]').setAttribute('content', data
+                                    .csrf_token);
                                 resetSessionTimer();
                             })
                             .catch(console.error);

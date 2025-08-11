@@ -1,29 +1,32 @@
 @extends('layouts.app')
 
-@section('title', 'My Tasks')
+@section('title', 'All Tasks')
 
 @section('breadcrumb')
-    <span class="breadcrumb-item active">My Tasks</span>
+    <span class="breadcrumb-item active">All Tasks</span>
+@endsection
+
+@section('actions')
+    <div class="btn-group">
+        <a href="{{ route('admin.tasks.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Task
+        </a>
+    </div>
 @endsection
 
 @push('styles')
     <style>
-        .table td {
-            vertical-align: middle;
+        /* Hide the sidebar */
+        #sidebar, .sidebar-wrapper, .sidebar-menu {
+                display: none !important;
+            }
+
+       /* Adjust content wrapper to full width when sidebar is hidden */
+       .content-wrapper {
+            margin-left: 0 !important;
         }
 
-        .badge {
-            font-size: 80%;
-        }
-
-        .btn-group .btn {
-            margin-right: 4px;
-        }
-
-        .btn-group .btn:last-child {
-            margin-right: 0;
-        }
-
+        /* Card styles */
         .card {
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
@@ -84,7 +87,7 @@
         }
 
         .task-card:hover::before {
-            opacity: 1; /* Gradient border appears on hover */
+            opacity: 1;
         }
 
         .task-card-body {
@@ -180,6 +183,10 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        .task-badge.bg-danger {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+        }
+
         .task-badge::before {
             content: '';
             position: absolute;
@@ -201,6 +208,7 @@
             justify-content: flex-start;
             padding-top: 12px;
             border-top: 1px solid rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
         }
 
         .task-btn {
@@ -214,6 +222,10 @@
             overflow: hidden;
             border: none;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
         }
 
         .task-btn:hover {
@@ -222,24 +234,44 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
-        .task-btn-primary {
-            background: linear-gradient(135deg, #a78bfa, #f472b6);
+        .task-btn-view {
+            background: linear-gradient(135deg, #2dd4bf, #14b8a6);
             color: white;
         }
 
-        .task-btn-primary:hover {
-            background: linear-gradient(135deg, #9333ea, #ec4899);
+        .task-btn-view:hover {
+            background: linear-gradient(135deg, #26a69a, #0d9488);
+            box-shadow: 0 4px 10px rgba(20, 184, 166, 0.3);
+        }
+
+        .task-btn-edit {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            color: white;
+        }
+
+        .task-btn-edit:hover {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .task-btn-delete {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            color: white;
+        }
+
+        .task-btn-delete:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .task-btn-update-status {
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            color: white;
+        }
+
+        .task-btn-update-status:hover {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
             box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
-        }
-
-        .task-btn-success {
-            background: linear-gradient(135deg, #10b981, #34d399);
-            color: white;
-        }
-
-        .task-btn-success:hover {
-            background: linear-gradient(135deg, #059669, #22c55e);
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
         }
 
         .task-due-date {
@@ -275,18 +307,6 @@
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out forwards;
             opacity: 0;
-        }
-
-        /* Modal Button */
-        .btn-purple-600 {
-            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-            color: white;
-            border: none;
-        }
-
-        .btn-purple-600:hover {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
         }
 
         @keyframes fadeIn {
@@ -383,136 +403,131 @@
                 transform: translateX(100%);
             }
         }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 0;
+        }
+
+        .pagination .page-item {
+            transition: transform 0.2s ease;
+        }
+
+        .pagination .page-link {
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            line-height: 42px;
+            text-align: center;
+            padding: 0;
+            font-weight: 500;
+            color: #333;
+            background-color: #f4f4f4;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            transition: all 0.25s ease;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #007bff;
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+        }
+
+        .pagination .page-link:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.4);
+        }
+
+        /* Search Form */
+        .search-form {
+            max-width: 400px;
+            margin-bottom: 1rem;
+        }
+
+        .search-form .input-group {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .search-form .form-control {
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .search-form .btn {
+            border: none;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-form .btn:hover {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Modal Button */
+        .btn-purple-600 {
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            color: white;
+            border: none;
+        }
+
+        .btn-purple-600:hover {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+        }
     </style>
 @endpush
 
 @section('content')
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-12">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
                 <div class="card shadow animate-slide-up">
                     <div class="card-header d-flex justify-content-between align-items-center bg-light">
                         <h3 class="card-title mb-0">
-                            <i class="fas fa-tasks text-purple-600 me-2"></i>My Tasks
+                            <i class="fas fa-tasks text-purple-600 me-2"></i>All Tasks
                         </h3>
                     </div>
 
                     <div class="card-body border-bottom bg-light py-3">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <div class="card bg-white h-100">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="text-muted mb-1">Total Tasks</h6>
-                                                <h4 class="mb-0">{{ $tasksCount['total'] }}</h4>
-                                            </div>
-                                            <div class="rounded-circle bg-purple-100 p-2">
-                                                <i class="fas fa-tasks text-purple-600"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-white h-100">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="text-muted mb-1">Pending</h6>
-                                                <h4 class="mb-0">{{ $tasksCount['pending'] }}</h4>
-                                            </div>
-                                            <div class="rounded-circle bg-yellow-100 p-2">
-                                                <i class="fas fa-clock text-yellow-600"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-white h-100">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="text-muted mb-1">In Progress</h6>
-                                                <h4 class="mb-0">{{ $tasksCount['in_progress'] }}</h4>
-                                            </div>
-                                            <div class="rounded-circle bg-blue-100 p-2">
-                                                <i class="fas fa-spinner text-blue-600"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-white h-100">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="text-muted mb-1">Completed</h6>
-                                                <h4 class="mb-0">{{ $tasksCount['completed'] }}</h4>
-                                            </div>
-                                            <div class="rounded-circle bg-green-100 p-2">
-                                                <i class="fas fa-check text-green-600"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <form class="d-flex gap-2" method="GET" action="{{ route('employees.tasks.index') }}">
-                                <select name="status" class="form-select form-select-sm">
-                                    <option value="">All Status</option>
-                                    <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Pending</option>
-                                    <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>In Progress</option>
-                                    <option value="3" {{ request('status') == '3' ? 'selected' : '' }}>On Hold</option>
-                                    <option value="4" {{ request('status') == '4' ? 'selected' : '' }}>Pending Review</option>
-                                    <option value="7" {{ request('status') == '7' ? 'selected' : '' }}>Completed</option>
-                                    <option value="8" {{ request('status') == '8' ? 'selected' : '' }}>Resolved</option>
-                                </select>
-                                <select name="priority" class="form-select form-select-sm">
-                                    <option value="">All Priority</option>
-                                    <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Low</option>
-                                    <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Medium</option>
-                                    <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>High</option>
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-outline-purple-600">
-                                    <i class="fas fa-filter me-1"></i>Filter
+                        <!-- Search Form -->
+                        <form method="GET" action="{{ route('admin.tasks.all') }}" class="search-form">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control" placeholder="Search tasks..." value="{{ request('search') }}">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i>
                                 </button>
-                                @if (request()->hasAny(['status', 'priority']))
-                                    <a href="{{ route('employees.tasks.index') }}"
-                                        class="btn btn-sm btn-outline-secondary">
-                                        <i class="fas fa-times me-1"></i>Clear
-                                    </a>
-                                @endif
-                            </form>
-                        </div>
+                            </div>
+                        </form>
                     </div>
 
                     <div class="card-body">
-                        @if ($tasks->isEmpty())
-                            <div class="alert alert-info animate-fade-in">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-info-circle me-3"></i>
-                                    <div>
-                                        <h5 class="mb-1">No tasks found</h5>
-                                        <p class="mb-0">No tasks assigned to you at the moment.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
+                        @if($tasks->count() > 0)
                             <div class="tasks-grid">
-                                @foreach ($tasks as $index => $task)
-                                    <div class="task-card animate-fade-in"
-                                        style="animation-delay: {{ $index * 0.1 }}s">
+                                @foreach($tasks as $index => $task)
+                                    <div class="task-card animate-fade-in" style="animation-delay: {{ $index * 0.1 }}s">
                                         <div class="task-card-body">
                                             <h4 class="task-title">
                                                 {{ $task->title }}
                                             </h4>
 
-                                            @if ($task->description)
+                                            @if($task->description)
                                                 <p class="task-description">
                                                     {{ $task->description }}
                                                 </p>
@@ -527,6 +542,21 @@
                                                     <i class="fas fa-user"></i>
                                                     <span>{{ $task->adminCreator->name ?? 'System' }}</span>
                                                 </div>
+                                                @if($task->assignedTo && $task->assignedTo->user)
+                                                    <div class="task-meta-item">
+                                                        <i class="fas fa-user-tie"></i>
+                                                        <span>{{ $task->assignedTo->user->name }}</span>
+                                                    </div>
+                                                @endif
+                                                @if($task->callLog)
+                                                    <div class="task-meta-item">
+                                                        <i class="fas fa-phone"></i>
+                                                        <a href="{{ route('admin.call-logs.show', $task->callLog) }}"
+                                                           class="text-decoration-none">
+                                                            Call #{{ $task->callLog->id }}
+                                                        </a>
+                                                    </div>
+                                                @endif
                                             </div>
 
                                             <div class="task-badges">
@@ -538,18 +568,39 @@
                                                     <i class="fas fa-spinner me-1"></i>
                                                     {{ $task->status_label }}
                                                 </span>
+                                                @if($task->is_overdue)
+                                                    <span class="task-badge bg-danger">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                        Overdue
+                                                    </span>
+                                                @endif
                                             </div>
 
                                             <div class="task-actions">
-                                                <a href="{{ route('employees.tasks.show', $task) }}"
-                                                    class="task-btn task-btn-primary">
+                                                <a href="{{ route('admin.tasks.show', $task) }}"
+                                                   class="task-btn task-btn-view">
                                                     <i class="fas fa-eye me-1"></i> View
                                                 </a>
-                                                @if (!in_array($task->status, [7, 8]))
-                                                    <button type="button" class="task-btn task-btn-success"
-                                                        onclick="updateTaskStatus('{{ $task->id }}')">
-                                                        <i class="fas fa-check me-1"></i> Update
+                                                @if(Auth::user()->isAdmin())
+                                                    <a href="{{ route('admin.tasks.edit', $task) }}"
+                                                       class="task-btn task-btn-edit">
+                                                        <i class="fas fa-edit me-1"></i> Edit
+                                                    </a>
+                                                    <button type="button"
+                                                            class="task-btn task-btn-delete delete-btn"
+                                                            data-task-id="{{ $task->id }}"
+                                                            data-task-title="{{ $task->title }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteModal">
+                                                        <i class="fas fa-trash me-1"></i> Delete
                                                     </button>
+                                                    @if(!in_array($task->status, [7, 8]))
+                                                        <button type="button"
+                                                                class="task-btn task-btn-update-status"
+                                                                onclick="updateTaskStatus('{{ $task->id }}')">
+                                                            <i class="fas fa-sync-alt me-1"></i> Update Status
+                                                        </button>
+                                                    @endif
                                                 @endif
                                             </div>
                                         </div>
@@ -560,6 +611,24 @@
                             <div class="mt-4 d-flex justify-content-center">
                                 {{ $tasks->links() }}
                             </div>
+                        @else
+                            <div class="alert alert-info animate-fade-in">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-3"></i>
+                                    <div>
+                                        <h5 class="mb-1">No tasks found</h5>
+                                        <p class="mb-0">Create tasks directly or automatically from call logs.</p>
+                                        <div class="mt-3 d-flex gap-2">
+                                            <a href="{{ route('admin.tasks.create') }}" class="btn btn-primary">
+                                                <i class="fas fa-plus me-1"></i>Create Task
+                                            </a>
+                                            <a href="{{ route('admin.call-logs.create') }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-phone me-1"></i>Record a Call
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -567,17 +636,51 @@
         </div>
     </div>
 
-    <!-- Task Status Update Modal -->
-    <div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content"
-                style="border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.15); box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.1); background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);">
+                 style="border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.15); box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.1); background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);">
                 <div class="modal-header" style="border-bottom: 1px solid rgba(0,0,0,0.1);">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the task:</p>
+                    <p><strong id="taskTitle"></strong></p>
+                    <p class="text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.1);">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
+                            style="border-radius: 8px;">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <form id="deleteForm" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger" style="border-radius: 8px;">
+                            <i class="fas fa-trash me-1"></i>Delete Task
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Status Update Modal -->
+    <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                 style="border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.15); box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.1); background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(0,0,0,0.1);">
+                    <h5 class="modal-title" id="updateStatusModalLabel">
                         <i class="fas fa-tasks text-purple-600 me-2"></i>
                         Update Task Status
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="updateStatusForm" method="POST">
                     @csrf
@@ -586,18 +689,17 @@
                         <div class="form-group">
                             <label for="status" class="form-label fw-semibold">New Status</label>
                             <select name="status" id="status" class="form-select" required
-                                style="border-radius: 8px;">
-                                <option value="2">In Progress</option>
-                                <option value="3">On Hold</option>
-                                <option value="4">Pending Review</option>
-                                <option value="7">Completed</option>
+                                    style="border-radius: 8px;">
+                                @foreach(\App\Models\Task::getStatusOptions() as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.1);">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
-                            style="border-radius: 8px;">
-                            Cancel
+                                style="border-radius: 8px;">
+                            <i class="fas fa-times me-1"></i>Cancel
                         </button>
                         <button type="submit" class="btn btn-purple-600" style="border-radius: 8px;">
                             <i class="fas fa-check me-1"></i>Update Status
@@ -612,9 +714,10 @@
 @push('scripts')
     <script>
         function updateTaskStatus(taskId) {
+            console.log('Task ID:', taskId); // Debug
             const modal = new bootstrap.Modal(document.getElementById('updateStatusModal'));
             const form = document.getElementById('updateStatusForm');
-            form.action = `{{ url('employee/tasks') }}/${taskId}/status`;
+            form.action = '{{ route('admin.tasks.update-all', ['task' => ':taskId']) }}'.replace(':taskId', taskId);
             modal.show();
         }
 
@@ -644,6 +747,22 @@
                 observer.observe(card);
             });
 
+            // Delete confirmation functionality
+            let currentTaskId = null;
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const deleteForm = document.getElementById('deleteForm');
+
+            document.querySelectorAll('.delete-btn').forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentTaskId = this.getAttribute('data-task-id');
+                    const taskTitle = this.getAttribute('data-task-title');
+                    document.getElementById('taskTitle').textContent = taskTitle;
+                    deleteForm.action = '{{ route('admin.tasks.destroy', ['task' => ':taskId']) }}'.replace(':taskId', currentTaskId);
+                    deleteModal.show();
+                });
+            });
+
             // Add loading state when updating status
             document.getElementById('updateStatusForm').addEventListener('submit', function() {
                 const submitBtn = this.querySelector('button[type="submit"]');
@@ -653,7 +772,7 @@
 
             // Add ripple effect to buttons
             document.querySelectorAll('.task-btn').forEach(function(btn) {
-                btn.addEventListener('click', function(e) {
+                button.addEventListener('click', function(e) {
                     const ripple = document.createElement('span');
                     const rect = this.getBoundingClientRect();
                     const size = Math.max(rect.width, rect.height);

@@ -687,4 +687,20 @@ class DynamicFormController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Display a listing of all dynamic form responses.
+     */
+    public function responses()
+    {
+        // Log::info('Responses method accessed', ['user' => Auth::user() ? Auth::user()->toArray() : 'Guest']);
+        try {
+            $responses = DynamicFormResponse::with(['dynamicForm', 'client'])->paginate(10);
+            $forms = DynamicForm::select('id', 'name')->get();
+            return view('admin.dynamic-forms.responses', compact('responses', 'forms'));
+        } catch (\Exception $e) {
+            // Log::error('Error in responses method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
+        }
+    }
 }

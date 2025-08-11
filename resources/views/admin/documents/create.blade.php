@@ -18,34 +18,59 @@
 @push('styles')
     <style>
         .upload-area {
-            border: <select class="form-select client-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id"><option value="">None (General Document)</option>@foreach ($clients as $id => $name)
-                <option value="{{ $id }}" {{ old('client_id', $selectedClientId) == $id ? 'selected' : '' }}>{{ $name }} </option>
-            @endforeach
-            </select>ed #007bff;
-            border-radius: 10px;
-            padding: 40px;
+            border: 2px dashed #0b6efd;
+            border-radius: 12px;
+            padding: 50px 20px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: 0.3s ease;
             cursor: pointer;
+            /* background-color: #f8f9fa; */
+            color: #6c757d;
+            position: relative;
         }
 
         .upload-area:hover {
-            border-color: #0056b3;
-            background-color: rgba(0, 123, 255, 0.05);
+            background-color: #e9f2ff;
+            border-color: #0b5ed7;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
         }
 
         .upload-area.dragover {
-            border-color: #28a745;
-            background-color: rgba(40, 167, 69, 0.1);
+            border-color: #198754;
+            background-color: #e6ffed;
+        }
+
+        .upload-area i {
+            color: #0d6efd;
+            margin-bottom: 10px;
         }
 
         .file-preview {
             display: none;
             margin-top: 20px;
-            padding: 15px;
+            padding: 15px 20px;
             border: 1px solid #dee2e6;
-            border-radius: 5px;
-            background-color: #f8f9fa;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .file-preview i {
+            color: #6c757d;
+        }
+
+        .file-preview .btn-outline-danger {
+            border-radius: 50%;
+            padding: 4px 8px;
+        }
+
+        .form-check-label strong {
+            color: #212529;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection {
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
         }
 
         .permission-section {
@@ -57,164 +82,188 @@
 @endpush
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">📤 Upload Document</h4>
-                    <a href="{{ route('admin.documents.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>Back to Documents
-                    </a>
-                </div>
-                <div class="card-body">
-                    @if($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <form action="{{ route('admin.documents.store') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
-                        @csrf
-
-                        <!-- File Upload Area -->
-                        <div class="mb-4">
-                            <label class="form-label">Document File <span class="text-danger">*</span></label>
-                            <div class="upload-area" id="uploadArea">
-                                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
-                                <h5>Drag and drop your file here</h5>
-                                <p class="text-muted">or click to browse (Max: 10MB)</p>
-                                <input type="file" id="file" name="file" class="d-none" required>
-                            </div>
-                            <div id="filePreview" class="file-preview">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-file fa-2x me-3"></i>
-                                    <div>
-                                        <strong id="fileName"></strong><br>
-                                        <small id="fileSize" class="text-muted"></small>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="removeFile">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Document Info -->
-                        <div class="row mb-4">
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    <label for="title" class="form-label">Document Title <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                           id="title" name="title" value="{{ old('title') }}" required>
-                                    @error('title') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="categories_id" class="form-label">Category</label>
-                                    <select class="form-select @error('categories_id') is-invalid @enderror"
-                                            id="categories_id" name="categories_id">
-                                        <option value="">Select category...</option>
-                                        @foreach($categories as $id => $name)
-                                            <option value="{{ $id }}" {{ old('categories_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('categories_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="expires_at" class="form-label">Expiration Date</label>
-                                    <input type="date" class="form-control @error('expires_at') is-invalid @enderror"
-                                           id="expires_at" name="expires_at" value="{{ old('expires_at') }}"
-                                           min="{{ date('Y-m-d', strtotime('+1 day')) }}">
-                                    @error('expires_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror"
-                                      id="description" name="description" rows="3">{{ old('description') }}</textarea>
-                            @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-
-                        @if(Auth::user()->isAdmin() || Auth::user()->isEmployee())
-                        <!-- Admin/Employee Permissions -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label for="client_id" class="form-label">Associated Client</label>
-                                <select class="form-select client-select @error('client_id') is-invalid @enderror"
-                                        id="client_id" name="client_id">
-                                    <option value="">None (General Document)</option>
-                                    @foreach($clients as $id => $name)
-                                        <option value="{{ $id }}" {{ (old('client_id', $selectedClientId) == $id) ? 'selected' : '' }}>
-                                            {{ $name }}
-                                        </option>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">📤 Upload Document</h4>
+                        <a href="{{ route('admin.documents.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Documents
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
                                     @endforeach
-                                </select>
-                                @error('client_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </ul>
                             </div>
-                        </div>
-
-                        <div class="permission-section mb-4">
-                            <h5 class="mb-3">🔒 Access Permissions</h5>
-
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="is_public" name="is_public" value="1" {{ old('is_public') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="is_public"><strong>Public Document</strong></label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="is_confidential" name="is_confidential" value="1" {{ old('is_confidential') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="is_confidential"><strong>Confidential Document</strong></label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="specificUsers" style="{{ old('is_public') ? 'display: none;' : '' }}">
-                                <label class="form-label">Grant Access to Specific Users</label>
-                                <div class="row">
-                                    @foreach($users as $id => $name)
-                                        <div class="col-md-4 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="access_permissions[]"
-                                                       value="{{ $id }}" id="user_{{ $id }}"
-                                                       {{ in_array($id, old('access_permissions', [])) ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="user_{{ $id }}">{{ $name }}</label>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
                         @endif
 
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('admin.documents.index') }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-upload me-2"></i>Upload Document
-                            </button>
-                        </div>
+                        <form action="{{ route('admin.documents.store') }}" method="POST" enctype="multipart/form-data"
+                            id="uploadForm">
+                            @csrf
 
-                    </form>
+                            <!-- File Upload Area -->
+                            <div class="mb-4">
+                                <label class="form-label">Document File <span class="text-danger">*</span></label>
+                                <div class="upload-area" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <h5>Drag and drop your file here</h5>
+                                    <p class="text-muted">or click to browse (Max: 10MB)</p>
+                                    <input type="file" id="file" name="file" class="d-none" required>
+                                </div>
+                                <div id="filePreview" class="file-preview">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-file fa-2x me-3"></i>
+                                        <div>
+                                            <strong id="fileName"></strong><br>
+                                            <small id="fileSize" class="text-muted"></small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto"
+                                            id="removeFile">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Document Info -->
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">Document Title <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('title') is-invalid @enderror"
+                                            id="title" name="title" value="{{ old('title') }}" required>
+                                        @error('title')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="categories_id" class="form-label">Category</label>
+                                        <select class="form-select @error('categories_id') is-invalid @enderror"
+                                            id="categories_id" name="categories_id">
+                                            <option value="">Select category...</option>
+                                            @foreach ($categories as $id => $name)
+                                                <option value="{{ $id }}"
+                                                    {{ old('categories_id') == $id ? 'selected' : '' }}>{{ $name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('categories_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="expires_at" class="form-label">Expiration Date</label>
+                                        <input type="date" class="form-control @error('expires_at') is-invalid @enderror"
+                                            id="expires_at" name="expires_at" value="{{ old('expires_at') }}"
+                                            min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                                        @error('expires_at')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
+                                    rows="3">{{ old('description') }}</textarea>
+                                @error('description')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            @if (Auth::user()->isAdmin() || Auth::user()->isEmployee())
+                                <!-- Admin/Employee Permissions -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label for="client_id" class="form-label">Associated Client</label>
+                                        <select class="form-select client-select @error('client_id') is-invalid @enderror"
+                                            id="client_id" name="client_id">
+                                            <option value="">None (General Document)</option>
+                                            @foreach ($clients as $id => $name)
+                                                <option value="{{ $id }}"
+                                                    {{ old('client_id', $selectedClientId) == $id ? 'selected' : '' }}>
+                                                    {{ $name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('client_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="permission-section mb-4">
+                                    <h5 class="mb-3">🔒 Access Permissions</h5>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="is_public"
+                                                    name="is_public" value="1"
+                                                    {{ old('is_public') ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="is_public"><strong>Public
+                                                        Document</strong></label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="is_confidential"
+                                                    name="is_confidential" value="1"
+                                                    {{ old('is_confidential') ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="is_confidential"><strong>Confidential
+                                                        Document</strong></label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="specificUsers" style="{{ old('is_public') ? 'display: none;' : '' }}">
+                                        <label class="form-label">Grant Access to Specific Users</label>
+                                        <div class="row">
+                                            @foreach ($users as $id => $name)
+                                                <div class="col-md-4 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="access_permissions[]" value="{{ $id }}"
+                                                            id="user_{{ $id }}"
+                                                            {{ in_array($id, old('access_permissions', [])) ? 'checked' : '' }}>
+                                                        <label class="form-check-label"
+                                                            for="user_{{ $id }}">{{ $name }}</label>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ route('admin.documents.index') }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload me-2"></i>Upload Document
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('scripts')
@@ -232,6 +281,13 @@
 
             // Drag and drop functionality
             uploadArea.addEventListener('click', () => fileInput.click());
+
+            uploadArea.addEventListener('mouseenter', () => {
+                uploadArea.classList.add('hover');
+            });
+            uploadArea.addEventListener('mouseleave', () => {
+                uploadArea.classList.remove('hover');
+            });
 
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();

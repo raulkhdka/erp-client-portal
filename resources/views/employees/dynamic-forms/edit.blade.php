@@ -375,13 +375,23 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Status</label>
+                            <label class="form-label fw-bold">Active Status</label>
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1"
                                        {{ old('is_active', $form->is_active) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="is_active">
                                     <span class="badge {{ $form->is_active ? 'bg-success' : 'bg-secondary' }}" id="statusBadge">
                                         {{ $form->is_active ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </label>
+                            </div>
+                            <label class="form-label fw-bold mt-2">Draft Status</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_draft" name="is_draft" value="1"
+                                       {{ old('is_draft', $form->is_draft) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_draft">
+                                    <span class="badge {{ $form->is_draft ? 'bg-warning' : 'bg-success' }}" id="draftBadge">
+                                        {{ $form->is_draft ? 'Draft' : 'Published' }}
                                     </span>
                                 </label>
                             </div>
@@ -736,7 +746,9 @@ class DynamicFormBuilder {
             previewColumn: document.getElementById('previewColumn'),
             sidebarColumn: document.getElementById('sidebarColumn'),
             togglePreviewBtn: document.getElementById('togglePreview'),
-            draftIndicator: document.getElementById('draftIndicator')
+            draftIndicator: document.getElementById('draftIndicator'),
+            isDraftInput: document.getElementById('is_draft'),
+            draftBadge: document.getElementById('draftBadge')
         };
 
         axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -773,13 +785,21 @@ class DynamicFormBuilder {
             if (e.target.checked) {
                 badge.textContent = 'Active';
                 badge.className = 'badge bg-success';
-                this.isDraft = false;
-                this.elements.draftIndicator.textContent = '';
             } else {
                 badge.textContent = 'Inactive';
                 badge.className = 'badge bg-secondary';
-                this.isDraft = true;
+            }
+        });
+        this.elements.isDraftInput?.addEventListener('change', (e) => {
+            this.isDraft = e.target.checked;
+            if (e.target.checked) {
+                this.elements.draftBadge.textContent = 'Draft';
+                this.elements.draftBadge.className = 'badge bg-warning';
                 this.elements.draftIndicator.textContent = '(Draft)';
+            } else {
+                this.elements.draftBadge.textContent = 'Published';
+                this.elements.draftBadge.className = 'badge bg-success';
+                this.elements.draftIndicator.textContent = '';
             }
         });
         document.addEventListener('keydown', (e) => {
@@ -1455,6 +1475,10 @@ class DynamicFormBuilder {
 
     saveAsDraft() {
         this.isDraft = true;
+        this.elements.isDraftInput.checked = true;
+        this.elements.draftBadge.textContent = 'Draft';
+        this.elements.draftBadge.className = 'badge bg-warning';
+        this.elements.draftIndicator.textContent = '(Draft)';
         this.elements.form.querySelector('button[type="submit"]').click();
     }
 
@@ -1479,7 +1503,7 @@ class DynamicFormBuilder {
 
         this.hideErrors();
         const formData = new FormData(this.elements.form);
-        formData.append('is_draft', this.isDraft ? '1' : '0');
+        formData.append('is_draft', this.elements.isDraftInput.checked ? '1' : '0');
 
         // Clean field_options before submission
         const fieldItems = this.elements.fieldsContainer.querySelectorAll('.field-item');
