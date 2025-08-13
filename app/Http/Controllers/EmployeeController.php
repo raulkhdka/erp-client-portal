@@ -15,7 +15,7 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $employees = Employee::with('user')->paginate(4);
+        $employees = Employee::with('user')->paginate(6);
         return view('admin.employees.index', compact('employees'));
     }
 
@@ -32,7 +32,9 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        // Clean and transform hire_date before validation
+        $cleanHireDate = (int) str_replace(['-', ' '], '', $request->hire_date);
+        $validated = $request->validate([
             'user_name' => 'required|string|max:255',
             'employee_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
@@ -41,9 +43,12 @@ class EmployeeController extends Controller
             'department' => 'nullable|string',
             'position' => 'required|string',
             'phone' => 'nullable|string|max:15',
-            'hire_date' => 'required|date',
+            'hire_date' => 'required|string',
             'salary' => 'nullable|numeric',
+            'permissions' => 'nullable|array',
         ]);
+
+        $validated['hire_date'] = $cleanHireDate;
 
         try {
             DB::beginTransaction();
@@ -55,7 +60,7 @@ class EmployeeController extends Controller
             // Create new user
             $user = User::create([
                 'name' => $username,
-                'email' => $request->email,
+                'email' => $validated['email'],
                 'password' => Hash::make($request->password),
                 'role' => User::ROLE_EMPLOYEE,
             ]);
@@ -63,15 +68,15 @@ class EmployeeController extends Controller
             // Create employee
             Employee::create([
                 'user_id' => $user->id,
-                'name' => $request->employee_name,
-                'employee_id' => $request->employee_id,
-                'department' => $request->department,
-                'position' => $request->position,
-                'phone' => $request->phone,
-                'hire_date' => $request->hire_date,
-                'salary' => $request->salary,
+                'name' => $validated['employee_name'],
+                'employee_id' => $validated['employee_id'],
+                'department' => $validated['department'] ?? null,
+                'position' => $validated['position'],
+                'phone' => $validated['phone'] ?? null,
+                'hire_date' => $validated['hire_date'],
+                'salary' => $validated['salary'] ?? null,
                 'status' => 'active',
-                'permissions' => $request->permissions ?? [],
+                'permissions' => $validated['permissions'] ?? [],
             ]);
 
             DB::commit();
@@ -97,6 +102,7 @@ class EmployeeController extends Controller
     public function edit(string $id)
     {
         $employee = Employee::with('user')->findOrFail($id);
+
         return view('admin.employees.edit', compact('employee'));
     }
 
@@ -107,40 +113,42 @@ class EmployeeController extends Controller
     {
         $employee = Employee::findOrFail($id);
 
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $employee->user_id,
             'employee_id' => 'required|string|unique:employees,employee_id,' . $id,
             'department' => 'nullable|string',
             'position' => 'required|string',
             'phone' => 'nullable|string|max:15',
-            'hire_date' => 'required|date',
+            'hire_date' => 'required|string', // not `date` because it's Nepali format
             'salary' => 'nullable|numeric',
             'status' => 'nullable|in:active,inactive,terminated',
+            'permissions' => 'nullable|array',
         ]);
+
+        // Clean hire_date (remove - and spaces)
+        $validated['hire_date'] = (int) str_replace(['-', ' '], '', $validated['hire_date']);
 
         try {
             DB::beginTransaction();
 
-            // Update user
             $employee->user->update([
-                'email' => $request->email,
+                'email' => $validated['email'],
             ]);
 
-            // Update employee
             $employee->update([
-                'employee_id' => $request->employee_id,
-                'department' => $request->department,
-                'position' => $request->position,
-                'phone' => $request->phone,
-                'hire_date' => $request->hire_date,
-                'salary' => $request->salary,
-                'status' => $request->status ?? $employee->status, //Use existing status if not provided
-                'permissions' => $request->permissions ?? [],
+                'employee_id' => $validated['employee_id'],
+                'department' => $validated['department'] ?? null,
+                'position' => $validated['position'],
+                'phone' => $validated['phone'] ?? null,
+                'hire_date' => $validated['hire_date'],
+                'salary' => $validated['salary'] ?? null,
+                'status' => $validated['status'] ?? $employee->status,
+                'permissions' => $validated['permissions'] ?? [],
             ]);
 
             DB::commit();
-            return redirect()->route('admin.employees.index', $employee->id)->with('success', 'Employee updated successfully.');
+            return redirect()->route('admin.employees.index')->with('success', 'Employee updated successfully.');
         } catch (\Exception $e) {
             DB::rollback();
             return back()->withErrors(['error' => 'Failed to update employee: ' . $e->getMessage()]);

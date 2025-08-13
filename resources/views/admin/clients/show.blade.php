@@ -299,7 +299,12 @@
                             @endif
                             <div class="info-item mb-3">
                                 <i class="fas fa-calendar-alt me-2"></i>
-                                <strong>Member Since:</strong> <span>{{ $client->created_at->format('M d, Y') }}</span>
+                                @if($client->created_at)
+                                    {!! $client->created_at_nepali_html !!}
+                                @else
+                                    Not provided
+                                @endif
+                                {{-- <strong>Member Since:</strong> <span>{{ $client->created_at->format('M d, Y') }}</span> --}}
                             </div>
                         </div>
                     </div>

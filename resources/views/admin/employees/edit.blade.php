@@ -282,8 +282,8 @@
                       <div class="col-md-6">
                         <label for="hire_date" class="form-label">Hire Date <span class="text-danger">*</span></label>
                         <div class="input-group">
-                          <input type="date" class="form-control @error('hire_date') is-invalid @enderror"
-                            id="hire_date" name="hire_date" value="{{ old('hire_date', $employee->hire_date->format('Y-m-d')) }}" required placeholder="Select date" autocomplete="off">
+                          <input type="text" class="form-control nepali-date @error('hire_date') is-invalid @enderror"
+                            id="hire_date" name="hire_date" value="{{ old('hire_date', $employee->hire_date_formatted) }}" required placeholder="Select date" autocomplete="off">
                           <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                           @error('hire_date')
                             <div class="invalid-feedback">{{ $message }}</div>

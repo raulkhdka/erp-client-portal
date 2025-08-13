@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo; // Import BelongsTo
 use Illuminate\Database\Eloquent\Relations\HasMany;   // Import HasMany
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Services\ClientCacheService;
+use App\Helpers\NepaliDateHelper;
 
 class Client extends Model
 {
@@ -22,6 +23,12 @@ class Client extends Model
         'business_license',
         'status',
         'notes'
+    ];
+
+    // Append these virtual attributes automatically when toArray() or JSON used
+    protected $appends = [
+        'created_at_nepali_html',
+        'updated_at_nepali_html',
     ];
 
     protected $casts = [
@@ -41,6 +48,26 @@ class Client extends Model
         static::deleted(function ($client) {
             ClientCacheService::clearCache();
         });
+
+    }
+
+    // Accessors for Nepali HTML dates (do not store in DB)
+    public function getCreatedAtNepaliHtmlAttribute()
+    {
+        if (!$this->created_at) {
+            return 'N/A';
+        }
+
+        return NepaliDateHelper::auto_nepali_date($this->created_at->format('Y-m-d'), 'formatted');
+    }
+
+    public function getUpdatedAtNepaliHtmlAttribute()
+    {
+        if (!$this->updated_at) {
+            return 'N/A';
+        }
+
+        return NepaliDateHelper::auto_nepali_date($this->updated_at->format('Y-m-d'), 'formatted');
     }
 
     // Relationships
@@ -137,4 +164,9 @@ class Client extends Model
     {
         return $this->belongsToMany(DynamicForm::class, 'dynamic_form_client');
     }
+
+    public static function convertAdToBs($adDate)
+      {
+          return NepaliDateHelper::auto_nepali_date($adDate, 'formatted');
+      }
 }

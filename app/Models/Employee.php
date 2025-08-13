@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Helpers\NepaliDateHelper;
 
 class Employee extends Model
 {
@@ -24,9 +25,86 @@ class Employee extends Model
 
     protected $casts = [
         'permissions' => 'array',
-        'hire_date' => 'date',
+        'hire_date' => 'integer',
         'salary' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
+
+    /**
+     * Accessor: get hire_date formatted as YYYY-MM-DD string.
+     * Converts the integer BS date to a date string.
+     */
+    public function getHireDateFormattedAttribute()
+    {
+        if (!$this->hire_date) {
+            return null;
+        }
+
+        // Convert integer to string and pad zeros to 8 digits (YYYYMMDD)
+        $hd = str_pad((string)$this->hire_date, 8, '0', STR_PAD_LEFT);
+
+        // Validate length
+        if (strlen($hd) !== 8) {
+            return null;
+        }
+
+        // Format as YYYY-MM-DD
+        return substr($hd, 0, 4) . '-' . substr($hd, 4, 2) . '-' . substr($hd, 6, 2);
+    }
+
+    /**
+     * Accessor: get Nepali date HTML for hire_date (BS integer).
+     * Uses your helper to generate formatted Nepali HTML.
+     */
+    public function getHireDateNepaliHtmlAttribute()
+    {
+        if (!$this->hire_date) {
+            return 'N/A';
+        }
+
+        return NepaliDateHelper::auto_nepali_date_bs_integer($this->hire_date, 'formatted');
+    }
+
+    /**
+     * Accessor: format created_at as Y-m-d string.
+     */
+    public function getCreatedAtFormattedAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('Y-m-d') : null;
+    }
+
+    /**
+     * Accessor: get Nepali date HTML for created_at.
+     */
+    public function getCreatedAtNepaliHtmlAttribute()
+    {
+        if (!$this->created_at) {
+            return 'N/A';
+        }
+
+        return NepaliDateHelper::auto_nepali_date($this->created_at->format('Y-m-d'), 'formatted');
+    }
+
+    /**
+     * Accessor: format updated_at as Y-m-d string.
+     */
+    public function getUpdatedAtFormattedAttribute()
+    {
+        return $this->updated_at ? $this->updated_at->format('Y-m-d') : null;
+    }
+
+    /**
+     * Accessor: get Nepali date HTML for updated_at.
+     */
+    public function getUpdatedAtNepaliHtmlAttribute()
+    {
+        if (!$this->updated_at) {
+            return 'N/A';
+        }
+
+        return NepaliDateHelper::auto_nepali_date($this->updated_at->format('Y-m-d'), 'formatted');
+    }
 
     // Relationships
     public function user()

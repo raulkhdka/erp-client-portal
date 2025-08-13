@@ -25,22 +25,16 @@
     <style>
         :root {
             --primary-color: #10b981;
-            /* Define primary color for consistency */
         }
 
-        /* Modern Card Styling */
         .modern-card {
-            /* border: 1px solid #000000; */
-            /* Black border for modern look */
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             background: #f7f7f7;
-            /* Light grey background */
             overflow: hidden;
             position: relative;
             max-height: 600px;
-            /* Set max height for scrollable cards */
             display: flex;
             flex-direction: column;
             margin-bottom: 1.5rem !important;
@@ -49,7 +43,6 @@
         .modern-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-            /* background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2)); Gradient border effect */
         }
 
         .modern-card .card-header {
@@ -58,7 +51,6 @@
             position: relative;
             overflow: hidden;
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            /* Unified gradient for all headers */
             color: white;
             z-index: 1;
         }
@@ -71,20 +63,15 @@
             right: 0;
             bottom: 0;
             border-radius: 16px;
-            /* Match the card's border-radius */
             padding: 2px;
-            /* This defines the thickness of the border */
             background: linear-gradient(135deg, rgb(187, 34, 187) 0%, rgb(42, 42, 209) 100%);
-            -webkit-mask:
-                linear-gradient(rgb(179, 39, 179) 0 0) content-box,
-                linear-gradient(rgb(41, 41, 218) 0 0);
+            -webkit-mask: linear-gradient(rgb(179, 39, 179) 0 0) content-box, linear-gradient(rgb(41, 41, 218) 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-
 
         .modern-card .card-header::before {
             content: '';
@@ -109,7 +96,6 @@
             padding: 2rem;
             flex-grow: 1;
             overflow-y: auto;
-            /* Enable vertical scrolling */
             scrollbar-width: thin;
             scrollbar-color: var(--primary-color) #e5e7eb;
         }
@@ -138,7 +124,6 @@
             align-items: center;
         }
 
-        /* Table Styling */
         .modern-table {
             border-collapse: separate;
             border-spacing: 0;
@@ -148,7 +133,6 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             border: 1px solid #000000;
             background: #f7f7f7;
-            /* Light grey background */
         }
 
         .modern-table thead th {
@@ -206,7 +190,6 @@
             border-bottom-right-radius: 10px;
         }
 
-        /* Links and Badges */
         a.text-decoration-none {
             color: #2563eb;
             transition: color 0.2s ease;
@@ -229,7 +212,6 @@
             transform: scale(1.05);
         }
 
-        /* Side Panel Sticky Scroll */
         .side-panel {
             position: sticky;
             top: 1.5rem;
@@ -255,13 +237,32 @@
             transition: background-color 0.3s ease;
         }
 
-        /* Main Content */
         .main-content {
             position: relative;
             z-index: 1;
         }
 
-        /* Responsive Design */
+        /* Nepali Date Styling */
+        .nepali-date-display {
+            display: inline-block;
+        }
+
+        .date-toggle {
+            cursor: pointer;
+            margin-left: 5px;
+            color: #007bff;
+            text-decoration: underline;
+            font-size: 0.9em;
+            border: none;
+            background: none;
+            padding: 0;
+            transition: color 0.3s ease;
+        }
+
+        .date-toggle:hover {
+            color: #0056b3;
+        }
+
         @media (max-width: 992px) {
             .modern-card {
                 border-radius: 12px;
@@ -298,7 +299,6 @@
             }
         }
 
-        /* Animations */
         .fade-in {
             animation: fadeIn 0.6s ease-out;
         }
@@ -308,7 +308,6 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -316,6 +315,14 @@
         }
     </style>
 @endpush
+
+{{-- @push('scripts')
+    <!-- Include Sajan Maharjan's Nepali Functions Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nepali-date-converter/1.0.0/nepali-functions.js"></script>
+
+    <!-- Include your updated nepalidatehelper.js -->
+    <script src="{{ asset('js/nepalidatehelper.js') }}"></script>
+@endpush --}}
 
 @section('content')
     <div class="row">
@@ -327,7 +334,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3 text-nowrap">
                             <strong><i class="fas fa-user me-2"></i>Full Name:</strong>
                             <p class="text-muted">{{ $employee->name }}</p>
                         </div>
@@ -345,7 +352,13 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <strong><i class="fas fa-calendar-alt me-2"></i>Hire Date:</strong>
-                            <p class="text-muted">{{ $employee->hire_date->format('F j, Y') }}</p>
+                            <p class="text-muted">
+                                @if($employee->hire_date)
+                                    {!! $employee->hire_date_nepali_html !!}
+                                @else
+                                    Not provided
+                                @endif
+                            </p>
                         </div>
                         <div class="col-md-6 mb-3">
                             <strong><i class="fas fa-money-bill-wave me-2"></i>Salary:</strong>
@@ -372,8 +385,7 @@
                             <strong><i class="fas fa-phone me-2"></i>Phone:</strong>
                             <p class="text-muted">
                                 @if ($employee->phone)
-                                    <a href="tel:{{ $employee->phone }}"
-                                        class="text-decoration-none">{{ $employee->phone }}</a>
+                                    <a href="tel:{{ $employee->phone }}" class="text-decoration-none">{{ $employee->phone }}</a>
                                 @else
                                     Not provided
                                 @endif
@@ -382,8 +394,7 @@
                         <div class="col-md-6 mb-3">
                             <strong><i class="fas fa-envelope me-2"></i>Email Address:</strong>
                             <p class="text-muted">
-                                <a href="mailto:{{ $employee->user->email }}"
-                                    class="text-decoration-none">{{ $employee->user->email }}</a>
+                                <a href="mailto:{{ $employee->user->email }}" class="text-decoration-none">{{ $employee->user->email }}</a>
                             </p>
                         </div>
                     </div>
@@ -411,17 +422,14 @@
                                     @foreach ($employee->accessibleClients as $client)
                                         <tr>
                                             <td>
-                                                <a href="{{ route('admin.clients.show', $client->id) }}"
-                                                    class="text-decoration-none">
+                                                <a href="{{ route('admin.clients.show', $client->id) }}" class="text-decoration-none">
                                                     {{ $client->name }}
                                                 </a>
                                             </td>
                                             <td>{{ $client->company_name ?: '-' }}</td>
-                                            <td>{{ $client->pivot->access_granted_date ? \Carbon\Carbon::parse($client->pivot->access_granted_date)->format('M j, Y') : '-' }}
-                                            </td>
+                                            <td>{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($client->pivot->access_granted_date, 'readable') !!}</td>
                                             <td>
-                                                <span
-                                                    class="badge bg-{{ $client->pivot->is_active ? 'success' : 'secondary' }}">
+                                                <span class="badge bg-{{ $client->pivot->is_active ? 'success' : 'secondary' }}">
                                                     {{ $client->pivot->is_active ? 'Active' : 'Inactive' }}
                                                 </span>
                                             </td>
@@ -450,15 +458,21 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span><i class="fas fa-clock me-2"></i>Active Since:</span>
-                        <span class="text-muted">{{ $employee->hire_date->diffForHumans() }}</span>
+                        <span class="text-muted">
+                            @if($employee->hire_date)
+                                {!! $employee->hire_date_nepali_html !!}
+                            @else
+                                Not provided
+                            @endif
+                        </span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span><i class="fas fa-user-plus me-2"></i>Account Created:</span>
-                        <span class="text-muted">{{ $employee->user->created_at->format('M j, Y') }}</span>
+                        <span class="text-muted">{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($employee->user->created_at, 'readable') !!}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-sync-alt me-2"></i>Last Updated:</span>
-                        <span class="text-muted">{{ $employee->updated_at->format('M j, Y') }}</span>
+                        <span class="text-muted">{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($employee->updated_at, 'readable') !!}</span>
                     </div>
                 </div>
             </div>
@@ -470,12 +484,10 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('admin.employees.edit', $employee->id) }}"
-                            class="btn btn-outline-primary btn-sm">
+                        <a href="{{ route('admin.employees.edit', $employee->id) }}" class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-edit me-2"></i>Edit Employee
                         </a>
-                        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#statusModal">
+                        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#statusModal">
                             <i class="fas fa-toggle-on me-2"></i>Change Status
                         </button>
                         <button type="button" class="btn btn-outline-info btn-sm">
@@ -500,13 +512,11 @@
                 </div>
                 <div class="modal-body">
                     <p>Are you sure you want to delete <strong>{{ $employee->user->name }}</strong>?</p>
-                    <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This action cannot be undone
-                        and will also delete their user account.</p>
+                    <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This action cannot be undone and will also delete their user account.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form method="POST" action="{{ route('admin.employees.destroy', $employee->id) }}"
-                        class="d-inline">
+                    <form method="POST" action="{{ route('admin.employees.destroy', $employee->id) }}" class="d-inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">
@@ -534,7 +544,7 @@
                     <input type="hidden" name="employee_id" value="{{ $employee->employee_id }}">
                     <input type="hidden" name="department" value="{{ $employee->department }}">
                     <input type="hidden" name="position" value="{{ $employee->position }}">
-                    <input type="hidden" name="hire_date" value="{{ $employee->hire_date->format('Y-m-d') }}">
+                    <input type="hidden" name="hire_date" value="{{ $employee->hire_date ?? 'N/A' }}">
                     <input type="hidden" name="salary" value="{{ $employee->salary }}">
                     @if ($employee->permissions)
                         @foreach ($employee->permissions as $permission)
@@ -543,17 +553,13 @@
                     @endif
 
                     <div class="modal-body">
-                        <p>Current status: <span
-                                class="badge bg-{{ $employee->status === 'active' ? 'success' : ($employee->status === 'inactive' ? 'warning' : 'danger') }}">{{ ucfirst($employee->status) }}</span>
-                        </p>
+                        <p>Current status: <span class="badge bg-{{ $employee->status === 'active' ? 'success' : ($employee->status === 'inactive' ? 'warning' : 'danger') }}">{{ ucfirst($employee->status) }}</span></p>
 
                         <label for="status" class="form-label">New Status:</label>
                         <select class="form-control" id="status" name="status" required>
                             <option value="active" {{ $employee->status === 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ $employee->status === 'inactive' ? 'selected' : '' }}>Inactive
-                            </option>
-                            <option value="terminated" {{ $employee->status === 'terminated' ? 'selected' : '' }}>
-                                Terminated</option>
+                            <option value="inactive" {{ $employee->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                            <option value="terminated" {{ $employee->status === 'terminated' ? 'selected' : '' }}>Terminated</option>
                         </select>
                     </div>
                     <div class="modal-footer">

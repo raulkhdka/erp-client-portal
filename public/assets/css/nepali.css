@@ -1,0 +1,385 @@
+/* Custom CSS for Nepali Date Picker */
+/* Add this to your assets/css/app.css or create a separate CSS file */
+
+/* =================================
+   BASIC CUSTOMIZATION
+   ================================= */
+
+/* Customize the date picker container */
+.ndp-container {
+    font-family: 'Inter', sans-serif !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e3e6f0 !important;
+    position: absolute !important;
+    margin-top: 5px !important;
+    z-index: 10000 !important; /* Increased z-index for modal compatibility */
+}
+
+/* Specific positioning for hire_date */
+#hire_date ~ .ndp-container {
+    top: 100% !important; /* Position directly below input */
+    left: 0 !important;
+    transform: translateY(5px); /* Small offset */
+}
+
+/* Customize header background */
+.ndp-header {
+    background: #f8f9fc !important;
+    color: #5a5c69 !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 15px !important;
+}
+
+/* Customize navigation buttons */
+.ndp-nav-btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 5px 10px !important;
+    transition: all 0.3s ease !important;
+}
+
+.ndp-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Customize month/year dropdowns */
+.ndp-select {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border-radius: 4px !important;
+    color: #333 !important;
+    padding: 5px !important;
+}
+
+/* =================================
+   CALENDAR GRID CUSTOMIZATION
+   ================================= */
+
+/* Customize day cells */
+.ndp-day {
+    transition: all 0.2s ease !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+}
+
+/* Today's date styling */
+.ndp-today {
+    background: #f8f9fc !important;
+    color: #4e73df !important;
+    font-weight: bold !important;
+    border: 2px solid #4e73df !important;
+}
+
+/* Selected date styling */
+.ndp-selected {
+    background: #4e73df !important;
+    color: white !important;
+    font-weight: bold !important;
+}
+
+/* Hover effect for dates */
+.ndp-day:hover {
+    background: #e3e6f0 !important;
+    color: #4e73df !important;
+    transform: scale(1.05) !important;
+}
+
+/* Disabled dates */
+.ndp-disabled {
+    color: #ccc !important;
+    background: #f8f9fa !important;
+}
+
+/* Holiday (Saturday) styling */
+.ndp-saturday-holiday {
+    color: red !important;
+}
+
+/* =================================
+   MINI ENGLISH DATES STYLING
+   ================================= */
+
+/* Style the mini English dates */
+.ndp-mini-english {
+    font-size: 0.7em !important;
+    color: #6c757d !important;
+    position: absolute !important;
+    bottom: 2px !important;
+    right: 2px !important;
+    font-weight: 300 !important;
+}
+
+/* Mini English dates for selected day */
+.ndp-selected .ndp-mini-english {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Mini English dates for today */
+.ndp-today .ndp-mini-english {
+    color: #4e73df !important;
+    font-weight: 500 !important;
+}
+
+/* =================================
+   DARK MODE CUSTOMIZATION
+   ================================= */
+
+/* Dark mode using our custom class */
+.ndp-dark-theme,
+.ndp-dark-theme *,
+.datepicker.ndp-dark-theme,
+.ndp-calendar.ndp-dark-theme {
+    background: #000000 !important;
+    border-color: #4a5568 !important;
+    color: #ffffff !important;
+}
+
+/* Dark mode header */
+.ndp-dark-theme .ndp-header,
+.ndp-dark-theme thead,
+.ndp-dark-theme .calendar-header {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Dark mode navigation buttons */
+.ndp-dark-theme .ndp-nav-btn,
+.ndp-dark-theme .nav-btn,
+.ndp-dark-theme button {
+    background: #4a5568 !important;
+    color: #ffffff !important;
+    border-color: #4a5568 !important;
+}
+
+.ndp-dark-theme .ndp-nav-btn:hover,
+.ndp-dark-theme .nav-btn:hover,
+.ndp-dark-theme button:hover {
+    background: #718096 !important;
+    color: white !important;
+}
+
+/* Dark mode day cells */
+.ndp-dark-theme .ndp-day,
+.ndp-dark-theme .day,
+.ndp-dark-theme td {
+    color: #ffffff !important;
+    background: transparent !important;
+}
+
+.ndp-dark-theme .ndp-day:hover,
+.ndp-dark-theme .day:hover,
+.ndp-dark-theme td:hover {
+    background: #4a5568 !important;
+    color: white !important;
+}
+
+/* Dark mode today */
+.ndp-dark-theme .ndp-today,
+.ndp-dark-theme .today {
+    background: #4a5568 !important;
+    color: #63b3ed !important;
+    border-color: #63b3ed !important;
+}
+
+/* Dark mode selected */
+.ndp-dark-theme .ndp-selected,
+.ndp-dark-theme .selected,
+.ndp-dark-theme .active {
+    background: #63b3ed !important;
+    color: #000000 !important;
+}
+
+/* Dark mode disabled dates */
+.ndp-dark-theme .ndp-disabled,
+.ndp-dark-theme .disabled {
+    color: #718096 !important;
+    background: #000000 !important;
+}
+
+/* Dark mode dropdowns */
+.ndp-dark-theme select,
+.ndp-dark-theme .ndp-select {
+    background: #4a5568 !important;
+    color: #ffffff !important;
+    border-color: #4a5568 !important;
+}
+
+/* Dark mode mini english dates */
+.ndp-dark-theme .ndp-mini-english,
+.ndp-dark-theme .mini-english {
+    color: #a0aec0 !important;
+}
+
+.ndp-dark-theme .ndp-selected .ndp-mini-english,
+.ndp-dark-theme .selected .mini-english {
+    color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Dark mode holiday (Saturday) styling */
+.ndp-dark-theme .ndp-saturday-holiday {
+    color: red !important;
+}
+
+/* Dark mode for common class names used in various versions */
+.ndp-dark-theme .calendar,
+.ndp-dark-theme .datepicker-dropdown,
+.ndp-dark-theme .datepicker-table {
+    background: #000000 !important;
+    border-color: #4a5568 !important;
+    color: #ffffff !important;
+}
+
+/* Additional selectors for different versions of the library */
+.ndp-dark-theme .nepali-datepicker-calendar,
+.ndp-dark-theme .nepali-date-picker,
+.ndp-dark-theme .ndp-wrapper,
+.ndp-dark-theme .calendar-wrapper {
+    background: #000000 !important;
+    border: 1px solid #4a5568 !important;
+    color: #ffffff !important;
+}
+
+/* =================================
+   INPUT FIELD STYLING
+   ================================= */
+
+/* Style the input field when date picker is active */
+.nepali-date:focus,
+[data-nepali-date]:focus {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 .2rem rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Add a calendar icon to date inputs */
+.nepali-date,
+[data-nepali-date] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 16px !important;
+    padding-right: 40px !important;
+}
+
+/* =================================
+   RESPONSIVE DESIGN
+   ================================= */
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .ndp-container {
+        width: 100% !important;
+        max-width: 350px !important;
+    }
+
+    .ndp-day {
+        font-size: 0.9em !important;
+        padding: 8px 4px !important;
+    }
+
+    .ndp-mini-english {
+        font-size: 0.6em !important;
+    }
+}
+
+/* =================================
+   ANIMATION EFFECTS
+   ================================= */
+
+/* Smooth appearance animation */
+.ndp-container {
+    animation: ndpFadeIn 0.3s ease !important;
+}
+
+@keyframes ndpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Date cell animation */
+.ndp-day {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* =================================
+   BOOTSTRAP INTEGRATION
+   ================================= */
+
+/* Make it work well with Bootstrap forms */
+.form-group .ndp-container,
+.mb-3 .ndp-container {
+    margin-top: 5px;
+}
+
+/* Match Bootstrap button styling for navigation */
+.ndp-nav-btn {
+    font-size: 0.875rem !important;
+}
+
+/* =================================
+   CUSTOM THEME VARIANTS
+   ================================= */
+
+/* Blue Theme */
+.ndp-container.ndp-theme-blue .ndp-header {
+    background: linear-gradient(45deg, #007bff, #0056b3) !important;
+}
+
+.ndp-container.ndp-theme-blue .ndp-selected {
+    background: #007bff !important;
+}
+
+.ndp-container.ndp-theme-blue .ndp-today {
+    border-color: #007bff !important;
+    color: #007bff !important;
+}
+
+/* Green Theme */
+.ndp-container.ndp-theme-green .ndp-header {
+    background: linear-gradient(45deg, #28a745, #1e7e34) !important;
+}
+
+.ndp-container.ndp-theme-green .ndp-selected {
+    background: #28a745 !important;
+}
+
+.ndp-container.ndp-theme-green .ndp-today {
+    border-color: #28a745 !important;
+    color: #28a745 !important;
+}
+
+/* Red Theme */
+.ndp-container.ndp-theme-red .ndp-header {
+    background: linear-gradient(45deg, #dc3545, #c82333) !important;
+}
+
+.ndp-container.ndp-theme-red .ndp-selected {
+    background: #dc3545 !important;
+}
+
+.ndp-container.ndp-theme-red .ndp-today {
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+/* =================================
+   FORM SCROLL CONTAINER
+   ================================= */
+
+/* Ensure scroll container is properly styled */
+.form-scroll {
+    position: relative;
+}
+
+/* Ensure modal container has high z-index */
+.modal .ndp-container {
+    z-index: 10000 !important;
+}

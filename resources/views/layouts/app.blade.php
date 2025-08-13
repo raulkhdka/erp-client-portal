@@ -21,6 +21,10 @@
     <!-- Custom Application Styles -->
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/sidebar.css') }}" rel="stylesheet">
+    <!-- Custom Nepali Date Picker Styles -->
+    <link href="{{ asset('assets/css/ndp.min.css') }}" rel="stylesheet">
+
+    <link href="{{ asset('assets/css/nepali.css') }}" rel="stylesheet">
 
     <style>
         html,
@@ -151,6 +155,14 @@
 
     <script src="{{ asset('assets/js/utils.js') }}"></script>
     <script src="{{ asset('assets/js/sidebar.js') }}"></script>
+    <!-- Custom Script for Nepali Date Picker -->
+    <script src="{{ asset('assets/js/ndp.min.js') }}" ></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nepali-date-converter/1.0.0/nepali-functions.js"></script>
+    <!-- Custom Script for Nepali Date Converter -->
+    <script src="{{ asset('assets/js/helpers/nepaliDateHelper.js') }}"> </script>
+
+    <script src="{{ asset('assets/js/helpers/nepaliDatePickerHelper.js') }}"></script>
 
     @auth
         <!-- Session Management -->

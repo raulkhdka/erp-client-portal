@@ -545,7 +545,9 @@
                                                     <td>{{ $employee->user->email }}</td>
                                                     <td>{{ $employee->department ?? 'Not specified' }}</td>
                                                     <td>{{ $employee->position }}</td>
-                                                    <td>{{ $employee->hire_date->format('M d, Y') }}</td>
+                                                    <td>
+                                                        {{ $employee->hire_date_formatted ?? 'N/A' }}
+                                                    </td>
                                                     <td>
                                                         <div class="status-dropdown">
                                                             <button

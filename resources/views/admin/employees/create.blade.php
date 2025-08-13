@@ -362,8 +362,8 @@
                       <div class="col-md-6">
                         <label for="hire_date" class="form-label">Hire Date <span class="text-danger">*</span></label>
                         <div class="input-group">
-                          <input type="date" class="form-control @error('hire_date') is-invalid @enderror"
-                            id="hire_date" name="hire_date" value="{{ old('hire_date') }}" required placeholder="Select date" autocomplete="off">
+                          <input type="text" class="form-control nepali-date @error('hire_date') is-invalid @enderror"
+                            id="hire_date" name="hire_date" data-mode="dark" value="{{ old('hire_date') }}" required placeholder="Select date" autocomplete="off">
                           <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                           @error('hire_date')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -530,5 +530,24 @@
       // Generate username on page load (e.g., after validation errors)
       generateUsername();
     });
+
+    // document.querySelectorAll('.hire-select').forEach(select => {
+    //                 if (!select.tomselect) {
+    //                     new TomSelect(select, {
+    //                         create: false,
+    //                         placeholder: 'Select date',
+    //                         allowEmptyOption: true,
+    //                         render: {
+    //                             option: function(item, escape) {
+    //                                 return '<div>' + escape(item.text) + '</div>';
+    //                             },
+    //                             item: function(item, escape) {
+    //                                 return '<div>' + escape(item.text) + '</div>';
+    //                             }
+    //                         }
+    //                     });
+    //                 }
+    //             });
+
   </script>
 @endpush

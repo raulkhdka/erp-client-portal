@@ -118,7 +118,8 @@
     }
     .form-control, .form-select, textarea.form-control {
       border-radius: 12px;
-      border: 2px solid #eef2f6;
+      border: none;
+      outline: none;
       background: #f8fafc;
       transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
     }
