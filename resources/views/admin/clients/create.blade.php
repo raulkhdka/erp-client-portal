@@ -68,22 +68,7 @@
     .form-shell {
       --stack-offset: 160px; /* adjust to your header/breadcrumb/actions total height if needed */
     }
-    @media (min-width: 992px) {
-      .form-col { min-height: 0; }
-      .form-shell {
-        height: calc(100dvh - var(--stack-offset));
-        display: flex;
-        min-height: 0; /* required for child overflow */
-      }
-      .form-scroll {
-        flex: 1 1 auto;
-        height: 100%;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 1rem;
-        min-height: 0; /* required for overflow */
-      }
-    }
+
 
     /* Section title */
     .section-title {
@@ -222,314 +207,311 @@
       .card-modern { transition: none; }
       .form-control, .form-select, textarea.form-control { transition: none; }
     }
+    form>div{
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    form .subcard , form>div{
+        background: white;
+    }
   </style>
 @endsection
 
 @section('content')
-<div class="container-fluid form-wrap">
-  <div class="row g-4 justify-content-center">
-    <div class="col-12 form-col">
-      <div class="form-shell">
-        <div class="form-scroll">
-          <div class="card card-modern">
-            <div class="card-body">
-              <form method="POST" action="{{ route('admin.clients.store') }}">
-                @csrf
+<div class="p-4 px-5">
+    <form method="POST" action="{{ route('admin.clients.store') }}">
+      @csrf
 
-                {{-- Client Creation --}}
-                <div class="mb-4">
-                  <div class="section-title">
-                    <div class="icon"><i class="fas fa-user-plus"></i></div>
-                    <div>
-                      <div>Client Creation</div>
-                      <div class="section-subtext">Create the client profile and login credentials.</div>
-                    </div>
-                  </div>
+      {{-- Client Creation --}}
+      <div class="mb-4">
+        <div class="section-title">
+          <div class="icon"><i class="fas fa-user-plus"></i></div>
+          <div>
+            <div>Client Creation</div>
+            <div class="section-subtext">Create the client profile and login credentials.</div>
+          </div>
+        </div>
 
-                  <div class="subcard">
-                    <div class="row g-3">
-                      <div class="col-md-6">
-                        <label for="client_name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-id-card"></i></span>
-                          <input type="text" class="form-control @error('client_name') is-invalid @enderror"
-                            id="client_name" name="client_name" value="{{ old('client_name') }}" required placeholder="e.g. Jane Cooper">
-                          @error('client_name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                          @enderror
-                        </div>
-                      </div>
+        <div class="subcard">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="client_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                <input type="text" class="form-control @error('client_name') is-invalid @enderror"
+                  id="client_name" name="client_name" value="{{ old('client_name') }}" required placeholder="e.g. Jane Cooper">
+                @error('client_name')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            </div>
 
-                      <div class="col-md-6">
-                        <label for="username" class="form-label">Username (Auto-generated)</label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-user"></i></span>
-                          <input type="text" class="form-control" id="username" readonly placeholder="Will generate from name">
-                        </div>
-                      </div>
+            <div class="col-md-6">
+              <label for="username" class="form-label">Username (Auto-generated)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                <input type="text" class="form-control" id="username" readonly placeholder="Will generate from name">
+              </div>
+            </div>
 
-                      {{-- Adjust these to change relative widths (e.g., 6/6 or 5/7) --}}
-                      <div class="col-md-6">
-                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                          <input type="password" class="form-control @error('password') is-invalid @enderror"
-                            id="password" name="password" required placeholder="Choose a secure password">
-                          <button class="btn btn-outline-secondary" type="button" id="togglePassword" tabindex="-1" aria-label="Toggle password visibility">
-                            <i class="fas fa-eye"></i>
-                          </button>
-                          <button class="btn btn-outline-primary" type="button" id="generatePassword" tabindex="-1" title="Generate Random Password">
-                            <i class="fas fa-magic"></i>
-                          </button>
-                          @error('password')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                          @enderror
-                        </div>
-                        <div class="mt-2 d-flex align-items-center gap-2">
-                          <div class="strength flex-grow-1" aria-hidden="true">
-                            <div id="passwordStrengthBar" class="strength-bar"></div>
-                          </div>
-                          <small id="passwordStrengthText" class="text-muted">Strength</small>
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <label for="company_name" class="form-label">Company Name <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-building"></i></span>
-                          <input type="text" class="form-control @error('company_name') is-invalid @enderror"
-                            id="company_name" name="company_name" value="{{ old('company_name') }}" required placeholder="e.g. Acme Inc.">
-                          @error('company_name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                          @enderror
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <label for="tax_id" class="form-label">Tax ID</label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-file-invoice-dollar"></i></span>
-                          <input type="text" class="form-control @error('tax_id') is-invalid @enderror"
-                            id="tax_id" name="tax_id" value="{{ old('tax_id') }}" placeholder="Optional">
-                          @error('tax_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                          @enderror
-                        </div>
-                      </div>
-
-                      <div class="col-md-6">
-                        <label for="business_license" class="form-label">Business License</label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
-                          <input type="text" class="form-control @error('business_license') is-invalid @enderror"
-                            id="business_license" name="business_license" value="{{ old('business_license') }}" placeholder="Optional">
-                          @error('business_license')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                          @enderror
-                        </div>
-                      </div>
-
-                      <div class="col-12">
-                        <label for="address" class="form-label">Address</label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
-                          <textarea class="form-control @error('address') is-invalid @enderror"
-                            id="address" name="address" rows="3" placeholder="Street, City, State, ZIP">{{ old('address') }}</textarea>
-                          @error('address')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                          @enderror
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            {{-- Adjust these to change relative widths (e.g., 6/6 or 5/7) --}}
+            <div class="col-md-6">
+              <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <input type="password" class="form-control @error('password') is-invalid @enderror"
+                  id="password" name="password" required placeholder="Choose a secure password">
+                <button class="btn btn-outline-secondary" type="button" id="togglePassword" tabindex="-1" aria-label="Toggle password visibility">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-outline-primary" type="button" id="generatePassword" tabindex="-1" title="Generate Random Password">
+                  <i class="fas fa-magic"></i>
+                </button>
+                @error('password')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+              </div>
+              <div class="mt-2 d-flex align-items-center gap-2">
+                <div class="strength flex-grow-1" aria-hidden="true">
+                  <div id="passwordStrengthBar" class="strength-bar"></div>
                 </div>
+                <small id="passwordStrengthText" class="text-muted">Strength</small>
+              </div>
+            </div>
 
-                {{-- Email Addresses --}}
-                <div class="mb-4">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="section-title mb-0">
-                      <div class="icon"><i class="fas fa-envelope"></i></div>
-                      <div>Email Addresses</div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="addEmail">
-                      <i class="fas fa-plus me-1"></i>Add Email
-                    </button>
-                  </div>
+            <div class="col-md-6">
+              <label for="company_name" class="form-label">Company Name <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-building"></i></span>
+                <input type="text" class="form-control @error('company_name') is-invalid @enderror"
+                  id="company_name" name="company_name" value="{{ old('company_name') }}" required placeholder="e.g. Acme Inc.">
+                @error('company_name')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            </div>
 
-                  <div id="emailContainer" class="subcard">
-                    <div class="row email-item align-items-end g-3 mb-2">
-                      <div class="col-md-6">
-                        <label class="form-label visually-hidden">Email</label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-at"></i></span>
-                          <input type="email" class="form-control @error('emails.0.email') is-invalid @enderror"
-                            name="emails[0][email]" placeholder="Email address" value="{{ old('emails.0.email') }}" required>
-                          @error('emails.0.email')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                          @enderror
-                        </div>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label visually-hidden">Type</label>
-                        <select class="form-select" name="emails[0][type]">
-                          <option value="primary" {{ old('emails.0.type', 'primary') == 'primary' ? 'selected' : '' }}>Primary</option>
-                          <option value="billing" {{ old('emails.0.type') == 'billing' ? 'selected' : '' }}>Billing</option>
-                          <option value="support" {{ old('emails.0.type') == 'support' ? 'selected' : '' }}>Support</option>
-                          <option value="personal" {{ old('emails.0.type') == 'personal' ? 'selected' : '' }}>Personal</option>
-                        </select>
-                      </div>
-                      <div class="col-md-2 text-end">
-                        <button type="button" class="btn btn-ghost-danger btn-sm remove-email" style="display:none;">
-                          <i class="fas fa-times"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div class="col-md-6">
+              <label for="tax_id" class="form-label">Tax ID</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-file-invoice-dollar"></i></span>
+                <input type="text" class="form-control @error('tax_id') is-invalid @enderror"
+                  id="tax_id" name="tax_id" value="{{ old('tax_id') }}" placeholder="Optional">
+                @error('tax_id')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            </div>
 
-                {{-- Phone Numbers --}}
-                <div class="mb-4">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="section-title mb-0">
-                      <div class="icon"><i class="fas fa-phone"></i></div>
-                      <div>Phone Numbers</div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="addPhone">
-                      <i class="fas fa-plus me-1"></i>Add Phone
-                    </button>
-                  </div>
+            <div class="col-md-6">
+              <label for="business_license" class="form-label">Business License</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                <input type="text" class="form-control @error('business_license') is-invalid @enderror"
+                  id="business_license" name="business_license" value="{{ old('business_license') }}" placeholder="Optional">
+                @error('business_license')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            </div>
 
-                  <div id="phoneContainer" class="subcard">
-                    <div class="row phone-item align-items-end g-3 mb-2">
-                      <div class="col-md-6">
-                        <label class="form-label visually-hidden">Phone</label>
-                        <div class="input-group">
-                          <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                          <input type="text" class="form-control" name="phones[0][phone]" placeholder="Phone number">
-                        </div>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label visually-hidden">Type</label>
-                        <select class="form-select" name="phones[0][type]">
-                          <option value="mobile" {{ old('phones.0.type', 'mobile') == 'mobile' ? 'selected' : '' }}>Mobile</option>
-                          <option value="office" {{ old('phones.0.type') == 'office' ? 'selected' : '' }}>Office</option>
-                          <option value="home" {{ old('phones.0.type') == 'home' ? 'selected' : '' }}>Home</option>
-                          <option value="fax" {{ old('phones.0.type') == 'fax' ? 'selected' : '' }}>Fax</option>
-                        </select>
-                      </div>
-                      <div class="col-md-2 text-end">
-                        <button type="button" class="btn btn-ghost-danger btn-sm remove-phone" style="display:none;">
-                          <i class="fas fa-times"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {{-- Services (Tom Select multi-select) --}}
-                <div class="mb-4">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="section-title mb-0">
-                      <div class="icon"><i class="fas fa-toolbox"></i></div>
-                      <div>Services</div>
-                    </div>
-                    <div class="btn-group">
-                      <a href="{{ route('admin.services.index') }}" class="btn btn-sm btn-outline-info" target="_blank">
-                        <i class="fas fa-external-link-alt me-1"></i>Manage Services
-                      </a>
-                      <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickServiceModal">
-                        <i class="fas fa-plus me-1"></i>Quick Add Service
-                      </button>
-                    </div>
-                  </div>
-
-                  @if($services->count() === 0)
-                    <div class="alert alert-info" id="noServicesAlert">
-                      <i class="fas fa-info-circle me-2"></i>
-                      No services available. You can <button type="button" class="btn btn-link p-0 align-baseline" data-bs-toggle="modal" data-bs-target="#quickServiceModal">create a service</button> or
-                      <a href="{{ route('admin.services.index') }}" class="alert-link" target="_blank">manage all services</a>.
-                    </div>
-                  @endif
-
-                  <div class="subcard">
-                    <label for="servicesSelect" class="form-label">Select Services</label>
-                    <select id="servicesSelect" name="services[]" multiple class="form-select" data-placeholder="Select services...">
-                      @foreach($services as $service)
-                        <option
-                          value="{{ $service->id }}"
-                          {{ in_array($service->id, old('services', [])) ? 'selected' : '' }}
-                          data-detail="{{ $service->detail }}"
-                        >
-                          {{ $service->name }}
-                        </option>
-                      @endforeach
-                    </select>
-                    @error('services')
-                      <div class="invalid-feedback d-block">{{ $message }}</div>
-                    @enderror
-                    <small class="text-muted">Type to search and select multiple services.</small>
-                  </div>
-                </div>
-
-                {{-- Notes --}}
-                <div class="mb-4">
-                  <div class="section-title">
-                    <div class="icon"><i class="fas fa-sticky-note"></i></div>
-                    <div>Notes</div>
-                  </div>
-                  <div class="subcard">
-                    <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional notes about this client...">{{ old('notes') }}</textarea>
-                  </div>
-                </div>
-
-                {{-- Employee Assignment --}}
-                <div class="mb-4">
-                  <div class="section-title">
-                    <div class="icon"><i class="fas fa-user-tag"></i></div>
-                    <div>Employee Assignment</div>
-                  </div>
-                  <p class="text-muted small mb-3">Select an employee who will have access to this client's information.</p>
-                  <div class="subcard">
-                    @if($employees->count() > 0)
-                      <div class="mb-2">
-                        <label for="assigned_employee" class="form-label visually-hidden">Assign Employee</label>
-                        <select class="form-select @error('assigned_employee') is-invalid @enderror"
-                          id="assigned_employee" name="assigned_employee" aria-label="Select employee">
-                          <option value="">Select an employee...</option>
-                          @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}" {{ old('assigned_employee') == $employee->id ? 'selected' : '' }}>
-                              {{ $employee->name }} ({{ $employee->position }}{{ $employee->department ? ' - ' . $employee->department : '' }})
-                            </option>
-                          @endforeach
-                        </select>
-                        @error('assigned_employee')
-                          <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                      </div>
-                    @else
-                      <div class="alert alert-info m-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        No active employees available for assignment. <a href="{{ route('admin.employees.create') }}">Create an employee</a> first.
-                      </div>
-                    @endif
-                  </div>
-                </div>
-
-                {{-- Actions --}}
-                <div class="d-flex justify-content-end gap-2">
-                  <a href="{{ route('admin.clients.index') }}" class="btn btn-secondary">Cancel</a>
-                  <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>Create Client
-                  </button>
-                </div>
-              </form>
+            <div class="col-12">
+              <label for="address" class="form-label">Address</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                <textarea class="form-control @error('address') is-invalid @enderror"
+                  id="address" name="address" rows="3" placeholder="Street, City, State, ZIP">{{ old('address') }}</textarea>
+                @error('address')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+
+      {{-- Email Addresses --}}
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="section-title mb-0">
+            <div class="icon"><i class="fas fa-envelope"></i></div>
+            <div>Email Addresses</div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="addEmail">
+            <i class="fas fa-plus me-1"></i>Add Email
+          </button>
+        </div>
+
+        <div id="emailContainer" class="subcard">
+          <div class="row email-item align-items-end g-3 mb-2">
+            <div class="col-md-6">
+              <label class="form-label visually-hidden">Email</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-at"></i></span>
+                <input type="email" class="form-control @error('emails.0.email') is-invalid @enderror"
+                  name="emails[0][email]" placeholder="Email address" value="{{ old('emails.0.email') }}" required>
+                @error('emails.0.email')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label visually-hidden">Type</label>
+              <select class="form-select" name="emails[0][type]">
+                <option value="primary" {{ old('emails.0.type', 'primary') == 'primary' ? 'selected' : '' }}>Primary</option>
+                <option value="billing" {{ old('emails.0.type') == 'billing' ? 'selected' : '' }}>Billing</option>
+                <option value="support" {{ old('emails.0.type') == 'support' ? 'selected' : '' }}>Support</option>
+                <option value="personal" {{ old('emails.0.type') == 'personal' ? 'selected' : '' }}>Personal</option>
+              </select>
+            </div>
+            <div class="col-md-2 text-end">
+              <button type="button" class="btn btn-ghost-danger btn-sm remove-email" style="display:none;">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{-- Phone Numbers --}}
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="section-title mb-0">
+            <div class="icon"><i class="fas fa-phone"></i></div>
+            <div>Phone Numbers</div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="addPhone">
+            <i class="fas fa-plus me-1"></i>Add Phone
+          </button>
+        </div>
+
+        <div id="phoneContainer" class="subcard">
+          <div class="row phone-item align-items-end g-3 mb-2">
+            <div class="col-md-6">
+              <label class="form-label visually-hidden">Phone</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                <input type="text" class="form-control" name="phones[0][phone]" placeholder="Phone number">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label visually-hidden">Type</label>
+              <select class="form-select" name="phones[0][type]">
+                <option value="mobile" {{ old('phones.0.type', 'mobile') == 'mobile' ? 'selected' : '' }}>Mobile</option>
+                <option value="office" {{ old('phones.0.type') == 'office' ? 'selected' : '' }}>Office</option>
+                <option value="home" {{ old('phones.0.type') == 'home' ? 'selected' : '' }}>Home</option>
+                <option value="fax" {{ old('phones.0.type') == 'fax' ? 'selected' : '' }}>Fax</option>
+              </select>
+            </div>
+            <div class="col-md-2 text-end">
+              <button type="button" class="btn btn-ghost-danger btn-sm remove-phone" style="display:none;">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{-- Services (Tom Select multi-select) --}}
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="section-title mb-0">
+            <div class="icon"><i class="fas fa-toolbox"></i></div>
+            <div>Services</div>
+          </div>
+          <div class="btn-group">
+            <a href="{{ route('admin.services.index') }}" class="btn btn-sm btn-outline-info" target="_blank">
+              <i class="fas fa-external-link-alt me-1"></i>Manage Services
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#quickServiceModal">
+              <i class="fas fa-plus me-1"></i>Quick Add Service
+            </button>
+          </div>
+        </div>
+
+        @if($services->count() === 0)
+          <div class="alert alert-info" id="noServicesAlert">
+            <i class="fas fa-info-circle me-2"></i>
+            No services available. You can <button type="button" class="btn btn-link p-0 align-baseline" data-bs-toggle="modal" data-bs-target="#quickServiceModal">create a service</button> or
+            <a href="{{ route('admin.services.index') }}" class="alert-link" target="_blank">manage all services</a>.
+          </div>
+        @endif
+
+        <div class="subcard">
+          <label for="servicesSelect" class="form-label">Select Services</label>
+          <select id="servicesSelect" name="services[]" multiple class="form-select" data-placeholder="Select services...">
+            @foreach($services as $service)
+              <option
+                value="{{ $service->id }}"
+                {{ in_array($service->id, old('services', [])) ? 'selected' : '' }}
+                data-detail="{{ $service->detail }}"
+              >
+                {{ $service->name }}
+              </option>
+            @endforeach
+          </select>
+          @error('services')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+          @enderror
+          <small class="text-muted">Type to search and select multiple services.</small>
+        </div>
+      </div>
+
+      {{-- Notes --}}
+      <div class="mb-4">
+        <div class="section-title">
+          <div class="icon"><i class="fas fa-sticky-note"></i></div>
+          <div>Notes</div>
+        </div>
+        <div class="subcard">
+          <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional notes about this client...">{{ old('notes') }}</textarea>
+        </div>
+      </div>
+
+      {{-- Employee Assignment --}}
+      <div class="mb-4">
+        <div class="section-title">
+          <div class="icon"><i class="fas fa-user-tag"></i></div>
+          <div>Employee Assignment</div>
+        </div>
+        <p class="text-muted small mb-3">Select an employee who will have access to this client's information.</p>
+        <div class="subcard">
+          @if($employees->count() > 0)
+            <div class="mb-2">
+              <label for="assigned_employee" class="form-label visually-hidden">Assign Employee</label>
+              <select class="form-select @error('assigned_employee') is-invalid @enderror"
+                id="assigned_employee" name="assigned_employee" aria-label="Select employee">
+                <option value="">Select an employee...</option>
+                @foreach($employees as $employee)
+                  <option value="{{ $employee->id }}" {{ old('assigned_employee') == $employee->id ? 'selected' : '' }}>
+                    {{ $employee->name }} ({{ $employee->position }}{{ $employee->department ? ' - ' . $employee->department : '' }})
+                  </option>
+                @endforeach
+              </select>
+              @error('assigned_employee')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+          @else
+            <div class="alert alert-info m-0">
+              <i class="fas fa-info-circle me-2"></i>
+              No active employees available for assignment. <a href="{{ route('admin.employees.create') }}">Create an employee</a> first.
+            </div>
+          @endif
+        </div>
+      </div>
+
+      {{-- Actions --}}
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{{ route('admin.clients.index') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save me-2"></i>Create Client
+        </button>
+      </div>
+    </form>
 </div>
+
 
 {{-- Quick Add Service Modal --}}
 <div class="modal fade" id="quickServiceModal" tabindex="-1" aria-labelledby="quickServiceModalLabel" aria-hidden="true">

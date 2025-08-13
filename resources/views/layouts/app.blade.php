@@ -54,11 +54,10 @@
             /* no wrapping */
         }
 
-
+d
         main.main-content {
             flex: 1 1 auto;
-            height: 100vh;
-            overflow-y: auto;
+
             padding: 0 1rem;
         }
     </style>
@@ -119,10 +118,7 @@
                         @yield('actions')
                     </div>
                 </div>
-                <div class="px-4">
-                    @yield('content')
-                </div>
-
+                @yield('content')
             </main>
         </div>
     </div>
