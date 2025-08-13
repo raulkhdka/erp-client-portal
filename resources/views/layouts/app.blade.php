@@ -54,14 +54,6 @@
             /* no wrapping */
         }
 
-        .sidebar {
-            flex: 0 0 250px;
-            /* adjust to your sidebar width */
-            height: 100vh;
-            overflow-y: auto;
-            position: sticky;
-            top: 0;
-        }
 
         main.main-content {
             flex: 1 1 auto;
@@ -76,12 +68,12 @@
 
 <body class="m-0 p-0">
     <div class="container-fluid">
-        <div class="row">
+        <div >
             <!-- Include Sidebar Component -->
             @include('components.sidebar')
 
             <!-- Main content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 p-0 main-content">
+            <main class="main-content">
 
                 <!-- Flash Messages -->
                 {{-- @if (session('success'))

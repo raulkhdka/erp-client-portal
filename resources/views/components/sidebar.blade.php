@@ -1,5 +1,5 @@
 <!-- Sidebar Component -->
-<nav id="sidebar" class="col-md-3 col-lg-2 p-0 d-md-block sidebar collapse">
+<nav id="sidebar" class=" sidebar">
     <div class="sidebar-wrapper">
         <!-- Logo/Brand Section -->
         <div class="sidebar-header">

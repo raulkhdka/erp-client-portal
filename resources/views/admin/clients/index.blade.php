@@ -67,7 +67,7 @@
         }
 
         #clients-table thead th {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            background: #0078D7;
             color: white;
             font-weight: 600;
             font-size: 0.65rem;
@@ -257,7 +257,6 @@
 
         /* Export Buttons */
         .dt-buttons {
-            margin-bottom: 1.5rem;
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
@@ -578,7 +577,7 @@
         /* Remove main content padding */
         main.main-content {
             padding: 0 !important;
-            margin: 0 !important;
+
         }
 
         /* Fix the content wrapper */
@@ -680,7 +679,7 @@
         /* Ensure main content starts right after sidebar */
         main.main-content {
             border-left: none;
-            margin-left: 0 !important;
+
         }
 
         /* For Bootstrap column that contains the main content */
@@ -692,34 +691,25 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card enhanced-card">
-                    <div class="card-body">
-                        <div class="table-container">
-                            <div class="table-responsive">
-                                <table class="table" id="clients-table">
-                                    <thead>
-                                        <tr>
-                                            <th><i class="fas fa-list-ol me-2"></i>SN</th>
-                                            <th><i class="fas fa-user me-2"></i>Client Name</th>
-                                            <th><i class="fas fa-building me-2"></i>Company Info</th>
-                                            <th><i class="fas fa-user-tie me-2"></i>Employee Name</th>
-                                            <th><i class="fas fa-envelope me-2"></i>Email</th>
-                                            <th><i class="fas fa-phone me-2"></i>Phone</th>
-                                            <th><i class="fas fa-toggle-on me-2"></i>Status</th>
-                                            <th><i class="fas fa-cogs me-2"></i>Actions</th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="table-container bg-white p-4">
+    <div class="table-responsive">
+        <table class="table" id="clients-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-list-ol me-2"></i>SN</th>
+                    <th><i class="fas fa-user me-2"></i>Client Name</th>
+                    <th><i class="fas fa-building me-2"></i>Company Info</th>
+                    <th><i class="fas fa-user-tie me-2"></i>Employee Name</th>
+                    <th><i class="fas fa-envelope me-2"></i>Email</th>
+                    <th><i class="fas fa-phone me-2"></i>Phone</th>
+                    <th><i class="fas fa-toggle-on me-2"></i>Status</th>
+                    <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                </tr>
+            </thead>
+        </table>
     </div>
+</div>
+
 
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
