@@ -18,6 +18,11 @@
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.0/css/buttons.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.5/css/responsive.dataTables.css" />
+
     <!-- Custom Application Styles -->
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/sidebar.css') }}" rel="stylesheet">
@@ -145,6 +150,20 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Tom Select JS -->
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+    <!-- DataTables JS -->
+
+    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.0/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.0/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.0/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/3.0.5/js/dataTables.responsive.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+
+
     <!-- Custom Helper Scripts-->
     <script src="{{ asset('assets/js/helpers/toastHelper.js') }}" > </script>
 
@@ -158,7 +177,7 @@
     <!-- Custom Script for Nepali Date Picker -->
     <script src="{{ asset('assets/js/ndp.min.js') }}" ></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nepali-date-converter/1.0.0/nepali-functions.js"></script>
+    {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/nepali-date-converter/1.0.0/nepali-functions.js"></script> --}}
     <!-- Custom Script for Nepali Date Converter -->
     <script src="{{ asset('assets/js/helpers/nepaliDateHelper.js') }}"> </script>
 

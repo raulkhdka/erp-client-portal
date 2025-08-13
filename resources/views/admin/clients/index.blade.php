@@ -12,422 +12,681 @@
 
 @push('styles')
     <style>
-        /* Enhanced Table Styling with Auto-Adjusting Sizes */
-        .enhanced-table {
-            border-collapse: separate !important;
+        /* Professional DataTables Theme */
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #3730a3;
+            --secondary-color: #64748b;
+            --success-color: #059669;
+            --danger-color: #dc2626;
+            --warning-color: #d97706;
+            --info-color: #0284c7;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-muted: #6b7280;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 0.5rem;
+            --transition: all 0.15s ease-in-out;
+        }
+
+        /* Card Styling */
+        .enhanced-card {
+            background: #ffffff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+
+            padding: 2rem;
+            /* more inner spacing */
+            margin: 1.5rem auto;
+            /* more breathing room outside */
+            width: 100%;
+            max-width: 1400px;
+            /* stretch to be fuller on large screens */
+        }
+
+        /* DataTables Wrapper */
+        .dataTables_wrapper {
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Table Styling */
+        #clients-table {
+            border-collapse: separate;
             border-spacing: 0;
-            border: 0.5px solid #000000 !important;
-            border-radius: 12px !important;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
             width: 100% !important;
-            table-layout: auto !important;
-        }
-
-        .table-responsive {
-            border: 0.5px solid #000000 !important;
-            border-radius: 12px !important;
             background: white;
-            width: 100%;
-            margin: 0 auto;
-            box-sizing: border-box;
+            table-layout: auto !important;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
 
-        .enhanced-table thead th:first-child,
-        .enhanced-table tbody td:first-child {
-            border-left: none !important;
-        }
-
-        .enhanced-table thead th:last-child,
-        .enhanced-table tbody td:last-child {
-            border-right: none !important;
-        }
-
-        .enhanced-table thead th {
-            border-top: none !important;
-            border-bottom: 0.5px solid #000000 !important;
-        }
-
-        .enhanced-table tbody tr:last-child td {
-            border-bottom: none !important;
-        }
-
-        .enhanced-table thead th:first-child {
-            border-top-left-radius: 12px;
-        }
-
-        .enhanced-table thead th:last-child {
-            border-top-right-radius: 12px;
-        }
-
-        .enhanced-table tbody tr:last-child td:first-child {
-            border-bottom-left-radius: 12px;
-        }
-
-        .enhanced-table tbody tr:last-child td:last-child {
-            border-bottom-right-radius: 12px;
-        }
-
-        .enhanced-table thead th,
-        .enhanced-table tbody td {
-            border-right: 0.5px solid #000000 !important;
-            border-bottom: 0.5px solid #000000 !important;
-        }
-
-        .enhanced-table thead th:last-child,
-        .enhanced-table tbody td:last-child {
-            border-right: none !important;
-        }
-
-        .enhanced-table tbody tr:last-child td {
-            border-bottom: none !important;
-        }
-
-        .table-responsive .table {
-            margin-bottom: 0 !important;
-        }
-
-        .enhanced-table thead th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        #clients-table thead th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
             color: white;
-            text-align: center !important;
-            vertical-align: middle;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0.5rem 0.5rem;
-            position: relative;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        .enhanced-table thead th::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .enhanced-table thead th:hover::before {
-            left: 100%;
-        }
-
-        .enhanced-table tbody td {
-            padding: 0.5rem 0.5rem;
+            letter-spacing: 0.025em;
+            padding: 1rem 0.75rem;
+            text-align: center;
+            border: none;
             vertical-align: middle;
-            text-align: center !important;
-            transition: all 0.3s ease;
-            background-color: white;
-            word-wrap: break-word;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        #clients-table thead th:first-child {
+            border-top-left-radius: var(--border-radius);
+        }
+
+        #clients-table thead th:last-child {
+            border-top-right-radius: var(--border-radius);
+        }
+
+        #clients-table tbody td {
+            padding: 0.875rem 0.75rem;
+            vertical-align: middle;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
             font-size: 0.875rem;
+            color: #374151;
+            background-color: white;
+            transition: var(--transition);
         }
 
-        .enhanced-table tbody td:nth-child(1) {
-            white-space: nowrap;
+        #clients-table tbody tr {
+            transition: var(--transition);
         }
 
-        .enhanced-table tbody tr {
-            transition: all 0.3s ease;
-            position: relative;
-            height: auto;
+        #clients-table tbody tr:hover {
+            background-color: var(--light-bg);
         }
 
-        .enhanced-table tbody tr:hover {
-            background-color: #f8fafc !important;
-            transform: scale(1.01);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        #clients-table tbody tr:hover td {
+            background-color: var(--light-bg);
         }
 
-        .enhanced-table tbody tr:hover td {
-            background-color: #f8fafc !important;
+        #clients-table tbody tr:nth-child(even) {
+            background-color: #fafbfc;
         }
 
-        .enhanced-table tbody tr:nth-child(even) {
-            background-color: #f9fafb;
+        #clients-table tbody tr:nth-child(even) td {
+            background-color: #fafbfc;
         }
 
-        .enhanced-table tbody tr:nth-child(even) td {
-            background-color: #f9fafb;
-        }
-
-        .enhanced-table tbody tr:nth-child(even):hover td {
-            background-color: #f1f5f9 !important;
-        }
-
+        /* Badge Styling */
         .animated-badge {
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+            transition: var(--transition);
+        }
+
+        .bg-success {
+            background-color: var(--success-color) !important;
+        }
+
+        .bg-secondary {
+            background-color: var(--secondary-color) !important;
+        }
+
+        .bg-warning {
+            background-color: var(--warning-color) !important;
+        }
+
+        .bg-light {
+            background-color: #f1f5f9 !important;
+            color: #475569 !important;
         }
 
         .animated-badge:hover {
             transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-md);
         }
 
-        .animated-badge::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
+        /* Button Styling */
+        .icon-wrapper {
+            transition: var(--transition);
+            border-radius: 0.375rem;
         }
 
-        .animated-badge:hover::before {
-            left: 100%;
+        .icon-wrapper:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
         }
 
-        .enhanced-table tbody td strong,
-        .enhanced-table tbody td small,
-        .enhanced-table tbody td span {
-            display: inline-block;
-            text-align: center;
+        /* DataTables Controls */
+        .dataTables_length,
+        .dataTables_filter {
+            margin-bottom: 1.5rem;
+        }
+
+        .dataTables_length label,
+        .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0;
+        }
+
+        .dataTables_length select {
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            background-color: white;
+            transition: var(--transition);
+        }
+
+        .dataTables_length select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .dataTables_filter input {
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            background-color: white;
+            transition: var(--transition);
+            min-width: 250px;
+        }
+
+        .dataTables_filter input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .dataTables_info {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        /* Pagination */
+        .dataTables_paginate {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dataTables_paginate .paginate_button {
+            border: 1px solid var(--border-color) !important;
+            border-radius: 0.375rem !important;
+            margin: 0 0.125rem;
+            padding: 0.5rem 0.75rem !important;
+            color: #374151 !important;
+            background: white !important;
+            transition: var(--transition) !important;
+            font-weight: 500;
+        }
+
+        .dataTables_paginate .paginate_button:hover {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
+            transform: translateY(-1px);
+        }
+
+        .dataTables_paginate .paginate_button.current {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
+            font-weight: 600;
+        }
+
+        .dataTables_paginate .paginate_button.disabled {
+            color: var(--text-muted) !important;
+            background: #f9fafb !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Export Buttons */
+        .dt-buttons {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .dt-button {
+            border: none !important;
+            border-radius: 0.375rem !important;
+            padding: 0.5rem 1rem !important;
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            transition: var(--transition) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dt-button:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .buttons-excel {
+            background: var(--success-color) !important;
+            color: white !important;
+        }
+
+        .buttons-pdf {
+            background: var(--danger-color) !important;
+            color: white !important;
+        }
+
+        .buttons-print {
+            background: var(--info-color) !important;
+            color: white !important;
+        }
+
+        .buttons-copy {
+            background: var(--secondary-color) !important;
+            color: white !important;
+        }
+
+        .dt-button.refresh-btn {
+            background: var(--warning-color) !important;
+            color: white !important;
+        }
+
+        /* Loading States */
+        .dataTables_processing {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-radius: var(--border-radius) !important;
+            box-shadow: var(--shadow-lg) !important;
+            padding: 2rem !important;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        /* Responsive Design */
+        #clients-table {
+            width: 100% !important;
+            table-layout: fixed;
+        }
+
+        #clients-table thead th,
+        #clients-table tbody td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Column widths for better responsive behavior */
+        #clients-table thead th:nth-child(1) {
+            width: 5%;
+        }
+
+        /* SN */
+        #clients-table thead th:nth-child(2) {
+            width: 15%;
+        }
+
+        /* Client Name */
+        #clients-table thead th:nth-child(3) {
+            width: 20%;
+        }
+
+        /* Company Info */
+        #clients-table thead th:nth-child(4) {
+            width: 15%;
+        }
+
+        /* Employee */
+        #clients-table thead th:nth-child(5) {
+            width: 20%;
+        }
+
+        /* Email */
+        #clients-table thead th:nth-child(6) {
+            width: 15%;
+        }
+
+        /* Phone */
+        #clients-table thead th:nth-child(7) {
+            width: 8%;
+        }
+
+        /* Status */
+        #clients-table thead th:nth-child(8) {
+            width: 10%;
+        }
+
+        /* Actions */
+
+        /* Custom DataTables Layout */
+        .dataTables_top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dataTables_buttons_left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dataTables_search_right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dataTables_filter {
+            margin-bottom: 0 !important;
+        }
+
+        .dataTables_length {
+            margin-bottom: 0 !important;
         }
 
         @media (max-width: 1200px) {
-            .enhanced-table {
-                font-size: 0.875rem;
-                border-radius: 12px !important;
-                width: 100% !important;
+            #clients-table thead th:nth-child(3) {
+                width: 18%;
             }
 
-            .enhanced-table thead th,
-            .enhanced-table tbody td {
-                padding: 0.5rem 0.25rem;
+            #clients-table thead th:nth-child(5) {
+                width: 18%;
             }
 
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 12px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 12px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 12px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 12px;
-            }
-
-            .table-responsive {
-                border-radius: 12px !important;
+            #clients-table thead th:nth-child(6) {
+                width: 10%;
             }
         }
 
         @media (max-width: 992px) {
-            .enhanced-table {
-                font-size: 0.8rem;
-                border-radius: 10px !important;
+            .dataTables_top {
+                flex-direction: column;
+                align-items: stretch;
             }
 
-            .enhanced-table thead th {
+            .dataTables_buttons_left,
+            .dataTables_search_right {
+                justify-content: center;
+            }
+
+            #clients-table thead th,
+            #clients-table tbody td {
                 font-size: 0.75rem;
-                padding: 0.4rem 0.25rem;
+                padding: 0.5rem 0.25rem;
             }
 
-            .enhanced-table tbody td {
-                padding: 0.4rem 0.25rem;
-            }
-
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 10px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 10px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 10px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 10px;
-            }
-
-            .table-responsive {
-                border-radius: 10px !important;
+            .dt-button {
+                font-size: 0.75rem !important;
+                padding: 0.375rem 0.75rem !important;
             }
         }
 
         @media (max-width: 768px) {
-            .enhanced-table {
+            .dataTables_filter input {
+                min-width: 180px;
+                width: 100%;
+            }
+
+            .dt-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.25rem;
+            }
+
+            .dt-button {
+                font-size: 0.7rem !important;
+                padding: 0.25rem 0.5rem !important;
+                margin: 0.125rem;
+            }
+
+            #clients-table {
+                font-size: 0.7rem;
+            }
+
+            #clients-table thead th,
+            #clients-table tbody td {
+                padding: 0.375rem 0.125rem;
+                white-space: nowrap;
+            }
+
+            /* Hide less important columns on mobile */
+            #clients-table thead th:nth-child(4),
+            #clients-table tbody td:nth-child(4),
+            #clients-table thead th:nth-child(6),
+            #clients-table tbody td:nth-child(6) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .dataTables_top {
+                gap: 0.5rem;
+            }
+
+            .dataTables_filter input {
+                min-width: 150px;
                 font-size: 0.75rem;
-                border-radius: 8px !important;
             }
 
-            .enhanced-table thead th {
-                padding: 0.3rem 0.2rem;
+            .dt-button {
+                font-size: 0.65rem !important;
+                padding: 0.25rem 0.375rem !important;
             }
 
-            .enhanced-table tbody td {
-                padding: 0.3rem 0.2rem;
+            /* Show only essential columns on very small screens */
+            #clients-table thead th:nth-child(3),
+            #clients-table tbody td:nth-child(3),
+            #clients-table thead th:nth-child(5),
+            #clients-table tbody td:nth-child(5) {
+                display: none;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
 
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 8px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 8px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 8px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 8px;
-            }
-
-            .table-responsive {
-                border-radius: 8px !important;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
         .table-container {
-            animation: fadeInUp 0.6s ease-out;
+            animation: fadeInUp 0.5s ease-out;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .enhanced-card {
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-        }
-
-        .enhanced-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
+        /* Empty State */
         .empty-state {
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            padding: 3rem;
+            text-align: center;
         }
 
         .empty-state i {
-            animation: bounce 2s infinite;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
         }
 
-        @keyframes bounce {
-
-            0%,
-            20%,
-            50%,
-            80%,
-            100% {
-                transform: translateY(0);
-            }
-
-            40% {
-                transform: translateY(-10px);
-            }
-
-            60% {
-                transform: translateY(-5px);
-            }
+        .empty-state h4 {
+            color: #374151;
+            margin-bottom: 0.5rem;
         }
 
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 1rem 0;
+        .empty-state p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
         }
 
-        .pagination .page-item {
-            transition: transform 0.2s ease;
-        }
-
-        .pagination .page-link {
-            border: none;
-            border-radius: 50%;
-            width: 42px;
-            height: 42px;
-            line-height: 42px;
-            text-align: center;
-            padding: 0;
-            font-weight: 500;
-            color: #333;
-            background-color: #f4f4f4;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-            transition: all 0.25s ease;
-        }
-
-        .pagination .page-link:hover {
-            background-color: #007bff;
-            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-        }
-
-        .pagination .page-item.active .page-link {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
-        }
-
-        .pagination .page-link:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.4);
-        }
-
-        .truncated-content {
-            cursor: help;
-        }
-
+        /* Modal Styling */
         .modal-content {
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: var(--shadow-lg);
         }
 
         .modal-header {
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
+            border-bottom: 1px solid var(--border-color);
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
         }
 
-        .icon-wrapper {
-            transition: transform 0.3s ease;
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
         }
 
-        .icon-wrapper:hover {
-            transform: scale(1.1);
+        /* Performance Optimizations */
+        * {
+            box-sizing: border-box;
+        }
+
+        .dataTables_wrapper * {
+            will-change: auto;
+        }
+
+        /* Improved hover states */
+        #clients-table tbody tr:hover {
+            background-color: var(--light-bg);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Override Bootstrap container-fluid padding */
+        .container-fluid {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Remove main content padding */
+        main.main-content {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Fix the content wrapper */
+        .px-4 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        /* Enhanced card - remove margins and make it full width */
+        .enhanced-card {
+            background: #ffffff;
+            border-radius: 0;
+            /* Remove border radius for edge-to-edge */
+            box-shadow: none;
+            /* Remove shadow for cleaner edge-to-edge look */
+            border: none;
+            /* Remove border */
+            overflow: hidden;
+            padding: 2rem;
+            margin: 0 !important;
+            /* Remove all margins */
+            width: 100%;
+            max-width: none;
+            /* Remove max-width constraint */
+        }
+
+        /* Alternative: If you want to keep some styling but still go edge-to-edge */
+        .enhanced-card.keep-styling {
+            background: #ffffff;
+            border-radius: 0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border-left: none;
+            border-right: none;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            overflow: hidden;
+            padding: 2rem;
+            margin: 0 !important;
+            width: 100%;
+            max-width: none;
+        }
+
+        /* Ensure the row takes full width */
+        .container-fluid>.row {
+            margin: 0 !important;
+            width: 100%;
+        }
+
+        /* Fix the column classes */
+        .col-12 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        /* Breadcrumb and actions section - add some padding back */
+        .d-flex.align-items-center.justify-content-between {
+            padding: 1rem 2rem !important;
+            /* Add padding to match card content */
+            margin: 0 !important;
+        }
+
+        /* DataTable wrapper adjustments */
+        .dataTables_wrapper {
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Table container adjustments */
+        .table-container {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Responsive table wrapper */
+        .table-responsive {
+            margin: 0;
+            border-radius: 0;
+        }
+
+        /* DataTables controls - add some spacing */
+        .dataTables_top {
+            padding: 0 1rem;
+        }
+
+        .dataTables_info {
+            padding-left: 1rem;
+        }
+
+        .dataTables_paginate {
+            padding-right: 1rem;
+        }
+
+        /* Fix sidebar to ensure no gaps */
+        .sidebar {
+            padding-right: 0 !important;
+            border-right: 1px solid #e5e7eb;
+        }
+
+        /* Ensure main content starts right after sidebar */
+        main.main-content {
+            border-left: none;
+            margin-left: 0 !important;
+        }
+
+        /* For Bootstrap column that contains the main content */
+        .col-md-9.ms-sm-auto.col-lg-10 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
         }
     </style>
 @endpush
@@ -438,128 +697,24 @@
             <div class="col-12">
                 <div class="card enhanced-card">
                     <div class="card-body">
-                        @if ($clients->count() > 0)
-                            <div class="table-container">
-                                <div class="table-responsive">
-                                    <table class="table enhanced-table">
-                                        <thead>
-                                            <tr>
-                                                <th><i class="fas fa-list-ol me-2"></i>SN</th>
-                                                <th><i class="fas fa-user me-2"></i>Client Name</th>
-                                                <th><i class="fas fa-building me-2"></i>Company Name</th>
-                                                <th><i class="fas fa-user-tie me-2"></i>Employee Name</th>
-                                                <th><i class="fas fa-envelope me-2"></i>Email</th>
-                                                <th><i class="fas fa-phone me-2"></i>Phone</th>
-                                                <th><i class="fas fa-toggle-on me-2"></i>Status</th>
-                                                {{-- <th><i class="fas fa-calendar-alt me-2"></i>Created</th> --}}
-                                                <th><i class="fas fa-cogs me-2"></i>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($clients as $client)
-                                                <tr>
-                                                    <td>
-                                                        <span class="truncated-content" data-bs-toggle="tooltip"
-                                                            title="Client #{{ $loop->iteration }}">
-                                                            {{ $loop->iteration }}
-                                                        </span>
-                                                    </td>
-                                                    <td>{{ $client->name }}</td>
-                                                    <td>
-                                                        <strong>{{ $client->company_name }}</strong>
-                                                        @if (isset($client->services) &&
-                                                                $client->services instanceof \Illuminate\Database\Eloquent\Collection &&
-                                                                $client->services->count() > 0)
-                                                            <br><small class="text-muted">
-                                                                @foreach ($client->services->take(2) as $service)
-                                                                    <span
-                                                                        class="badge bg-light text-dark me-1 animated-badge">{{ $service->name }}</span>
-                                                                @endforeach
-                                                                @if ($client->services->count() > 2)
-                                                                    <span
-                                                                        class="text-muted">+{{ $client->services->count() - 2 }}
-                                                                        more</span>
-                                                                @endif
-                                                            </small>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        @if ($client->assignedEmployees->first())
-                                                            {{ $client->assignedEmployees->first()->name }}
-                                                        @else
-                                                            <span class="text-muted">Unassigned</span>
-                                                        @endif
-
-                                                    </td>
-                                                    <td>
-                                                        {{ $client->user->email }}
-                                                        @if ($client->emails->count() > 0)
-                                                            <br><small class="text-muted">+{{ $client->emails->count() }}
-                                                                additional email(s)</small>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        @if ($client->phones->count() > 0)
-                                                            {{ $client->phones->first()->phone }}
-                                                            @if ($client->phones->count() > 1)
-                                                                <br><small
-                                                                    class="text-muted">+{{ $client->phones->count() - 1 }}
-                                                                    more</small>
-                                                            @endif
-                                                        @else
-                                                            <span class="text-muted">No phone</span>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        <span
-                                                            class="badge bg-{{ $client->status === 'active' ? 'success' : ($client->status === 'inactive' ? 'secondary' : 'warning') }} animated-badge"
-                                                            data-bs-toggle="tooltip"
-                                                            title="Status: {{ ucfirst($client->status) }}">
-                                                            {{ ucfirst($client->status) }}
-                                                        </span>
-                                                    </td>
-                                                    {{-- <td>{{ $client->created_at->format('M d, Y') }}</td> --}}
-                                                    <td>
-                                                        <div class="btn-group" role="group">
-                                                            <a href="{{ route('admin.clients.show', $client->id) }}"
-                                                                class="btn btn-sm btn-outline-primary icon-wrapper"
-                                                                data-bs-toggle="tooltip" title="View">
-                                                                <i class="fas fa-eye"></i>
-                                                            </a>
-                                                            <a href="{{ route('admin.clients.edit', $client->id) }}"
-                                                                class="btn btn-sm btn-outline-secondary icon-wrapper"
-                                                                data-bs-toggle="tooltip" title="Edit">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-outline-danger icon-wrapper"
-                                                                data-bs-toggle="tooltip" title="Delete"
-                                                                data-delete-url="{{ route('admin.clients.destroy', $client->id) }}"
-                                                                onclick="deleteClient(this)">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div class="d-flex justify-content-center mt-4">
-                                    {{ $clients->links() }}
-                                </div>
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table" id="clients-table">
+                                    <thead>
+                                        <tr>
+                                            <th><i class="fas fa-list-ol me-2"></i>SN</th>
+                                            <th><i class="fas fa-user me-2"></i>Client Name</th>
+                                            <th><i class="fas fa-building me-2"></i>Company Info</th>
+                                            <th><i class="fas fa-user-tie me-2"></i>Employee Name</th>
+                                            <th><i class="fas fa-envelope me-2"></i>Email</th>
+                                            <th><i class="fas fa-phone me-2"></i>Phone</th>
+                                            <th><i class="fas fa-toggle-on me-2"></i>Status</th>
+                                            <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                                        </tr>
+                                    </thead>
+                                </table>
                             </div>
-                        @else
-                            <div class="text-center py-5 empty-state">
-                                <i class="fas fa-users fa-4x text-muted mb-4"></i>
-                                <h4 class="text-muted mb-3">No clients found</h4>
-                                <p class="text-muted mb-4">Start by adding your first client to the system.</p>
-                                <a href="{{ route('admin.clients.create') }}" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-plus me-2"></i>Add First Client
-                                </a>
-                            </div>
-                        @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -592,70 +747,332 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-
-            // Add loading animation to table rows
-            const tableRows = document.querySelectorAll('.enhanced-table tbody tr');
-            tableRows.forEach((row, index) => {
-                row.style.animationDelay = `${index * 0.1}s`;
-                row.style.animation = 'fadeInUp 0.6s ease-out forwards';
-            });
-
-            // Add click animation to badges and buttons
-            const animatedElements = document.querySelectorAll('.animated-badge, .btn, .icon-wrapper');
-            animatedElements.forEach(element => {
-                element.addEventListener('click', function() {
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1.05)';
-                    }, 100);
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 200);
-                });
-            });
-
-            // Smooth scroll for pagination
-            const paginationLinks = document.querySelectorAll('.pagination a');
-            paginationLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const tableContainer = document.querySelector('.table-container');
-                    if (tableContainer) {
-                        tableContainer.style.opacity = '0.7';
-                        tableContainer.style.transform = 'translateY(10px)';
-                        setTimeout(() => {
-                            tableContainer.style.opacity = '1';
-                            tableContainer.style.transform = 'translateY(0)';
-                        }, 300);
+        $(document).ready(function() {
+            // Initialize DataTable
+            const table = $('#clients-table').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                ajax: {
+                    url: "{{ route('admin.clients.index') }}",
+                    type: 'GET',
+                    data: function(d) {
+                        // Add any additional parameters here if needed
                     }
-                });
-            });
-
-            // Auto-resize table
-            function autoResizeTable() {
-                const table = document.querySelector('.enhanced-table');
-                if (table) {
-                    table.style.width = '100%';
-                    const containerWidth = table.parentElement.offsetWidth;
-                    if (table.offsetWidth > containerWidth) {
-                        table.style.width = `${containerWidth}px`;
+                },
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'client_name',
+                        name: 'name',
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        data: 'company_info',
+                        name: 'company_name',
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        data: 'employee_name',
+                        name: 'employee_name',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'email_info',
+                        name: 'user.email',
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        data: 'phone_info',
+                        name: 'phone_info',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'status',
+                        name: 'status',
+                        orderable: true,
+                        searchable: true
+                    },
+                    {
+                        data: 'actions',
+                        name: 'actions',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center'
                     }
+                ],
+                order: [
+                    [1, 'asc']
+                ],
+                pageLength: 25,
+                lengthMenu: [10, 25, 50, 100],
+                language: {
+                    processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+                    search: '_INPUT_',
+                    searchPlaceholder: 'Search clients...',
+                    lengthMenu: 'Show _MENU_ entries',
+                    info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+                    infoEmpty: 'Showing 0 to 0 of 0 entries',
+                    infoFiltered: '(filtered from _MAX_ total entries)',
+                    paginate: {
+                        first: '<i class="fas fa-angle-double-left"></i>',
+                        previous: '<i class="fas fa-angle-left"></i>',
+                        next: '<i class="fas fa-angle-right"></i>',
+                        last: '<i class="fas fa-angle-double-right"></i>'
+                    },
+                    emptyTable: `
+                        <div class="text-center py-5 empty-state">
+                            <i class="fas fa-users fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted mb-3">No clients found</h4>
+                            <p class="text-muted mb-4">Start by adding your first client to the system.</p>
+                            <a href="{{ route('admin.clients.create') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>Add First Client
+                            </a>
+                        </div>
+                    `
+                },
+                dom: '<"dataTables_top"<"dataTables_buttons_left"B><"dataTables_search_right"lf>>' +
+                    '<"row"<"col-sm-12"tr>>' +
+                    '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                buttons: [{
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel me-1"></i>Excel',
+                        className: 'btn btn-success btn-sm buttons-excel',
+                        title: 'Clients_List_' + new Date().toISOString().split('T')[0],
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6] // Exclude actions column
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="fas fa-file-pdf me-1"></i>PDF',
+                        className: 'btn btn-danger btn-sm buttons-pdf',
+                        title: 'Clients List',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6] // Exclude actions column
+                        },
+                        customize: function(doc) {
+                            doc.content[1].table.widths = ['8%', '15%', '20%', '15%', '20%', '12%',
+                                '10%'
+                            ];
+                            doc.styles.tableHeader.fontSize = 10;
+                            doc.defaultStyle.fontSize = 8;
+                        }
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fas fa-print me-1"></i>Print',
+                        className: 'btn btn-info btn-sm buttons-print',
+                        title: 'Clients List',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6] // Exclude actions column
+                        }
+                    },
+                    {
+                        extend: 'copy',
+                        text: '<i class="fas fa-copy me-1"></i>Copy',
+                        className: 'btn btn-secondary btn-sm buttons-copy',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6] // Exclude actions column
+                        }
+                    },
+                    {
+                        text: '<i class="fas fa-sync-alt me-1"></i>Refresh',
+                        className: 'btn btn-warning btn-sm refresh-btn',
+                        action: function(e, dt, node, config) {
+                            dt.ajax.reload();
+                        }
+                    }
+                ],
+                responsive: {
+                    details: {
+                        type: 'column',
+                        target: 'tr'
+                    }
+                },
+                columnDefs: [{
+                        targets: [0, 7], // SN and Actions columns
+                        responsivePriority: 1
+                    },
+                    {
+                        targets: [1, 2], // Client Name and Company Info
+                        responsivePriority: 2
+                    },
+                    {
+                        targets: [6], // Status
+                        responsivePriority: 3
+                    },
+                    {
+                        targets: [3, 4, 5], // Employee, Email, Phone
+                        responsivePriority: 4
+                    }
+                ],
+                initComplete: function() {
+                    // Initialize tooltips after table is loaded
+                    $('[data-bs-toggle="tooltip"]').tooltip();
+
+                    // Add animation to rows
+                    $('#clients-table tbody tr').each(function(index) {
+                        $(this).css({
+                            'animation-delay': (index * 0.1) + 's',
+                            'animation': 'fadeInUp 0.6s ease-out forwards'
+                        });
+                    });
+                },
+                drawCallback: function() {
+                    // Re-initialize tooltips after each draw
+                    $('[data-bs-toggle="tooltip"]').tooltip();
+
+                    // Add click animation to badges and buttons
+                    $('.animated-badge, .btn, .icon-wrapper').off('click.animation').on(
+                        'click.animation',
+                        function() {
+                            const element = $(this);
+                            element.css('transform', 'scale(0.95)');
+                            setTimeout(() => element.css('transform', 'scale(1.05)'), 100);
+                            setTimeout(() => element.css('transform', 'scale(1)'), 200);
+                        });
+                },
+                createdRow: function(row, data, dataIndex) {
+                    // Add hover effects to rows
+                    $(row).hover(
+                        function() {
+                            $(this).addClass('table-row-hover');
+                        },
+                        function() {
+                            $(this).removeClass('table-row-hover');
+                        }
+                    );
                 }
-            }
+            });
 
-            autoResizeTable();
-            window.addEventListener('resize', autoResizeTable);
+            // Custom search functionality
+            $('.dataTables_filter input').removeClass('form-control-sm');
+            $('.dataTables_length select').removeClass('form-select-sm');
+
+            // Add search icon to search input
+            $('.dataTables_filter').addClass('position-relative');
+            $('.dataTables_filter input').addClass('ps-5');
+            $('.dataTables_filter').prepend(
+                '<i class="fas fa-search position-absolute" style="left: 15px; top: 50%; transform: translateY(-50%); color: #6b7280; z-index: 10;"></i>'
+            );
+
+            // Enhance the length select
+            $('.dataTables_length select').addClass('form-select');
+
+            // Add loading overlay
+            let loadingOverlay = $(`
+                <div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; text-align: center;">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mb-0">Processing your request...</p>
+                    </div>
+                </div>
+            `);
+
+            $('body').append(loadingOverlay);
+
+            // Show loading overlay during AJAX requests
+            table.on('preXhr.dt', function() {
+                $('#loading-overlay').fadeIn(300);
+            });
+
+            table.on('xhr.dt', function() {
+                $('#loading-overlay').fadeOut(300);
+            });
         });
 
+        // Delete client function
         function deleteClient(button) {
             const form = document.getElementById('deleteForm');
             form.action = button.getAttribute('data-delete-url');
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
         }
+
+        // Handle delete form submission
+        $(document).on('submit', '#deleteForm', function(e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const formData = new FormData(this);
+
+            // Show loading
+            $('#loading-overlay').fadeIn(300);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $('#loading-overlay').fadeOut(300);
+                    $('#deleteModal').modal('hide');
+
+                    // Show success message
+                    showAlert('success', 'Client deleted successfully!');
+
+                    // Refresh the table
+                    $('#clients-table').DataTable().ajax.reload();
+                },
+                error: function(xhr) {
+                    $('#loading-overlay').fadeOut(300);
+                    $('#deleteModal').modal('hide');
+
+                    let message = 'An error occurred while deleting the client.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+
+                    showAlert('danger', message);
+                }
+            });
+        });
+
+        // Alert function
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show position-fixed"
+                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            $('body').append(alertHtml);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                $('.alert').fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        }
+
+        // Handle window resize for responsive table
+        $(window).on('resize', function() {
+            $('#clients-table').DataTable().columns.adjust().responsive.recalc();
+        });
+
+        // Add custom CSS for better mobile experience
+        $(document).ready(function() {
+            if ($(window).width() < 768) {
+                $('.dt-buttons').addClass('d-flex flex-wrap gap-1 mb-3');
+                $('.dt-button').addClass('btn-sm').removeClass('btn-sm');
+            }
+        });
     </script>
 @endpush

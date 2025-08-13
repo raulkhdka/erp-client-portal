@@ -13,18 +13,96 @@ use App\Models\Service;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\DataTables;
 
 class ClientController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clients = Client::with(['user', 'phones', 'emails', 'services'])
-                 ->orderBy('created_at', 'desc')
-                 ->paginate(4);
-        return view('admin.clients.index', compact('clients'));
+        if ($request->ajax()) {
+            $clients = Client::with(['user', 'phones', 'emails', 'services', 'assignedEmployees.user'])
+                     ->select('clients.*');
+
+            return DataTables::of($clients)
+                ->addIndexColumn()
+                ->addColumn('client_name', function ($client) {
+                    return $client->name;
+                })
+                ->addColumn('company_info', function ($client) {
+                    $html = '<strong>' . $client->company_name . '</strong>';
+                    if (isset($client->services) &&
+                        $client->services instanceof \Illuminate\Database\Eloquent\Collection &&
+                        $client->services->count() > 0) {
+                        $html .= '<br><small class="text-muted">';
+                        foreach ($client->services->take(2) as $service) {
+                            $html .= '<span class="badge bg-light text-dark me-1 animated-badge">' . $service->name . '</span>';
+                        }
+                        if ($client->services->count() > 2) {
+                            $html .= '<span class="text-muted">+' . ($client->services->count() - 2) . ' more</span>';
+                        }
+                        $html .= '</small>';
+                    }
+                    return $html;
+                })
+                ->addColumn('employee_name', function ($client) {
+                    if ($client->assignedEmployees->first()) {
+                        return $client->assignedEmployees->first()->name ?? $client->assignedEmployees->first()->name;
+                    }
+                    return '<span class="text-muted">Unassigned</span>';
+                })
+                ->addColumn('email_info', function ($client) {
+                    $html = $client->user->email;
+                    if ($client->emails->count() > 0) {
+                        $html .= '<br><small class="text-muted">+' . $client->emails->count() . ' additional email(s)</small>';
+                    }
+                    return $html;
+                })
+                ->addColumn('phone_info', function ($client) {
+                    if ($client->phones->count() > 0) {
+                        $html = $client->phones->first()->phone;
+                        if ($client->phones->count() > 1) {
+                            $html .= '<br><small class="text-muted">+' . ($client->phones->count() - 1) . ' more</small>';
+                        }
+                        return $html;
+                    }
+                    return '<span class="text-muted">No phone</span>';
+                })
+                ->addColumn('status', function ($client) {
+                    $badgeClass = $client->status === 'active' ? 'success' :
+                                 ($client->status === 'inactive' ? 'secondary' : 'warning');
+                    return '<span class="badge bg-' . $badgeClass . ' animated-badge" data-bs-toggle="tooltip" title="Status: ' . ucfirst($client->status) . '">' . ucfirst($client->status) . '</span>';
+                })
+                ->addColumn('actions', function ($client) {
+                    return '
+                        <div class="btn-group" role="group">
+                            <a href="' . route('admin.clients.show', $client->id) . '"
+                               class="btn btn-sm btn-outline-primary icon-wrapper"
+                               data-bs-toggle="tooltip" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="' . route('admin.clients.edit', $client->id) . '"
+                               class="btn btn-sm btn-outline-secondary icon-wrapper"
+                               data-bs-toggle="tooltip" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger icon-wrapper"
+                                    data-bs-toggle="tooltip" title="Delete"
+                                    data-delete-url="' . route('admin.clients.destroy', $client->id) . '"
+                                    onclick="deleteClient(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    ';
+                })
+                ->rawColumns(['company_info', 'employee_name', 'email_info', 'phone_info', 'status', 'actions'])
+                ->make(true);
+        }
+
+        return view('admin.clients.index');
     }
 
     /**
