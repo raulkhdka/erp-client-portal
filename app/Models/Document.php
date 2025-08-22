@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\NepaliDateHelper;
 
 class Document extends Model
 {
@@ -41,6 +42,53 @@ class Document extends Model
         'expires_at' => 'datetime',
         'last_accessed_at' => 'datetime',
     ];
+
+    protected $appends = [
+        'created_at_nepali_html',
+        'updated_at_nepali_html',
+    ];
+
+
+     /**
+     * Accessor: format created_at as Y-m-d string.
+     */
+    public function getCreatedAtFormattedAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('Y-m-d') : null;
+    }
+
+    // Accessors for Nepali HTML dates
+    public function getCreatedAtNepaliHtmlAttribute()
+    {
+        if (!$this->created_at) {
+            return 'N/A';
+        }
+
+        return NepaliDateHelper::auto_nepali_date($this->created_at->format('Y-m-d'), 'formatted');
+    }
+
+     /**
+     * Accessor: format updated_at as Y-m-d string.
+     */
+    public function getUpdatedAtFormattedAttribute()
+    {
+        return $this->updated_at ? $this->updated_at->format('Y-m-d') : null;
+    }
+
+    public function getUpdatedAtNepaliHtmlAttribute()
+    {
+        if (!$this->updated_at) {
+            return 'N/A';
+        }
+
+        return NepaliDateHelper::auto_nepali_date($this->updated_at->format('Y-m-d'), 'formatted');
+    }
+
+      // Convert AD to BS (Nepali Date)
+      public static function convertAdToBs($adDate)
+      {
+          return NepaliDateHelper::auto_nepali_date($adDate, 'formatted');
+      }
 
     // Relationships
     public function category()

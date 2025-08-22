@@ -532,7 +532,7 @@
                                 <td>
                                     <div class="text-muted">
                                         <i class="fas fa-calendar-alt me-1"></i>
-                                        {{ $form->created_at->format('M d, Y') }}
+                                        {!! $form->created_at_nepali_html !!}
                                     </div>
                                     <small class="text-muted">{{ $form->created_at->diffForHumans() }}</small>
                                 </td>

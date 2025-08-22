@@ -9,49 +9,188 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@if (!$isAjax) {{ $form->name }} @endif</title>
+
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #6c757d;
+            --success: #06d6a0;
+            --danger: #ef476f;
+            --warning: #ffd166;
+            --info: #118ab2;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --box-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--gray-800);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: @if ($isAjax) 0 @else 2rem @endif;
+        }
+
         .form-container {
             background: #ffffff;
-            border: 2px solid #e9ecef;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2.5rem;
             max-width: 800px;
-            margin: @if ($isAjax) 0 @else 2rem auto @endif;
+            margin: @if ($isAjax) 0 @else 0 auto @endif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--info));
         }
 
         .form-header {
+            text-align: center;
             margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
         }
 
         .form-header h1 {
-            font-size: 1.75rem;
-            font-weight: 600;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
         }
 
         .form-header .description {
             font-size: 1rem;
-            color: #6c757d;
+            color: var(--gray-600);
+            font-weight: 400;
+        }
+
+        /* Two-column layout for KYC form */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+
+        .form-col {
+            flex: 1 0 0;
+            padding: 0 0.75rem;
+            min-width: 250px;
         }
 
         .form-field {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
         }
 
         .form-field-label {
-            font-weight: normal;
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+            color: var(--gray-800);
+            font-size: 0.95rem;
+        }
+
+        .form-field-label .form-field-required {
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1.25rem;
+            font-size: 1rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            background-color: #fff;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 4px rgba(239, 71, 111, 0.15);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-check-input {
+            margin-right: 0.75rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .form-check-label {
+            font-weight: 400;
+            cursor: pointer;
         }
 
         .form-field-help {
             font-size: 0.85rem;
-            color: #6c757d;
-            margin-top: 0.25rem;
+            color: var(--gray-600);
+            margin-top: 0.5rem;
+            font-style: italic;
         }
 
-        .form-field-required {
-            color: #dc3545;
+        .invalid-feedback {
+            display: block;
+            width: 100%;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--danger);
+            font-weight: 500;
         }
 
         .loading-overlay {
@@ -61,10 +200,34 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(33, 37, 41, 0.7);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .toast-container {
@@ -75,40 +238,189 @@
             min-width: 300px;
         }
 
+        .toast {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-lg);
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .alert {
-            max-width: 600px;
-            margin: 0 auto 1rem;
-            border-radius: 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .alert.alert-danger {
+            background-color: #ffefef;
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert.alert-success {
+            background-color: #e6fff6;
+            color: #05a677;
+            border-left: 4px solid var(--success);
+        }
+
+        .alert.alert-info {
+            background-color: #e6f7ff;
+            color: var(--info);
+            border-left: 4px solid var(--info);
+        }
+
+        .alert ul {
+            margin: 0.5rem 0 0 1.25rem;
+        }
+
+        .alert li {
+            margin-bottom: 0.25rem;
+        }
+
+        .btn-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            opacity: 0.5;
+            cursor: pointer;
+            padding: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-close:hover {
+            opacity: 0.75;
         }
 
         .form-actions {
             display: flex;
             justify-content: center;
             gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--gray-200);
         }
 
-        .btn-back {
-            border-radius: 10px;
-            transition: all 0.3s ease;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            border: 2px solid transparent;
+            padding: 0.85rem 1.75rem;
+            font-size: 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            text-decoration: none;
+            min-width: 140px;
         }
 
-        .btn-back:hover {
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: var(--box-shadow);
         }
 
-        @media (max-width: 576px) {
+        .btn-secondary {
+            background-color: white;
+            color: var(--gray-700);
+            border: 2px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: @if ($isAjax) 0 @else 1rem @endif;
+            }
+
             .form-container {
-                padding: 1rem;
-                margin: @if ($isAjax) 0 @else 1rem @endif;
+                padding: 1.5rem;
             }
 
             .form-header h1 {
                 font-size: 1.5rem;
             }
 
+            .form-row {
+                flex-direction: column;
+                margin: 0;
+            }
+
+            .form-col {
+                padding: 0;
+                min-width: 100%;
+            }
+
             .form-actions {
                 flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 1.25rem;
+            }
+
+            .form-header {
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+            }
+
+            .form-field {
+                margin-bottom: 1.5rem;
+            }
+
+            .form-control {
+                padding: 0.75rem 1rem;
             }
         }
 
@@ -118,16 +430,46 @@
             box-shadow: none;
             padding: 0;
         }
+
+        .modal-body .form-container::before {
+            display: none;
+        }
+
+        /* KYC Form Specific Styles */
+        .kyc-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .kyc-section:last-child {
+            border-bottom: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .kyc-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1.25rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .kyc-subtitle {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-top: -0.5rem;
+            margin-bottom: 1.5rem;
+        }
     </style>
 </head>
 <body>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
-        <div class="text-center text-white">
-            <div class="spinner-border mb-3" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <div>Submitting...</div>
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div>Submitting your form...</div>
         </div>
     </div>
 
@@ -138,14 +480,16 @@
     <div class="form-container">
         <!-- Error Alert -->
         <div class="alert alert-danger alert-dismissible fade" role="alert" id="errorAlert" style="display: none;">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&times;</button>
+            <h4 class="alert-heading">Please correct the following errors:</h4>
             <ul class="error-message" id="errorList"></ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
         <!-- Success Alert -->
         <div class="alert alert-success alert-dismissible fade" role="alert" id="successAlert" style="display: none;">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&times;</button>
+            <h4 class="alert-heading">Success!</h4>
             <span id="successMessage"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
         <div class="form-header">
@@ -158,98 +502,242 @@
         @if ($form->exists)
             @if ($hasSubmitted)
                 <div class="alert alert-info" role="alert">
-                    You have already submitted this form. Thank you for your response!
+                    <h4 class="alert-heading">Form Already Submitted</h4>
+                    <p>You have already submitted this form. Thank you for your response!</p>
                 </div>
                 @if (!$isAjax)
                     <div class="form-actions">
-                        <a href="{{ route('clients.forms.index') }}" class="btn btn-secondary btn-back" aria-label="Back to forms list">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Forms
+                        <a href="{{ route('clients.forms.index') }}" class="btn btn-secondary" aria-label="Back to forms list">
+                            <i class="fas fa-arrow-left"></i> Back to Forms
                         </a>
                     </div>
                 @endif
             @else
                 <form id="publicForm" method="POST" action="{{ route('admin.dynamic-forms.submit', ['form' => $form->id]) }}" novalidate enctype="multipart/form-data" role="form" aria-labelledby="formTitle">
                     @csrf
-                    @foreach ($form->fields as $field)
-                        <div class="form-field">
-                            <label for="{{ $field->field_name }}" class="form-field-label">
-                                {{ $field->field_label }}
-                                @if ($field->is_required)
-                                    <span class="form-field-required" aria-hidden="true">*</span>
-                                @endif
-                            </label>
+
+                    <!-- Dynamic Fields with Two-Column Support -->
+                    @php
+                        $fields = $form->fields->toArray();
+                        $processedFields = [];
+                    @endphp
+
+                    @for ($i = 0; $i < count($fields); $i++)
+                        @php
+                            $field = $fields[$i];
+                            $nextField = isset($fields[$i + 1]) ? $fields[$i + 1] : null;
+
+                            // Skip if already processed
+                            if (in_array($field['id'], $processedFields)) continue;
+
+                            $requiredAttr = $field['is_required'] ? 'required' : '';
+                            $options = $field['field_options'] ? json_decode($field['field_options'], true) : [];
+                            $nameAttr = $field['field_name'];
+                        @endphp
+
+                        <!-- Check if this field and next field should be in same row -->
+                        @if ($nextField &&
+                              !in_array($nextField['id'], $processedFields) &&
+                              (
+                                  (strpos($field['field_name'], 'first') !== false && strpos($nextField['field_name'], 'last') !== false) ||
+                                  (strpos($field['field_name'], 'name') !== false && strpos($nextField['field_name'], 'address') !== false) ||
+                                  (strpos($field['field_name'], 'city') !== false && strpos($nextField['field_name'], 'state') !== false) ||
+                                  (strpos($field['field_name'], 'state') !== false && strpos($nextField['field_name'], 'zip') !== false) ||
+                                  (strpos($field['field_name'], 'zip') !== false && strpos($nextField['field_name'], 'country') !== false) ||
+                                  (strpos($field['field_name'], 'id_type') !== false && strpos($nextField['field_name'], 'id_number') !== false)
+                              ))
+                            <!-- Two-column row -->
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-field">
+                                        <label for="{{ $field['field_name'] }}" class="form-field-label">
+                                            {{ $field['field_label'] }}
+                                            @if ($field['is_required'])
+                                                <span class="form-field-required" aria-hidden="true">*</span>
+                                            @endif
+                                        </label>
+
+                                        @if ($field['field_type'] === 'textarea')
+                                            <textarea class="form-control" id="{{ $field['field_name'] }}" name="{{ $nameAttr }}" placeholder="{{ $field['placeholder'] }}" {{ $requiredAttr }} rows="4" aria-describedby="{{ $field['field_name'] }}_help">{{ old($nameAttr) }}</textarea>
+                                        @elseif ($field['field_type'] === 'select')
+                                            <select class="form-control" id="{{ $field['field_name'] }}" name="{{ $nameAttr }}" {{ $requiredAttr }} aria-describedby="{{ $field['field_name'] }}_help">
+                                                <option value="">{{ $field['placeholder'] ?: 'Choose...' }}</option>
+                                                @foreach ($options as $option)
+                                                    <option value="{{ $option }}" {{ old($nameAttr) == $option ? 'selected' : '' }}>{{ $option }}</option>
+                                                @endforeach
+                                            </select>
+                                        @elseif ($field['field_type'] === 'radio')
+                                            @foreach ($options as $option)
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="{{ $nameAttr }}" id="{{ $nameAttr . '_' . Str::slug($option) }}" value="{{ $option }}" {{ $requiredAttr }} {{ old($nameAttr) == $option ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="{{ $nameAttr . '_' . Str::slug($option) }}">{{ $option }}</label>
+                                                </div>
+                                            @endforeach
+                                        @elseif ($field['field_type'] === 'checkbox')
+                                            @foreach ($options as $option)
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="{{ $nameAttr }}[]" id="{{ $nameAttr . '_' . Str::slug($option) }}" value="{{ $option }}" {{ in_array($option, (array) old($nameAttr, [])) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="{{ $nameAttr . '_' . Str::slug($option) }}">{{ $option }}</label>
+                                                </div>
+                                            @endforeach
+                                        @elseif ($field['field_type'] === 'file')
+                                            <input type="file" class="form-control" id="{{ $field['field_name'] }}" name="{{ $nameAttr }}" {{ $requiredAttr }} aria-describedby="{{ $field['field_name'] }}_help">
+                                        @else
+                                            <input type="{{ $field['field_type'] }}" class="form-control" id="{{ $field['field_name'] }}" name="{{ $nameAttr }}" placeholder="{{ $field['placeholder'] }}" {{ $requiredAttr }} value="{{ old($nameAttr) }}" aria-describedby="{{ $field['field_name'] }}_help">
+                                        @endif
+
+                                        @if ($field['help_text'])
+                                            <div class="form-field-help" id="{{ $field['field_name'] }}_help">{{ $field['help_text'] }}</div>
+                                        @endif
+
+                                        @error($nameAttr)
+                                            <div class="invalid-feedback d-block" role="alert" aria-live="assertive">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                @php
+                                    $nextNameAttr = $nextField['field_name'];
+                                    $nextRequiredAttr = $nextField['is_required'] ? 'required' : '';
+                                    $nextOptions = $nextField['field_options'] ? json_decode($nextField['field_options'], true) : [];
+                                    $processedFields[] = $nextField['id'];
+                                @endphp
+
+                                <div class="form-col">
+                                    <div class="form-field">
+                                        <label for="{{ $nextField['field_name'] }}" class="form-field-label">
+                                            {{ $nextField['field_label'] }}
+                                            @if ($nextField['is_required'])
+                                                <span class="form-field-required" aria-hidden="true">*</span>
+                                            @endif
+                                        </label>
+
+                                        @if ($nextField['field_type'] === 'textarea')
+                                            <textarea class="form-control" id="{{ $nextField['field_name'] }}" name="{{ $nextNameAttr }}" placeholder="{{ $nextField['placeholder'] }}" {{ $nextRequiredAttr }} rows="4" aria-describedby="{{ $nextField['field_name'] }}_help">{{ old($nextNameAttr) }}</textarea>
+                                        @elseif ($nextField['field_type'] === 'select')
+                                            <select class="form-control" id="{{ $nextField['field_name'] }}" name="{{ $nextNameAttr }}" {{ $nextRequiredAttr }} aria-describedby="{{ $nextField['field_name'] }}_help">
+                                                <option value="">{{ $nextField['placeholder'] ?: 'Choose...' }}</option>
+                                                @foreach ($nextOptions as $option)
+                                                    <option value="{{ $option }}" {{ old($nextNameAttr) == $option ? 'selected' : '' }}>{{ $option }}</option>
+                                                @endforeach
+                                            </select>
+                                        @elseif ($nextField['field_type'] === 'radio')
+                                            @foreach ($nextOptions as $option)
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="{{ $nextNameAttr }}" id="{{ $nextNameAttr . '_' . Str::slug($option) }}" value="{{ $option }}" {{ $nextRequiredAttr }} {{ old($nextNameAttr) == $option ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="{{ $nextNameAttr . '_' . Str::slug($option) }}">{{ $option }}</label>
+                                                </div>
+                                            @endforeach
+                                        @elseif ($nextField['field_type'] === 'checkbox')
+                                            @foreach ($nextOptions as $option)
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="{{ $nextNameAttr }}[]" id="{{ $nextNameAttr . '_' . Str::slug($option) }}" value="{{ $option }}" {{ in_array($option, (array) old($nextNameAttr, [])) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="{{ $nextNameAttr . '_' . Str::slug($option) }}">{{ $option }}</label>
+                                                </div>
+                                            @endforeach
+                                        @elseif ($nextField['field_type'] === 'file')
+                                            <input type="file" class="form-control" id="{{ $nextField['field_name'] }}" name="{{ $nextNameAttr }}" {{ $nextRequiredAttr }} aria-describedby="{{ $nextField['field_name'] }}_help">
+                                        @else
+                                            <input type="{{ $nextField['field_type'] }}" class="form-control" id="{{ $nextField['field_name'] }}" name="{{ $nextNameAttr }}" placeholder="{{ $nextField['placeholder'] }}" {{ $nextRequiredAttr }} value="{{ old($nextNameAttr) }}" aria-describedby="{{ $nextField['field_name'] }}_help">
+                                        @endif
+
+                                        @if ($nextField['help_text'])
+                                            <div class="form-field-help" id="{{ $nextField['field_name'] }}_help">{{ $nextField['help_text'] }}</div>
+                                        @endif
+
+                                        @error($nextNameAttr)
+                                            <div class="invalid-feedback d-block" role="alert" aria-live="assertive">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
 
                             @php
-                                $requiredAttr = $field->is_required ? 'required' : '';
-                                $options = $field->field_options ? json_decode($field->field_options, true) : [];
-                                $nameAttr = $field->field_name;
+                                $processedFields[] = $field['id'];
+                                $i++; // Skip next field as it's already processed
                             @endphp
+                        @else
+                            <!-- Single column field -->
+                            <div class="form-field">
+                                <label for="{{ $field['field_name'] }}" class="form-field-label">
+                                    {{ $field['field_label'] }}
+                                    @if ($field['is_required'])
+                                        <span class="form-field-required" aria-hidden="true">*</span>
+                                    @endif
+                                </label>
 
-                            @if ($field->field_type === 'textarea')
-                                <textarea class="form-control" id="{{ $field->field_name }}" name="{{ $nameAttr }}" placeholder="{{ $field->placeholder }}" {{ $requiredAttr }} rows="4" aria-describedby="{{ $field->field_name }}_help">{{ old($nameAttr) }}</textarea>
-                            @elseif ($field->field_type === 'select')
-                                <select class="form-control" id="{{ $field->field_name }}" name="{{ $nameAttr }}" {{ $requiredAttr }} aria-describedby="{{ $field->field_name }}_help">
-                                    <option value="">{{ $field->placeholder ?: 'Choose...' }}</option>
+                                @if ($field['field_type'] === 'textarea')
+                                    <textarea class="form-control" id="{{ $field['field_name'] }}" name="{{ $nameAttr }}" placeholder="{{ $field['placeholder'] }}" {{ $requiredAttr }} rows="4" aria-describedby="{{ $field['field_name'] }}_help">{{ old($nameAttr) }}</textarea>
+                                @elseif ($field['field_type'] === 'select')
+                                    <select class="form-control" id="{{ $field['field_name'] }}" name="{{ $nameAttr }}" {{ $requiredAttr }} aria-describedby="{{ $field['field_name'] }}_help">
+                                        <option value="">{{ $field['placeholder'] ?: 'Choose...' }}</option>
+                                        @foreach ($options as $option)
+                                            <option value="{{ $option }}" {{ old($nameAttr) == $option ? 'selected' : '' }}>{{ $option }}</option>
+                                        @endforeach
+                                    </select>
+                                @elseif ($field['field_type'] === 'radio')
                                     @foreach ($options as $option)
-                                        <option value="{{ $option }}" {{ old($nameAttr) == $option ? 'selected' : '' }}>{{ $option }}</option>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="{{ $nameAttr }}" id="{{ $nameAttr . '_' . Str::slug($option) }}" value="{{ $option }}" {{ $requiredAttr }} {{ old($nameAttr) == $option ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="{{ $nameAttr . '_' . Str::slug($option) }}">{{ $option }}</label>
+                                        </div>
                                     @endforeach
-                                </select>
-                            @elseif ($field->field_type === 'radio')
-                                @foreach ($options as $option)
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="{{ $nameAttr }}" id="{{ $nameAttr . '_' . Str::slug($option) }}" value="{{ $option }}" {{ $requiredAttr }} {{ old($nameAttr) == $option ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="{{ $nameAttr . '_' . Str::slug($option) }}">{{ $option }}</label>
-                                    </div>
-                                @endforeach
-                            @elseif ($field->field_type === 'checkbox')
-                                @foreach ($options as $option)
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="{{ $nameAttr }}[]" id="{{ $nameAttr . '_' . Str::slug($option) }}" value="{{ $option }}" {{ in_array($option, (array) old($nameAttr, [])) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="{{ $nameAttr . '_' . Str::slug($option) }}">{{ $option }}</label>
-                                    </div>
-                                @endforeach
-                            @elseif ($field->field_type === 'file')
-                                <input type="file" class="form-control" id="{{ $field->field_name }}" name="{{ $nameAttr }}" {{ $requiredAttr }} aria-describedby="{{ $field->field_name }}_help">
-                            @else
-                                <input type="{{ $field->field_type }}" class="form-control" id="{{ $field->field_name }}" name="{{ $nameAttr }}" placeholder="{{ $field->placeholder }}" {{ $requiredAttr }} value="{{ old($nameAttr) }}" aria-describedby="{{ $field->field_name }}_help">
-                            @endif
+                                @elseif ($field['field_type'] === 'checkbox')
+                                    @foreach ($options as $option)
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="{{ $nameAttr }}[]" id="{{ $nameAttr . '_' . Str::slug($option) }}" value="{{ $option }}" {{ in_array($option, (array) old($nameAttr, [])) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="{{ $nameAttr . '_' . Str::slug($option) }}">{{ $option }}</label>
+                                        </div>
+                                    @endforeach
+                                @elseif ($field['field_type'] === 'file')
+                                    <input type="file" class="form-control" id="{{ $field['field_name'] }}" name="{{ $nameAttr }}" {{ $requiredAttr }} aria-describedby="{{ $field['field_name'] }}_help">
+                                @else
+                                    <input type="{{ $field['field_type'] }}" class="form-control" id="{{ $field['field_name'] }}" name="{{ $nameAttr }}" placeholder="{{ $field['placeholder'] }}" {{ $requiredAttr }} value="{{ old($nameAttr) }}" aria-describedby="{{ $field['field_name'] }}_help">
+                                @endif
 
-                            @if ($field->help_text)
-                                <div class="form-field-help" id="{{ $field->field_name }}_help">{{ $field->help_text }}</div>
-                            @endif
+                                @if ($field['help_text'])
+                                    <div class="form-field-help" id="{{ $field['field_name'] }}_help">{{ $field['help_text'] }}</div>
+                                @endif
 
-                            @error($nameAttr)
-                                <div class="invalid-feedback d-block" role="alert" aria-live="assertive">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    @endforeach
+                                @error($nameAttr)
+                                    <div class="invalid-feedback d-block" role="alert" aria-live="assertive">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            @php
+                                $processedFields[] = $field['id'];
+                            @endphp
+                        @endif
+                    @endfor
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary btn-lg" aria-label="Submit form">
-                            <i class="fas fa-paper-plane me-2"></i>Submit Form
+                            <i class="fas fa-paper-plane"></i> Submit Form
                         </button>
                         @if (!$isAjax)
-                            <a href="{{ route('clients.forms.index') }}" class="btn btn-secondary btn-back" aria-label="Back to forms list">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Forms
+                            <a href="{{ route('clients.forms.index') }}" class="btn btn-secondary" aria-label="Back to forms list">
+                                <i class="fas fa-arrow-left"></i> Back to Forms
                             </a>
                         @endif
                     </div>
                 </form>
             @endif
         @else
-            <div class="alert alert-danger" role="alert">Form not found.</div>
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Form Not Found</h4>
+                <p>The requested form could not be found.</p>
+            </div>
             @if (!$isAjax)
                 <div class="form-actions">
-                    <a href="{{ route('clients.forms.index') }}" class="btn btn-secondary btn-back" aria-label="Back to forms list">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Forms
+                    <a href="{{ route('clients.forms.index') }}" class="btn btn-secondary" aria-label="Back to forms list">
+                        <i class="fas fa-arrow-left"></i> Back to Forms
                     </a>
                 </div>
             @endif
         @endif
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.7/dist/axios.min.js" integrity="sha256-9bKyYHG7WfRmaDNW3xG1OSYUz2lmWGkXmQxl1Irw3Lk=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=" crossorigin="anonymous"></script>
+
     <script>
         function PublicFormHandler() {
             this.elements = {

@@ -7,7 +7,7 @@
 @endsection
 
 @section('actions')
-    <div class="btn-group">
+    <div>
         <a href="{{ route('admin.documents.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>New Document
         </a>
@@ -19,391 +19,378 @@
 
 @push('styles')
     <style>
-        .document-card {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+        .btn-primary {
+            background-color: #10b981;
+            border-color: #10b981;
+            margin-right: 0.5rem;
+            border-radius: 50px;
+            /* Fully rounded button */
         }
 
-        .document-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
+        .btn-outline-secondary {
+            border-radius: 50px;
+            /* Fully rounded button */
+        }
+         /* keep this it is helpful, KEEP btn-group to use this property */
+        /* .btn-group>.btn-primary,
+            .btn-group>.btn-outline-secondary {
+                border-radius: 50px !important; /* force fully rounded */
+        /* margin-right: 0.5rem; */
+        /* spacing between buttons */
+        /* } */
+
+        /* Table Styling */
+        .enhanced-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 0.5px solid #000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            table-layout: auto;
+            border-radius: 0 !important;
+            margin-top: 1rem;
         }
 
-        .category-badge {
-            font-size: 0.8em;
+        .table-responsive {
+            background: white;
+            width: 100%;
+            margin: 0 auto;
         }
 
-        .file-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+        /* Table Borders */
+        .enhanced-table thead th,
+        .enhanced-table tbody td {
+            border-right: 0.5px solid #000;
+            border-bottom: 0.5px solid #000;
+            padding: 0.5rem;
+            text-align: center;
+            vertical-align: middle;
         }
 
-        .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .enhanced-table thead th:first-child,
+        .enhanced-table tbody td:first-child {
+            border-left: none;
+        }
+
+        .enhanced-table thead th:last-child,
+        .enhanced-table tbody td:last-child {
+            border-right: none;
+        }
+
+        .enhanced-table thead th {
+            border-top: none;
+        }
+
+        .enhanced-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Table Header and Rows */
+        .enhanced-table thead th {
+            background: #10b981;
             color: white;
-            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 0.5rem;
+        }
+
+        .enhanced-table tbody td {
+            font-size: 0.875rem;
+            background-color: white;
+        }
+
+        .enhanced-table tbody tr:nth-child(even) td {
+            background-color: #f9fafb;
+        }
+
+        /* Badge Styling */
+        .badge-modern {
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Search Form */
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            max-width: 500px;
+        }
+
+        .search-form-container {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .search-form .form-control {
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .search-form .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #10b981;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .enhanced-table {
+                font-size: 0.8rem;
+            }
+
+            .enhanced-table thead th,
+            .enhanced-table tbody td {
+                padding: 0.4rem 0.25rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .enhanced-table {
+                font-size: 0.75rem;
+            }
+
+            .enhanced-table thead th,
+            .enhanced-table tbody td {
+                padding: 0.3rem 0.2rem;
+            }
+
+            .search-form {
+                flex-direction: column;
+                align-items: stretch;
+                max-width: 100%;
+            }
+
+            .search-form .form-control,
+            .search-form .btn {
+                width: 100%;
+            }
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 0;
+        }
+
+        .pagination .page-link {
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            line contributor: center;
+            padding: 0;
+            color: #333;
+            background-color: #f4f4f4;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .pagination .page-link:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Print Styles */
+        @media print {
+
+            .btn,
+            .search-form-container,
+            .pagination {
+                display: none !important;
+            }
+
+            .enhanced-table {
+                border: 1px solid #000;
+            }
+
+            .enhanced-table thead th {
+                background: #f0f0f0;
+                color: #000;
+                font-size: 10pt;
+                font-weight: bold;
+                padding: 8px;
+            }
+
+            .enhanced-table tbody tr:nth-child(even) {
+                background: #fff;
+            }
+
+            .enhanced-table thead th:nth-child(7),
+            .enhanced-table tbody td:nth-child(7) {
+                display: none;
+            }
         }
     </style>
 @endpush
 
 @section('content')
     <div class="container-fluid">
-        <!-- Header -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 class="mb-1">📁 Document Center</h2>
-                        <p class="text-muted mb-0">Manage all your documents in one place</p>
-                    </div>
-                    <div>
-                        <a href="{{ route('admin.documents.create') }}" class="btn btn-primary">
-                            <i class="fas fa-upload me-2"></i>Upload Document
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="stats-card p-3">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-file-alt fa-2x me-3"></i>
-                        <div>
-                            <h4 class="mb-0">{{ $documents->total() }}</h4>
-                            <small>Total Documents</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 bg-light">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-tags fa-2x text-primary me-3"></i>
-                            <div>
-                                <h4 class="mb-0">{{ $categories->count() }}</h4>
-                                <small class="text-muted">Categories</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 bg-light">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-users fa-2x text-success me-3"></i>
-                            <div>
-                                <h4 class="mb-0">{{ $clients->count() }}</h4>
-                                <small class="text-muted">Clients</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 bg-light">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-download fa-2x text-info me-3"></i>
-                            <div>
-                                <h4 class="mb-0">{{ $documents->sum('download_count') }}</h4>
-                                <small class="text-muted">Downloads</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="card mb-4">
+        <div class="enhanced-card">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.documents.index') }}">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label">Category</label>
-                            <select name="category_id" class="form-select">
-                                <option value="">All Categories</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}"
-                                        {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Client</label>
-                            <select name="client_id" class="form-select client-select">
-                                <option value="">All Clients</option>
-                                @foreach ($clients as $client)
-                                    <option value="{{ $client->id }}"
-                                        {{ request('client_id') == $client->id ? 'selected' : '' }}>
-                                        {{ $client->company_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Access Level</label>
-                            <select name="access_level" class="form-select">
-                                <option value="">All Documents</option>
-                                <option value="public" {{ request('access_level') == 'public' ? 'selected' : '' }}>Public
-                                </option>
-                                <option value="confidential"
-                                    {{ request('access_level') == 'confidential' ? 'selected' : '' }}>Confidential</option>
-                                <option value="my_documents"
-                                    {{ request('access_level') == 'my_documents' ? 'selected' : '' }}>My Documents</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Search</label>
-                            <div class="input-group">
-                                <input type="text" name="search" class="form-control" placeholder="Search documents..."
-                                    value="{{ request('search') }}">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary me-2">Filter</button>
-                            <a href="{{ route('admin.documents.index') }}" class="btn btn-secondary">Clear</a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
 
-        <!-- Documents Grid -->
-        <div class="row">
-            @forelse($documents as $document)
-                <div class="col-md-4 col-lg-3 mb-4">
-                    <div class="document-card p-3">
-                        <!-- File Icon -->
-                        <div class="text-center">
-                            @php
-                                $iconClass = match (strtolower($document->file_type)) {
-                                    'pdf' => 'fas fa-file-pdf text-danger',
-                                    'doc', 'docx' => 'fas fa-file-word text-primary',
-                                    'xls', 'xlsx' => 'fas fa-file-excel text-success',
-                                    'ppt', 'pptx' => 'fas fa-file-powerpoint text-warning',
-                                    'jpg', 'jpeg', 'png', 'gif' => 'fas fa-file-image text-info',
-                                    'zip', 'rar' => 'fas fa-file-archive text-secondary',
-                                    default => 'fas fa-file text-muted',
-                                };
-                            @endphp
-                            <i class="{{ $iconClass }} file-icon"></i>
-                        </div>
-
-                        <!-- Document Info -->
-                        <h6 class="mb-2 text-truncate" title="{{ $document->title }}">
-                            {{ $document->title }}
-                        </h6>
-
-                        <!-- Category Badge -->
-                        @if ($document->category)
-                            <span class="badge category-badge mb-2"
-                                style="background-color: {{ $document->category->color }}">
-                                <i class="{{ $document->category->icon }}"></i>
-                                {{ $document->category->name }}
-                            </span>
-                        @endif
-
-                        <!-- File Details -->
-                        <div class="small text-muted mb-2">
-                            <div>{{ $document->formatted_file_size }}</div>
-                            <div>{{ $document->created_at->format('M d, Y') }}</div>
-                            @if ($document->client)
-                                <div>Client: {{ $document->client->company_name }}</div>
-                            @endif
-                        </div>
-
-                        <!-- Access Indicators -->
-                        <div class="mb-2">
-                            @if ($document->is_public)
-                                <span class="badge bg-success">Public</span>
-                            @endif
-                            @if ($document->is_confidential)
-                                <span class="badge bg-danger">Confidential</span>
-                            @endif
-                            @if ($document->download_count > 0)
-                                <span class="badge bg-info">{{ $document->download_count }} downloads</span>
-                            @endif
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="btn-group w-100" role="group">
-                            <a href="{{ route('admin.documents.show', $document) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('admin.documents.download', $document) }}" class="btn btn-sm btn-outline-success">
-                                <i class="fas fa-download"></i>
-                            </a>
-
-                            @if ($document->uploaded_by === Auth::id() || Auth::user()->isAdmin())
-                                <a href="{{ route('admin.documents.edit', $document) }}"
-                                    class="btn btn-sm btn-outline-warning">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('admin.documents.destroy', $document) }}" method="POST"
-                                    class="d-inline" onsubmit="return confirm('Are you sure?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            @endif
-
-                            @if (!$document->is_approved && (Auth::user()->isAdmin() || Auth::user()->isEmployee()))
-                                <form action="{{ route('admin.documents.approve', $document) }}" method="POST"
-                                    class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Approve">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </form>
-
-                                <form action="{{ route('admin.documents.reject', $document) }}" method="POST"
-                                    class="d-inline" onsubmit="return confirm('Reject this document?')">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Reject">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-
-                    </div>
-                </div>
-            @empty
-                <div class="col-12">
-                    <div class="text-center py-5">
-                        <i class="fas fa-folder-open fa-5x text-muted mb-3"></i>
-                        <h4>No documents found</h4>
-                        <p class="text-muted">Upload your first document to get started!</p>
-                        <a href="{{ route('admin.documents.create') }}" class="btn btn-primary">
-                            <i class="fas fa-upload me-2"></i>Upload Document
-                        </a>
-                    </div>
-                </div>
-            @endforelse
-        </div>
-
-        <!-- Pagination -->
-        @if ($documents->hasPages())
-            <div class="d-flex justify-content-center mt-4">
-                {{ $documents->links() }}
-            </div>
-        @endif
-    </div>
-
-    <!-- Send Form Modal -->
-    <div class="modal fade" id="sendFormModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Send Form</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label class="form-label">Select Client</label>
-                            <select class="form-select client-select">
-                                <option>Choose a client...</option>
-                                @foreach ($clients as $client)
-                                    <option value="{{ $client->id }}">{{ $client->company_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Form Type</label>
-                            <select class="form-select">
-                                <option>Choose form type...</option>
-                                <option>Contact Form</option>
-                                <option>Feedback Form</option>
-                                <option>Service Request</option>
-                                <option>Custom Form</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Message</label>
-                            <textarea class="form-control" rows="3" placeholder="Optional message to include..."></textarea>
-                        </div>
+                <div class="search-form-container">
+                    <form class="search-form">
+                        <input type="text" name="search" id="search-input" class="form-control"
+                            placeholder="Search by title..." value="{{ request('search') }}" title="Search by title">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Send Form</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Manage Access Modal -->
-    <div class="modal fade" id="manageAccessModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Manage Document Access</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Recent Documents</h6>
-                            <div class="list-group">
-                                @foreach ($documents->take(5) as $doc)
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>{{ $doc->title }}</strong><br>
-                                            <small class="text-muted">{{ $doc->created_at->diffForHumans() }}</small>
-                                        </div>
-                                        <div>
-                                            @if ($doc->is_public)
-                                                <span class="badge bg-success">Public</span>
-                                            @else
-                                                <span class="badge bg-warning">Private</span>
-                                            @endif
-                                            <a href="{{ route('admin.documents.manage-access', $doc) }}"
-                                                class="btn btn-sm btn-outline-primary ms-2">
-                                                Manage
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endforeach
+                <div class="table-container">
+                    @if ($documents->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table enhanced-table" id="documentsTable">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-list-ol me-2"></i>SN</th>
+                                        <th><i class="fas fa-file-signature me-2"></i>Title</th>
+                                        <th><i class="fas fa-folder me-2"></i>Category</th>
+                                        <th><i class="fas fa-users me-2"></i>Client</th>
+                                        <th><i class="fas fa-toggle-on me-2"></i>Status</th>
+                                        <th><i class="fas fa-calendar me-2"></i>Created</th>
+                                        <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="document-table-body">
+                                    @foreach ($documents as $document)
+                                        <tr data-document-id="{{ $document->id }}">
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $document->title }}</td>
+                                            <td>
+                                                @if ($document->category)
+                                                    <span class="badge badge-modern"
+                                                        style="background-color: {{ $document->category->color }}">
+                                                        <i class="{{ $document->category->icon }}"></i>
+                                                        {{ $document->category->name }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">No category</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $document->client ? $document->client->company_name : 'N/A' }}</td>
+                                            <td>
+                                                @if ($document->is_approved)
+                                                    <span class="badge badge-modern"
+                                                        style="background-color: #10b981; color: white;">
+                                                        <i class="fas fa-check me-1"></i>Approved
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-modern bg-danger">
+                                                        <i class="fas fa-times me-1"></i>Pending
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="text-muted">
+                                                    <i class="fas fa-calendar-alt me-1"></i>
+                                                    {!! $document->created_at_nepali_html !!}
+                                                </div>
+                                                <small
+                                                    class="text-muted">{{ $document->created_at->diffForHumans() }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ route('admin.documents.show', $document) }}"
+                                                        class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip"
+                                                        title="View">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ route('admin.documents.download', $document) }}"
+                                                        class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip"
+                                                        title="Download">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                    @if ($document->uploaded_by === Auth::id() || Auth::user()->isAdmin())
+                                                        <a href="{{ route('admin.documents.edit', $document) }}"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            data-bs-toggle="tooltip" title="Edit">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-danger delete-document-btn"
+                                                            data-bs-toggle="tooltip" title="Delete"
+                                                            data-id="{{ $document->id }}">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <div class="loading-overlay" id="loading-overlay">
+                                <div class="spinner"></div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6>Access Statistics</h6>
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <div class="row text-center">
-                                        <div class="col-6">
-                                            <h4>{{ $documents->where('is_public', true)->count() }}</h4>
-                                            <small>Public Documents</small>
-                                        </div>
-                                        <div class="col-6">
-                                            <h4>{{ $documents->where('is_confidential', true)->count() }}</h4>
-                                            <small>Confidential</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="pagination mt-4">
+                            {{ $documents->appends(request()->query())->links() }}
                         </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    @else
+                        <div class="text-center py-5" id="empty-state">
+                            <i class="fas fa-folder-open fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted mb-3">No Documents Found</h4>
+                            <p class="text-muted mb-4">Upload your first document to get started!</p>
+                            <a href="{{ route('admin.documents.create') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus-circle me-2"></i>Upload Your First Document
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -413,12 +400,161 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Initialize Select2 for client dropdowns
-            $('.client-select').select2({
-                theme: 'bootstrap-5',
-                placeholder: 'All Clients',
-                allowClear: true,
-                width: '100%'
+            // Initialize tooltips
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                new bootstrap.Tooltip(el);
+            });
+
+            // Handle delete document
+            function deleteDocument(documentId) {
+                if (!documentId || isNaN(documentId)) {
+                    showToast('error', 'Invalid document ID.');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                        if (!csrfToken) {
+                            showToast('error', 'Security token not found.');
+                            return;
+                        }
+
+                        axios.delete(`${window.location.origin}/admin/documents/${documentId}`, {
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }).then(response => {
+                            if (response.data.status === 'success') {
+                                const row = document.querySelector(
+                                    `tr[data-document-id="${documentId}"]`);
+                                if (row) row.remove();
+                                showToast('success', 'Document deleted successfully.');
+                            } else {
+                                showToast('error', response.data.message ||
+                                    'Failed to delete document.');
+                            }
+                        }).catch(error => {
+                            let errorMessage = 'An error occurred while deleting the document.';
+                            if (error.response) {
+                                if (error.response.status === 405) errorMessage =
+                                    'Method not allowed.';
+                                else if (error.response.status === 404) errorMessage =
+                                    'Document not found.';
+                                else if (error.response.data?.message) errorMessage = error.response
+                                    .data.message;
+                            } else if (error.request) {
+                                errorMessage = 'No response from server.';
+                            }
+                            showToast('error', errorMessage);
+                        });
+                    }
+                });
+            }
+
+            // Handle delete button clicks
+            document.body.addEventListener('click', function(event) {
+                const button = event.target.closest('.delete-document-btn');
+                if (!button) return;
+                event.preventDefault();
+                deleteDocument(button.dataset.id);
+            });
+
+            // Real-time search
+            const searchInput = document.getElementById('search-input');
+            const searchForm = document.querySelector('.search-form');
+            const tableBody = document.getElementById('document-table-body');
+            const tableContainer = document.querySelector('.table-container');
+            const emptyState = document.getElementById('empty-state');
+            const pagination = document.querySelector('.pagination');
+
+            function performSearch() {
+                const searchTerm = searchInput.value.trim();
+                axios.get(`${window.location.origin}/admin/documents`, {
+                    params: {
+                        search: searchTerm
+                    },
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(response => {
+                    if (response.data.documents?.data.length > 0) {
+                        tableBody.innerHTML = response.data.documents.data.map((document, index) => `
+                    <tr data-document-id="${document.id}">
+                        <td>${index + 1}</td>
+                        <td>${document.title}</td>
+                        <td>
+                            ${document.category ? `
+                                        <span class="badge badge-modern" style="background-color: ${document.category.color}">
+                                            <i class="${document.category.icon}"></i> ${document.category.name}
+                                        </span>
+                                    ` : '<span class="text-muted">No category</span>'}
+                        </td>
+                        <td>${document.client ? document.client.company_name : 'N/A'}</td>
+                        <td>
+                            ${document.is_approved ?
+                                '<span class="badge badge-modern" style="background-color: #10b981; color: white;"><i class="fas fa-check me-1"></i>Approved</span>' :
+                                '<span class="badge badge-modern bg-danger"><i class="fas fa-times me-1"></i>Pending</span>'}
+                        </td>
+                        <td>
+                            <div class="text-muted">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                ${document.created_at_nepali_html}
+                            </div>
+                            <small class="text-muted">${new Date(document.created_at).toLocaleString('en-US', { timeZone: 'Asia/Kathmandu' })}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="${window.location.origin}/admin/documents/${document.id}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="${window.location.origin}/admin/documents/${document.id}/download" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Download">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                ${document.uploaded_by === {{ Auth::id() }} || {{ Auth::user()->isAdmin() }} ? `
+                                            <a href="${window.location.origin}/admin/documents/${document.id}/edit" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-document-btn" data-bs-toggle="tooltip" title="Delete" data-id="${document.id}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+                        tableContainer.style.display = 'block';
+                        if (emptyState) emptyState.style.display = 'none';
+                        if (pagination) pagination.innerHTML = response.data.pagination || '';
+                        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap
+                            .Tooltip(el));
+                    } else {
+                        tableBody.innerHTML = '';
+                        tableContainer.style.display = 'none';
+                        if (emptyState) emptyState.style.display = 'block';
+                        if (pagination) pagination.innerHTML = '';
+                    }
+                }).catch(error => {
+                    showToast('error', error.response?.data?.message ||
+                        'An error occurred while searching.');
+                });
+            }
+
+            searchInput.addEventListener('input', performSearch);
+            searchForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                performSearch();
             });
         });
     </script>

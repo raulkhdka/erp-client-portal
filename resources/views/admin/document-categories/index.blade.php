@@ -8,7 +8,7 @@
 @endsection
 
 @section('actions')
-    <div class="btn-group">
+    <div class="d-flex gap-2">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
             <i class="fas fa-plus me-2"></i>New Category
         </button>
@@ -20,163 +20,301 @@
 
 @push('styles')
     <style>
-        /* Enhanced Table Styling with Auto-Adjusting Sizes */
+        /* Table Styling */
         .enhanced-table {
-            border-collapse: separate !important;
+            border-collapse: separate;
             border-spacing: 0;
-            border: 0.5px solid #000000 !important;
-            border-radius: 12px !important;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-            width: 100% !important;
-            table-layout: auto !important;
-            /* Changed from fixed to auto for dynamic column sizing */
+            border: 0.5px solid #000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            table-layout: auto;
+            border-radius: 0 !important;
         }
 
         .table-responsive {
-            border: 0.5px solid #000000 !important;
-            border-radius: 12px !important;
             background: white;
             width: 100%;
             margin: 0 auto;
-            box-sizing: border-box;
+        }
+
+        /* Button Styling */
+        .btn-primary, .btn-secondary {
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 20px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+
+        .btn-primary:hover {
+            background-color: #0e9f6e;
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background-color: #6b7280;
+            border-color: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+            transform: scale(1.05);
+        }
+
+        .btn-print {
+            background-color: #4B5EAA;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .btn-print:hover {
+            background-color: #3B4A8A;
+            transform: scale(1.05);
+        }
+
+        /* Table Borders */
+        .enhanced-table thead th,
+        .enhanced-table tbody td {
+            border-right: 0.5px solid #000;
+            border-bottom: 0.5px solid #000;
+            padding: 0.5rem;
+            text-align: center;
+            vertical-align: middle;
         }
 
         .enhanced-table thead th:first-child,
         .enhanced-table tbody td:first-child {
-            border-left: none !important;
+            border-left: none;
         }
 
         .enhanced-table thead th:last-child,
         .enhanced-table tbody td:last-child {
-            border-right: none !important;
+            border-right: none;
         }
 
         .enhanced-table thead th {
-            border-top: none !important;
-            border-bottom: 0.5px solid #000000 !important;
+            border-top: none;
         }
 
         .enhanced-table tbody tr:last-child td {
-            border-bottom: none !important;
+            border-bottom: none;
         }
 
-        .enhanced-table thead th:first-child {
-            border-top-left-radius: 12px;
-        }
-
-        .enhanced-table thead th:last-child {
-            border-top-right-radius: 12px;
-        }
-
-        .enhanced-table tbody tr:last-child td:first-child {
-            border-bottom-left-radius: 12px;
-        }
-
-        .enhanced-table tbody tr:last-child td:last-child {
-            border-bottom-right-radius: 12px;
-        }
-
-        .enhanced-table thead th,
-        .enhanced-table tbody td {
-            border-right: 0.5px solid #000000 !important;
-            border-bottom: 0.5px solid #000000 !important;
-        }
-
-        .enhanced-table thead th:last-child,
-        .enhanced-table tbody td:last-child {
-            border-right: none !important;
-        }
-
-        .enhanced-table tbody tr:last-child td {
-            border-bottom: none !important;
-        }
-
-        .table-responsive .table {
-            margin-bottom: 0 !important;
-        }
-
+        /* Table Header and Rows */
         .enhanced-table thead th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #10b981;
             color: white;
-            text-align: center !important;
-            vertical-align: middle;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0.5rem 0.5rem;
-            position: relative;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        /* Removed fixed width settings for dynamic column sizing */
-        /* Previously had width and min-width for each column */
-
-        .enhanced-table thead th::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .enhanced-table thead th:hover::before {
-            left: 100%;
+            padding: 0.5rem;
         }
 
         .enhanced-table tbody td {
-            padding: 0.5rem 0.5rem;
-            vertical-align: middle;
-            text-align: center !important;
-            transition: all 0.3s ease;
+            font-size: 0.875rem;
             background-color: white;
-            word-wrap: break-word;
-        }
-
-        /* Specific column adjustments for readability */
-        .enhanced-table tbody td:nth-child(1) {
-            white-space: nowrap;
-        }
-
-        /* # */
-        /* Removed width for Name, Icon, Active, Order, Documents, Actions */
-        /* .enhanced-table tbody td:nth-child(3) { max-width: 200px; overflow: hidden; text-overflow: ellipsis; } */
-        /* Description, commented out */
-
-        .enhanced-table tbody tr {
-            transition: all 0.3s ease;
-            position: relative;
-            height: auto;
-        }
-
-        .enhanced-table tbody tr:hover {
-            background-color: #f8fafc !important;
-            transform: scale(1.01);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .enhanced-table tbody tr:hover td {
-            background-color: #f8fafc !important;
-        }
-
-        .enhanced-table tbody tr:nth-child(even) {
-            background-color: #f9fafb;
         }
 
         .enhanced-table tbody tr:nth-child(even) td {
             background-color: #f9fafb;
         }
 
-        .enhanced-table tbody tr:nth-child(even):hover td {
-            background-color: #f1f5f9 !important;
+        /* Search Form */
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            max-width: 500px;
         }
 
+        .search-form-container {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .search-form .form-control {
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .search-form .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #10b981;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .enhanced-table {
+                font-size: 0.8rem;
+            }
+
+            .enhanced-table thead th,
+            .enhanced-table tbody td {
+                padding: 0.4rem 0.25rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .enhanced-table {
+                font-size: 0.75rem;
+            }
+
+            .enhanced-table thead th,
+            .enhanced-table tbody td {
+                padding: 0.3rem 0.2rem;
+            }
+
+            .search-form {
+                flex-direction: column;
+                align-items: stretch;
+                max-width: 100%;
+            }
+
+            .search-form .form-control,
+            .search-form .btn {
+                width: 100%;
+            }
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 0;
+        }
+
+        .pagination .page-link {
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            line-height: 42px;
+            text-align: center;
+            padding: 0;
+            color: #333;
+            background-color: #f4f4f4;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .pagination .page-link:hover {
+            background-color: #10b981;;
+            color: white;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #10b981;;
+            color: white;
+            border-color: #10b981;
+        }
+
+        /* Print Styles */
+        @media print {
+            .btn,
+            .search-form-container,
+            .pagination {
+                display: none !important;
+            }
+
+            .enhanced-table {
+                border: 1px solid #000;
+            }
+
+            .enhanced-table thead th {
+                background: #f0f0f0;
+                color: #000;
+                font-size: 10pt;
+                font-weight: bold;
+                padding: 8px;
+            }
+
+            .enhanced-table tbody tr:nth-child(even) {
+                background: #fff;
+            }
+
+            .enhanced-table thead th:nth-child(7),
+            .enhanced-table tbody td:nth-child(7) {
+                display: none;
+            }
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .modal-header {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        /* Icon Wrapper */
+        .icon-wrapper {
+            transition: transform 0.3s ease;
+        }
+
+        .icon-wrapper:hover {
+            transform: scale(1.1);
+        }
+
+        /* Badge Styling */
         .animated-badge {
             transition: all 0.3s ease;
             position: relative;
@@ -204,264 +342,6 @@
         .animated-badge:hover::before {
             left: 100%;
         }
-
-        .enhanced-table tbody td strong,
-        .enhanced-table tbody td small,
-        .enhanced-table tbody td span {
-            display: inline-block;
-            text-align: center;
-        }
-
-        @media (max-width: 1200px) {
-            .enhanced-table {
-                font-size: 0.875rem;
-                border-radius: 12px !important;
-                width: 100% !important;
-            }
-
-            .enhanced-table thead th,
-            .enhanced-table tbody td {
-                padding: 0.5rem 0.25rem;
-            }
-
-            /* Removed width and min-width settings */
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 12px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 12px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 12px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 12px;
-            }
-
-            .table-responsive {
-                border-radius: 12px !important;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .enhanced-table {
-                font-size: 0.8rem;
-                border-radius: 10px !important;
-            }
-
-            .enhanced-table thead th {
-                font-size: 0.75rem;
-                padding: 0.4rem 0.25rem;
-            }
-
-            .enhanced-table tbody td {
-                padding: 0.4rem 0.25rem;
-            }
-
-            /* Removed width and min-width settings */
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 10px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 10px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 10px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 10px;
-            }
-
-            .table-responsive {
-                border-radius: 10px !important;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .enhanced-table {
-                font-size: 0.75rem;
-                border-radius: 8px !important;
-            }
-
-            .enhanced-table thead th {
-                padding: 0.3rem 0.2rem;
-            }
-
-            .enhanced-table tbody td {
-                padding: 0.3rem 0.2rem;
-            }
-
-            /* Removed width and min-width settings */
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 8px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 8px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 8px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 8px;
-            }
-
-            .table-responsive {
-                border-radius: 8px !important;
-            }
-        }
-
-        .table-container {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .enhanced-card {
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-        }
-
-        .enhanced-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .empty-state {
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .empty-state i {
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            20%,
-            50%,
-            80%,
-            100% {
-                transform: translateY(0);
-            }
-
-            40% {
-                transform: translateY(-10px);
-            }
-
-            60% {
-                transform: translateY(-5px);
-            }
-        }
-
-        /* Style the pagination container */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 1rem 0;
-        }
-
-        .pagination .page-item {
-            transition: transform 0.2s ease;
-        }
-
-        .pagination .page-link {
-            border: none;
-            border-radius: 50%;
-            width: 42px;
-            height: 42px;
-            line-height: 42px;
-            text-align: center;
-            padding: 0;
-            font-weight: 500;
-            color: #333;
-            background-color: #f4f4f4;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-            transition: all 0.25s ease;
-        }
-
-        .pagination .page-link:hover {
-            background-color: #007bff;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-        }
-
-        .pagination .page-item.active .page-link {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-        }
-
-        .pagination .page-link:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.4);
-        }
-
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .truncated-content {
-            cursor: help;
-        }
-
-        .modal-content {
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-
-        .modal-header {
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-        }
-
-        .icon-wrapper {
-            transition: transform 0.3s ease;
-        }
-
-        .icon-wrapper:hover {
-            transform: scale(1.1);
-        }
     </style>
 @endpush
 
@@ -471,6 +351,23 @@
             <div class="col-12">
                 <div class="card enhanced-card">
                     <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                            <div class="d-flex gap-2">
+                                <button onclick="window.print()" class="btn btn-print" data-bs-toggle="tooltip" title="Print Table">
+                                    <i class="fas fa-print me-2"></i>Print
+                                </button>
+                            </div>
+                            <div class="search-form-container">
+                                <form class="search-form">
+                                    <input type="text" name="search" id="search-input" class="form-control"
+                                        placeholder="Search by name..." value="{{ request('search') }}" title="Search by name">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search me-2"></i>Search
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
                         @if (session('error'))
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-circle me-2"></i>
@@ -495,7 +392,6 @@
                                             <tr>
                                                 <th><i class="fas fa-list-ol me-2"></i>SN</th>
                                                 <th><i class="fas fa-folder me-2"></i>Name</th>
-                                                {{-- <th><i class="fas fa-comment me-2"></i>Description</th> --}}
                                                 <th><i class="fas fa-image me-2"></i>Icon</th>
                                                 <th><i class="fas fa-toggle-on me-2"></i>Active</th>
                                                 <th><i class="fas fa-sort me-2"></i>Order</th>
@@ -503,7 +399,7 @@
                                                 <th><i class="fas fa-cogs me-2"></i>Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody id="category-table-body">
                                             @forelse ($categories as $category)
                                                 <tr>
                                                     <td>
@@ -518,15 +414,6 @@
                                                             <strong>{{ $category->name }}</strong>
                                                         </a>
                                                     </td>
-                                                    {{-- <td>
-                                                    @php
-                                                        $isLong = strlen($category->description ?? '') > 30;
-                                                    @endphp
-                                                    <span class="{{ $isLong ? 'truncated-content' : '' }}"
-                                                          @if ($isLong) data-bs-toggle="tooltip" title="{{ $category->description }}" @endif>
-                                                        {{ $category->description ? Str::limit($category->description, 30) : 'N/A' }}
-                                                    </span>
-                                                </td> --}}
                                                     <td>
                                                         @if ($category->icon && $category->color)
                                                             <span
@@ -637,7 +524,7 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="8" class="text-center empty-state">
+                                                    <td colspan="7" class="text-center empty-state">
                                                         <i class="fas fa-folder fa-4x text-muted mb-4"></i>
                                                         <h4 class="text-muted mb-3">No Document Categories Found</h4>
                                                         <p class="text-muted mb-4">Start by creating your first category.
@@ -654,10 +541,13 @@
                                             @endforelse
                                         </tbody>
                                     </table>
+                                    <div class="loading-overlay" id="loading-overlay">
+                                        <div class="spinner"></div>
+                                    </div>
                                 </div>
 
-                                <div class="d-flex justify-content-center mt-4">
-                                    {{ $categories->links() }}
+                                <div class="pagination mt-4">
+                                    {{ $categories->appends(request()->query())->links() }}
                                 </div>
                             </div>
                         @else
@@ -860,62 +750,136 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                new bootstrap.Tooltip(el);
             });
 
-            // Add loading animation to table rows
-            const tableRows = document.querySelectorAll('.enhanced-table tbody tr');
-            tableRows.forEach((row, index) => {
-                row.style.animationDelay = `${index * 0.1}s`;
-                row.style.animation = 'fadeInUp 0.6s ease-out forwards';
-            });
+            // Real-time search
+            const searchInput = document.getElementById('search-input');
+            const searchForm = document.querySelector('.search-form');
+            const tableBody = document.getElementById('category-table-body');
+            const tableContainer = document.querySelector('.table-container');
+            const emptyState = document.querySelector('.empty-state');
+            const pagination = document.querySelector('.pagination');
 
-            // Add click animation to badges and buttons
-            const animatedElements = document.querySelectorAll('.animated-badge, .btn');
-            animatedElements.forEach(element => {
-                element.addEventListener('click', function() {
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1.05)';
-                    }, 100);
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 200);
-                });
-            });
-
-            // Smooth scroll for pagination
-            const paginationLinks = document.querySelectorAll('.pagination a');
-            paginationLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const tableContainer = document.querySelector('.table-container');
-                    if (tableContainer) {
-                        tableContainer.style.opacity = '0.7';
-                        tableContainer.style.transform = 'translateY(10px)';
-                        setTimeout(() => {
-                            tableContainer.style.opacity = '1';
-                            tableContainer.style.transform = 'translateY(0)';
-                        }, 300);
+            function performSearch() {
+                const searchTerm = searchInput.value.trim();
+                axios.get(`${window.location.origin}/admin/document-categories`, {
+                    params: {
+                        search: searchTerm
+                    },
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
-                });
-            });
-
-            // Auto-resize table
-            function autoResizeTable() {
-                const table = document.querySelector('.enhanced-table');
-                if (table) {
-                    table.style.width = '100%';
-                    const containerWidth = table.parentElement.offsetWidth;
-                    if (table.offsetWidth > containerWidth) {
-                        table.style.width = `${containerWidth}px`;
+                }).then(response => {
+                    if (response.data.categories?.data.length > 0) {
+                        tableBody.innerHTML = response.data.categories.data.map((category, index) => `
+                            <tr>
+                                <td>
+                                    <span class="truncated-content" data-bs-toggle="tooltip" title="Category #${index + 1}">
+                                        ${index + 1}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="${window.location.origin}/admin/document-categories/${category.id}"
+                                        class="text-decoration-none text-primary">
+                                        <strong>${category.name}</strong>
+                                    </a>
+                                </td>
+                                <td>
+                                    ${category.icon && category.color ? `
+                                        <span class="icon-wrapper d-inline-flex align-items-center justify-content-center rounded-circle animated-badge"
+                                            style="background-color: ${category.color}; color: ${category.text_color || '#ffffff'}; width: 30px; height: 30px;"
+                                            data-bs-toggle="tooltip" title="Icon: ${category.icon}">
+                                            <i class="${category.icon}" style="font-size: 1.2em;"></i>
+                                        </span>
+                                    ` : category.icon ? `
+                                        <span class="icon-wrapper animated-badge" data-bs-toggle="tooltip" title="Icon: ${category.icon}">
+                                            <i class="${category.icon}" style="font-size: 1.2em;"></i>
+                                        </span>
+                                    ` : `
+                                        <span data-bs-toggle="tooltip" title="No icon">N/A</span>
+                                    `}
+                                </td>
+                                <td>
+                                    <span class="badge bg-${category.is_active ? 'success' : 'danger'} animated-badge"
+                                        data-bs-toggle="tooltip" title="Active: ${category.is_active ? 'Yes' : 'No'}">
+                                        ${category.is_active ? 'Yes' : 'No'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span data-bs-toggle="tooltip" title="Sort Order: ${category.sort_order}">
+                                        ${category.sort_order}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span data-bs-toggle="tooltip" title="Documents: ${category.documents_count}">
+                                        ${category.documents_count}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="${window.location.origin}/admin/document-categories/${category.id}"
+                                            class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Category">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-warning edit-category-btn"
+                                            data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+                                            data-id="${category.id}"
+                                            data-name="${category.name}"
+                                            data-description="${category.description || ''}"
+                                            data-icon="${category.icon || ''}"
+                                            data-color="${category.color || '#007bff'}"
+                                            data-is-active="${category.is_active}"
+                                            data-sort-order="${category.sort_order}"
+                                            data-update-url="${window.location.origin}/admin/document-categories/${category.id}"
+                                            data-bs-toggle="tooltip" title="Edit Category">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal${category.id}"
+                                            data-bs-toggle="tooltip" title="Delete Category">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                        tableContainer.style.display = 'block';
+                        if (emptyState) emptyState.style.display = 'none';
+                        if (pagination) pagination.innerHTML = response.data.pagination || '';
+                        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+                    } else {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="text-center empty-state">
+                                    <i class="fas fa-folder fa-4x text-muted mb-4"></i>
+                                    <h4 class="text-muted mb-3">No Document Categories Found</h4>
+                                    <p class="text-muted mb-4">Start by creating your first category.</p>
+                                    <div class="mt-4">
+                                        <button type="button" class="btn btn-primary btn-lg"
+                                            data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+                                            <i class="fas fa-plus me-2"></i>Create First Category
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        tableContainer.style.display = 'block';
+                        if (emptyState) emptyState.style.display = 'none';
+                        if (pagination) pagination.innerHTML = '';
                     }
-                }
+                }).catch(error => {
+                    showToast('error', error.response?.data?.message || 'An error occurred while searching.');
+                });
             }
 
-            autoResizeTable();
-            window.addEventListener('resize', autoResizeTable);
+            searchInput.addEventListener('input', performSearch);
+            searchForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                performSearch();
+            });
 
             // Edit modal population
             var editCategoryModal = document.getElementById('editCategoryModal');
@@ -940,25 +904,6 @@
                 modalForm.querySelector('#edit_sort_order').value = sortOrder || 0;
                 modalForm.querySelector('#edit_is_active').checked = (isActive === '1');
             });
-
-            // Handle modal errors
-            @if ($errors->any())
-                @php
-                    $hasCreateErrors = $errors->hasAny(['name', 'description', 'icon', 'color', 'sort_order', 'is_active']) && old('_token') && session('status') !== 'updated';
-                    $hasEditErrors = $errors->any() && old('_token') && session('status') === 'updated';
-                @endphp
-
-                var createModalErrors = @json($hasCreateErrors);
-                var editModalErrors = @json($hasEditErrors);
-
-                if (createModalErrors) {
-                    var createModal = new bootstrap.Modal(document.getElementById('createCategoryModal'));
-                    createModal.show();
-                } else if (editModalErrors) {
-                    var editModal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
-                    editModal.show();
-                }
-            @endif
 
             // Icon Picker Logic
             const fontAwesomeIcons = [
@@ -1004,11 +949,11 @@
                     const colDiv = document.createElement('div');
                     colDiv.className = 'col icon-item mb-2';
                     colDiv.innerHTML = `
-                <div class="card h-100 p-2 border-0 shadow-sm icon-card animated-badge" data-icon="${iconClass}">
-                    <i class="${iconClass} fa-2x"></i>
-                    <small class="mt-1 text-muted text-truncate">${iconClass.replace('fas fa-', '')}</small>
-                </div>
-            `;
+                        <div class="card h-100 p-2 border-0 shadow-sm icon-card animated-badge" data-icon="${iconClass}">
+                            <i class="${iconClass} fa-2x"></i>
+                            <small class="mt-1 text-muted text-truncate">${iconClass.replace('fas fa-', '')}</small>
+                        </div>
+                    `;
                     iconGrid.appendChild(colDiv);
                 });
             }
@@ -1039,8 +984,7 @@
                     const selectedIconClass = card.getAttribute('data-icon');
                     currentTargetInput.value = selectedIconClass;
 
-                    const iconPickerModal = bootstrap.Modal.getInstance(document.getElementById(
-                        'iconPickerModal'));
+                    const iconPickerModal = bootstrap.Modal.getInstance(document.getElementById('iconPickerModal'));
                     if (iconPickerModal) {
                         iconPickerModal.hide();
                     }
@@ -1060,8 +1004,7 @@
                 if (form) {
                     form.addEventListener('submit', function(event) {
                         const submitButton = event.submitter;
-                        if (!submitButton || (!submitButton.classList.contains('btn-primary') && !
-                                submitButton.classList.contains('btn-warning'))) {
+                        if (!submitButton || (!submitButton.classList.contains('btn-primary') && !submitButton.classList.contains('btn-warning'))) {
                             event.preventDefault();
                             event.stopPropagation();
                         }
@@ -1075,6 +1018,25 @@
                     });
                 }
             });
+
+            // Handle modal errors
+            @if ($errors->any())
+                @php
+                    $hasCreateErrors = $errors->hasAny(['name', 'description', 'icon', 'color', 'sort_order', 'is_active']) && old('_token') && session('status') !== 'updated';
+                    $hasEditErrors = $errors->any() && old('_token') && session('status') === 'updated';
+                @endphp
+
+                var createModalErrors = @json($hasCreateErrors);
+                var editModalErrors = @json($hasEditErrors);
+
+                if (createModalErrors) {
+                    var createModal = new bootstrap.Modal(document.getElementById('createCategoryModal'));
+                    createModal.show();
+                } else if (editModalErrors) {
+                    var editModal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+                    editModal.show();
+                }
+            @endif
         });
     </script>
 @endpush
