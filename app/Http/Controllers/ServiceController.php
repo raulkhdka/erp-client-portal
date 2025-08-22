@@ -4,20 +4,94 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ServicesExport;
 
 class ServiceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $services = Service::withCount('clients')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = Service::withCount('clients')->orderBy('created_at', 'desc');
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('type', 'like', "%{$search}%");
+            });
+        }
+
+        $services = $query->paginate(6);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'services' => $services,
+                'pagination' => (string) $services->appends(request()->query())->links()
+            ]);
+        }
 
         return view('admin.services.index', compact('services'));
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $service = Service::find($id);
+
+        if (!$service) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Service not found.'
+            ], 404);
+        }
+
+        $request->validate([
+            'status' => 'required|in:active,inactive'
+        ]);
+
+        $service->is_active = $request->status === 'active';
+        $service->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Status updated successfully.'
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $query = Service::withCount('clients');
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('type', 'like', "%{$search}%");
+            });
+        }
+
+        $services = $query->get();
+        $pdf = Pdf::loadView('admin.services.pdf', compact('services'));
+        return $pdf->download('services.pdf');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $query = Service::withCount('clients');
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('type', 'like', "%{$search}%");
+            });
+        }
+
+        $services = $query->get();
+        return Excel::download(new ServicesExport($services), 'services.xlsx');
     }
 
     /**
@@ -81,7 +155,8 @@ class ServiceController extends Controller
      */
     public function show(Service $service)
     {
-        $service->load('clients');
+        // Eager load clients with their emails and user relationships
+        $service->load('clients.emails', 'clients.user');
         return view('admin.services.show', compact('service'));
     }
 

@@ -7,16 +7,85 @@ use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\EmployeesExport;
 
 class EmployeeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $employees = Employee::with('user')->paginate(6);
+        $query = Employee::with('user');
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('email', 'like', "%{$search}%");
+                  })
+                  ->orWhere('department', 'like', "%{$search}%")
+                  ->orWhere('position', 'like', "%{$search}%");
+            });
+        }
+
+        $employees = $query->paginate(6);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'employees' => $employees,
+                'pagination' => (string) $employees->appends(request()->query())->links()
+            ]);
+        }
+
         return view('admin.employees.index', compact('employees'));
+    }
+
+    public function export(Request $request)
+    {
+        $query = Employee::with('user');
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('email', 'like', "%{$search}%");
+                  })
+                  ->orWhere('department', 'like', "%{$search}%")
+                  ->orWhere('position', 'like', "%{$search}%");
+            });
+        }
+
+        $employees = $query->get();
+        // Log::info('Employees for export:', $employees->toArray()); // Debug log
+        $pdf = Pdf::loadView('admin.employees.pdf', compact('employees'));
+        return $pdf->download('employees.pdf');
+    }
+
+    //Export to Excel
+    public function exportExcel(Request $request)
+    {
+        $query = Employee::with('user');
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('email', 'like', "%{$search}%");
+                  })
+                  ->orWhere('department', 'like', "%{$search}%")
+                  ->orWhere('position', 'like', "%{$search}%");
+            });
+        }
+
+        $employees = $query->get();
+        return Excel::download(new EmployeesExport($employees), 'employees.xlsx');
     }
 
     /**

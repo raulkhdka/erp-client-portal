@@ -292,246 +292,331 @@
                 transform: translateY(0);
             }
         }
+
+        /* Custom flex layout for main content and quick actions */
+        .main-content-flex {
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            width: 100%;
+        }
+        .main-content-section {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        .side-panel {
+            width: 340px;
+            max-width: 100%;
+            margin-left: 0;
+            position: sticky;
+            top: 1.5rem;
+            align-self: flex-start;
+            z-index: 0;
+        }
+        @media (max-width: 1200px) {
+            .side-panel {
+                width: 280px;
+            }
+        }
+        @media (max-width: 992px) {
+            .main-content-flex {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .side-panel {
+                width: 100%;
+                position: static;
+            }
+        }
+
+        /* Layout for sidebar, main content, and quick actions */
+        .show-layout-flex {
+            display: flex;
+            align-items: flex-start;
+            width: 100%;
+            min-height: 100vh;
+        }
+        .show-layout-flex #sidebar {
+            position: static;
+            width: 250px;
+            min-width: 250px;
+            height: 100vh;
+            z-index: 2;
+        }
+        .show-layout-flex .main-content-section {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 0 2rem 0 2rem;
+            margin-left: 0;
+        }
+        .show-layout-flex .side-panel {
+            width: 340px;
+            max-width: 100%;
+            margin-left: 0;
+            position: sticky;
+            top: 1.5rem;
+            align-self: flex-start;
+            z-index: 0;
+        }
+        @media (max-width: 1200px) {
+            .show-layout-flex .side-panel {
+                width: 280px;
+            }
+        }
+        @media (max-width: 992px) {
+            .show-layout-flex {
+                flex-direction: column;
+            }
+            .show-layout-flex #sidebar,
+            .show-layout-flex .side-panel {
+                width: 100%;
+                position: static;
+                min-width: 0;
+                height: auto;
+            }
+            .show-layout-flex .main-content-section {
+                padding: 0 1rem;
+            }
+        }
     </style>
 @endpush
 
 @section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-lg-8 main-content">
-            <!-- Call Information -->
-            <div class="card modern-card mb-4 fade-in">
-                <div class="card-header">
-                    <h5><i class="fas fa-phone me-2"></i>Call Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-user me-2"></i>Client:</strong>
-                            <p class="text-muted">
-                                @if($callLog->client)
-                                    <a href="{{ route('admin.clients.show', $callLog->client->id) }}" class="text-decoration-none">{{ $callLog->client->name }}</a>
-                                @else
-                                    No client assigned
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-user-tie me-2"></i>Employee:</strong>
-                            <p class="text-muted">
-                                @if($callLog->employee)
-                                    <a href="{{ route('admin.employees.show', $callLog->employee->id) }}" class="text-decoration-none">{{ $callLog->employee->name }}</a>
-                                @else
-                                    No employee assigned
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-user me-2"></i>Caller Name:</strong>
-                            <p class="text-muted">{{ $callLog->caller_name ?? 'N/A' }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-phone me-2"></i>Caller Phone:</strong>
-                            <p class="text-muted">
-                                @if($callLog->caller_phone)
-                                    <a href="tel:{{ $callLog->caller_phone }}" class="text-decoration-none">{{ $callLog->caller_phone }}</a>
-                                @else
-                                    N/A
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-tag me-2"></i>Call Type:</strong>
-                            <p class="text-muted">
-                                @if($callLog->call_type)
-                                    <span class="badge bg-info">{{ ucfirst($callLog->call_type) }}</span>
-                                @else
-                                    N/A
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-calendar-alt me-2"></i>Call Date:</strong>
-                            <p class="text-muted">{{ $callLog->call_date ? $callLog->call_date->format('M d, Y H:i') : 'N/A' }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-clock me-2"></i>Duration:</strong>
-                            <p class="text-muted">{{ $callLog->duration_minutes ?? 0 }} minutes</p>
-                        </div>
+<div class="show-layout-flex">
+
+    <div class="main-content-section">
+        <!-- Call Information -->
+        <div class="card modern-card mb-4 fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-phone me-2"></i>Call Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-user me-2"></i>Client:</strong>
+
+                            @if($callLog->client)
+                                <a href="{{ route('admin.clients.show', $callLog->client->id) }}" class="text-decoration-none">{{ $callLog->client->name }}</a>
+                            @else
+                                No client assigned
+                            @endif
+
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-user-tie me-2"></i>Employee:</strong>
+
+                            @if($callLog->employee)
+                                <a href="{{ route('admin.employees.show', $callLog->employee->id) }}" class="text-decoration-none">{{ $callLog->employee->name }}</a>
+                            @else
+                                No employee assigned
+                            @endif
+
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-user me-2"></i>Caller Name:</strong>
+                        {{ $callLog->caller_name ?? 'N/A' }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-phone me-2"></i>Caller Phone:</strong>
+
+                            @if($callLog->caller_phone)
+                                <a href="tel:{{ $callLog->caller_phone }}" class="text-decoration-none">{{ $callLog->caller_phone }}</a>
+                            @else
+                                N/A
+                            @endif
+
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-tag me-2"></i>Call Type:</strong>
+
+                            @if($callLog->call_type)
+                                <span class="badge bg-info">{{ ucfirst($callLog->call_type) }}</span>
+                            @else
+                                N/A
+                            @endif
+
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-calendar-alt me-2"></i>Call Date:</strong>
+                            {!! $callLog->call_date_formatted !!}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-clock me-2"></i>Call Time:</strong>
+                        {{ $callLog->call_time_formatted ?? 'N/A' }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-clock me-2"></i>Duration:</strong>
+                        {{ $callLog->duration_minutes ?? 0 }} minutes
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Call Details -->
-            <div class="card modern-card mb-4 fade-in">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle me-2"></i>Call Details</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-toggle-on me-2"></i>Status:</strong>
-                            <p class="text-muted">
-                                @if($callLog->status !== null && $callLog->status_label && $callLog->status_color)
-                                    <span class="badge bg-{{ $callLog->status_color }}">
-                                        {{ $callLog->status_label }}
-                                    </span>
-                                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="updateStatus()">
-                                        Change Status
-                                    </button>
-                                @else
-                                    N/A
+        <!-- Call Details -->
+        <div class="card modern-card mb-4 fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Call Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-toggle-on me-2"></i>Status:</strong>
+
+                            @if($callLog->status !== null && $callLog->status_label && $callLog->status_color)
+                                <span class="badge bg-{{ $callLog->status_color }}">
+                                    {{ $callLog->status_label }}
+                                </span>
+                            @else
+                                N/A
+                            @endif
+
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-exclamation-circle me-2"></i>Priority:</strong>
+
+                            @if($callLog->priority && $callLog->priority_color)
+                                <span class="badge bg-{{ $callLog->priority_color }}">
+                                    {{ ucfirst($callLog->priority) }}
+                                </span>
+                            @else
+                                N/A
+                            @endif
+
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-bell me-2"></i>Follow-up Required:</strong>
+
+                            @if($callLog->follow_up_required)
+                                <span class="badge bg-warning">Yes</span>
+                                @if($callLog->follow_up_date)
+                                   <br> <small>Next Call:
+                                    {{ $callLog->follow_up_date_formatted }}
+                                    {{ $callLog->follow_up_time_formatted ?? 'N/A' }}
+                                   </small>
                                 @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-exclamation-circle me-2"></i>Priority:</strong>
-                            <p class="text-muted">
-                                @if($callLog->priority && $callLog->priority_color)
-                                    <span class="badge bg-{{ $callLog->priority_color }}">
-                                        {{ ucfirst($callLog->priority) }}
-                                    </span>
-                                @else
-                                    N/A
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-bell me-2"></i>Follow-up Required:</strong>
-                            <p class="text-muted">
-                                @if($callLog->follow_up_required)
-                                    <span class="badge bg-warning">Yes</span>
-                                    @if($callLog->follow_up_date)
-                                        <br><small>Due: {{ $callLog->follow_up_date->format('M d, Y') }}</small>
-                                    @endif
-                                @else
-                                    <span class="badge bg-success">No</span>
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-calendar-plus me-2"></i>Created:</strong>
-                            <p class="text-muted">{{ $callLog->created_at->format('M d, Y H:i') }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-sync-alt me-2"></i>Last Updated:</strong>
-                            <p class="text-muted">{{ $callLog->updated_at->format('M d, Y H:i') }}</p>
-                        </div>
+                            @else
+                                <span class="badge bg-success">No</span>
+                            @endif
+
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-calendar-plus me-2"></i>Created:</strong>
+                        {!! $callLog->created_at_nepali_html !!}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-sync-alt me-2"></i>Last Updated:</strong>
+                        {!! $callLog->updated_at_nepali_html !!}
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Subject and Description -->
-            <div class="card modern-card mb-4 fade-in">
-                <div class="card-header">
-                    <h5><i class="fas fa-file-alt me-2"></i>Subject and Description</h5>
+        <!-- Subject and Description -->
+        <div class="card modern-card mb-4 fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-file-alt me-2"></i>Subject, Description and Notes</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Subject:</strong>
+                    {{ $callLog->subject ?? 'No subject provided' }}
                 </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <strong>Subject:</strong>
-                        <p class="text-muted">{{ $callLog->subject ?? 'No subject provided' }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Description:</strong>
-                        <div class="bg-light p-3 rounded">
-                            {!! nl2br(e($callLog->description ?? 'No description provided')) !!}
-                        </div>
-                    </div>
+
+                <div class="mb-3">
+                    <strong>Description:</strong>
+                    {!! nl2br(e($callLog->description ?? 'No description provided')) !!}
                     @if($callLog->notes)
-                    <div class="mb-3">
-                        <strong>Notes:</strong>
-                        <div class="bg-light p-3 rounded">
-                            {!! nl2br(e($callLog->notes)) !!}
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Related Tasks -->
-            <div class="card modern-card mb-4 fade-in">
-                <div class="card-header">
-                    <h5><i class="fas fa-tasks me-2"></i>Related Tasks</h5>
-                </div>
-                <div class="card-body">
-                    @if($callLog->tasks->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table modern-table">
-                                <thead>
-                                    <tr>
-                                        <th><i class="fas fa-file-alt me-2"></i>Title</th>
-                                        <th><i class="fas fa-user me-2"></i>Assigned To</th>
-                                        <th><i class="fas fa-exclamation-circle me-2"></i>Priority</th>
-                                        <th><i class="fas fa-toggle-on me-2"></i>Status</th>
-                                        <th><i class="fas fa-calendar-alt me-2"></i>Due Date</th>
-                                        <th><i class="fas fa-cog me-2"></i>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($callLog->tasks as $task)
-                                    <tr>
-                                        <td>{{ $task->title }}</td>
-                                        <td>
-                                            @if($task->assignedTo && $task->assignedTo->name)
-                                                <a href="{{ route('admin.employees.show', $task->assignedTo->id) }}" class="text-decoration-none">{{ $task->assignedTo->name }}</a>
-                                            @else
-                                                <span class="text-muted">Unassigned</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($task->priority && $task->priority_color)
-                                                <span class="badge bg-{{ $task->priority_color }}">
-                                                    {{ ucfirst($task->priority) }}
-                                                </span>
-                                            @else
-                                                <span class="text-muted">N/A</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($task->status_label && $task->status_color)
-                                                <span class="badge bg-{{ $task->status_color }}">
-                                                    {{ $task->status_label }}
-                                                </span>
-                                            @else
-                                                <span class="text-muted">N/A</span>
-                                            @endif
-                                        </td>
-                                        <td>{{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}</td>
-                                        <td>
-                                            <a href="{{ route('admin.tasks.show', $task) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <p class="text-muted">No tasks created for this call log yet.</p>
+                        &nbsp; <strong>Notes:</strong>
+                        {!! nl2br(e($callLog->notes)) !!}
                     @endif
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-4 side-panel">
-            <!-- Quick Actions -->
-            <div class="card modern-card fade-in">
-                <div class="card-header">
-                    <h6><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('admin.call-logs.edit', $callLog) }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-edit me-2"></i>Edit Call Log
-                        </a>
-                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="updateStatus()">
-                            <i class="fas fa-toggle-on me-2"></i>Change Status
-                        </button>
-                        <a href="{{ route('admin.call-logs.index') }}" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Call Logs
-                        </a>
+        <!-- Related Tasks -->
+        <div class="card modern-card mb-4 fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-tasks me-2"></i>Related Tasks</h5>
+            </div>
+            <div class="card-body">
+                @if($callLog->tasks->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table modern-table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-file-alt me-2"></i>Title</th>
+                                    <th><i class="fas fa-user me-2"></i>Assigned To</th>
+                                    <th><i class="fas fa-exclamation-circle me-2"></i>Priority</th>
+                                    <th><i class="fas fa-toggle-on me-2"></i>Status</th>
+                                    <th><i class="fas fa-calendar-alt me-2"></i>Due Date</th>
+                                    <th><i class="fas fa-cog me-2"></i>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($callLog->tasks as $task)
+                                <tr>
+                                    <td>{{ $task->title }}</td>
+                                    <td>
+                                        @if($task->assignedTo && $task->assignedTo->name)
+                                            <a href="{{ route('admin.employees.show', $task->assignedTo->id) }}" class="text-decoration-none">{{ $task->assignedTo->name }}</a>
+                                        @else
+                                            <span class="text-muted">Unassigned</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($task->priority && $task->priority_color)
+                                            <span class="badge bg-{{ $task->priority_color }}">
+                                                {{ ucfirst($task->priority) }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($task->status_label && $task->status_color)
+                                            <span class="badge bg-{{ $task->status_color }}">
+                                                {{ $task->status_label }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    <td>{!! $task->due_date_nepali_html !!}</td>
+                                    <td>
+                                        <a href="{{ route('admin.tasks.show', $task) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
+                @else
+                    <p class="text-muted">No tasks created for this call log yet.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="side-panel">
+        <!-- Quick Actions -->
+        <div class="card modern-card fade-in">
+            <div class="card-header">
+                <h6><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ route('admin.call-logs.edit', $callLog) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit me-2"></i>Edit Call Log
+                    </a>
+                    {{-- <button type="button" class="btn btn-outline-warning btn-sm" onclick="updateStatus()">
+                        <i class="fas fa-toggle-on me-2"></i>Change Status
+                    </button> --}}
+                    <a href="{{ route('admin.call-logs.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Call Logs
+                    </a>
                 </div>
             </div>
         </div>

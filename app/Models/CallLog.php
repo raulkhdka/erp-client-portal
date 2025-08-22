@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Helpers\NepaliDateHelper;
+use Carbon\Carbon;
 
 class CallLog extends Model
 {
@@ -21,17 +23,134 @@ class CallLog extends Model
         'priority',
         'status',
         'call_date',
+        'call_time',
         'duration_minutes',
         'follow_up_required',
-        'follow_up_date'
+        'follow_up_date',
+        'follow_up_time',
     ];
 
     protected $casts = [
-        'call_date' => 'datetime',
-        'follow_up_date' => 'datetime',
+        'call_date' => 'integer',
+        'follow_up_date' => 'integer',
+        'call_time' => 'datetime:H:i',
+        'follow_up_time' => 'datetime:H:i',
         'status' => 'integer',
-        'duration_minutes' => 'integer'
+        'duration_minutes' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
+
+    protected $appends = [
+        'call_date_formatted',
+        'call_date_nepali_html',
+        'call_time_formatted',
+        'follow_up_date_formatted',
+        'follow_up_date_nepali_html',
+        'created_at_formatted',
+        'created_at_nepali_html',
+        'updated_at_formatted',
+        'updated_at_nepali_html'
+    ];
+
+    /**
+     * Accessor: get call_date formatted as YYYY-MM-DD string.
+     */
+    public function getCallDateFormattedAttribute(): string
+    {
+        if (!$this->call_date) {
+            return 'N/A';
+        }
+        $dateStr = str_pad($this->call_date, 8, '0', STR_PAD_LEFT);
+        return substr($dateStr, 0, 4) . '-' . substr($dateStr, 4, 2) . '-' . substr($dateStr, 6, 2);
+    }
+
+    /**
+     * Accessor: get Nepali date HTML for call_date.
+     */
+    public function getCallDateNepaliHtmlAttribute()
+    {
+        if (!$this->call_date) {
+            return 'N/A';
+        }
+        $dateStr = $this->call_date_formatted;
+        return NepaliDateHelper::auto_nepali_date($dateStr, 'formatted');
+    }
+
+    /**
+     * Accessor: get call_time formatted as h:i A (e.g., 01:15 PM).
+     */
+    public function getCallTimeFormattedAttribute()
+    {
+        if (!$this->call_time) {
+            return 'N/A';
+        }
+        return Carbon::parse($this->call_time)->format('h:i A');
+    }
+
+    public function getFollowUpDateFormattedAttribute(): string
+    {
+        if (!$this->follow_up_date) {
+            return 'N/A';
+        }
+        $dateStr = str_pad($this->follow_up_date, 8, '0', STR_PAD_LEFT);
+        return substr($dateStr, 0, 4) . '-' . substr($dateStr, 4, 2) . '-' . substr($dateStr, 6, 2);
+    }
+
+    public function getFollowUpDateNepaliHtmlAttribute()
+    {
+        if (!$this->follow_up_date) {
+            return 'N/A';
+        }
+        $dateStr = $this->follow_up_date_formatted;
+        return NepaliDateHelper::auto_nepali_date($dateStr, 'formatted');
+    }
+
+    public function getCallDatetimeFormattedAttribute(): string
+    {
+        $date = $this->call_date_formatted;
+        $time = $this->call_time ? $this->call_time_formatted : 'N/A';
+        if ($date === 'N/A' && $time === 'N/A') {
+            return 'N/A';
+        }
+        return $date . ' ' . $time;
+    }
+
+    public function getFollowUpDatetimeFormattedAttribute(): string
+    {
+        $date = $this->follow_up_date_formatted;
+        $time = $this->follow_up_time ? Carbon::parse($this->follow_up_time)->format('h:i A') : 'N/A';
+        if ($date === 'N/A' && $time === 'N/A') {
+            return 'N/A';
+        }
+        return $date . ' ' . $time;
+    }
+
+    public function getCreatedAtFormattedAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('Y-m-d') : null;
+    }
+
+    public function getCreatedAtNepaliHtmlAttribute()
+    {
+        if (!$this->created_at) {
+            return 'N/A';
+        }
+        return NepaliDateHelper::auto_nepali_date($this->created_at->format('Y-m-d'), 'formatted');
+    }
+
+    public function getUpdatedAtFormattedAttribute()
+    {
+        return $this->updated_at ? $this->updated_at->format('Y-m-d') : null;
+    }
+
+    public function getUpdatedAtNepaliHtmlAttribute()
+    {
+        if (!$this->updated_at) {
+            return 'N/A';
+        }
+        return NepaliDateHelper::auto_nepali_date($this->updated_at->format('Y-m-d'), 'formatted');
+    }
 
     // Status constants
     const STATUS_PENDING = 1;
@@ -51,7 +170,6 @@ class CallLog extends Model
     const PRIORITY_URGENT = 'urgent';
 
     // Relationships
-
     public function client()
     {
         return $this->belongsTo(Client::class);
@@ -72,9 +190,6 @@ class CallLog extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /**
-     * Get the tasks associated with the call log.
-     */
     public function tasks()
     {
         return $this->hasMany(Task::class, 'call_log_id');
@@ -115,24 +230,22 @@ class CallLog extends Model
             8 => 'Resolved',
             9 => 'Backlog'
         ];
-
         return $statuses[$this->status] ?? 'Unknown';
     }
 
     public function getStatusColorAttribute()
     {
         $colors = [
-            1 => 'warning',   // Pending
-            2 => 'primary',   // In Progress
-            3 => 'secondary', // On Hold
-            4 => 'danger',    // Escalated
-            5 => 'info',      // Waiting Client
-            6 => 'dark',      // Testing
-            7 => 'success',   // Completed
-            8 => 'success',   // Resolved
-            9 => 'light'      // Backlog
+            1 => 'warning',
+            2 => 'primary',
+            3 => 'secondary',
+            4 => 'danger',
+            5 => 'info',
+            6 => 'dark',
+            7 => 'success',
+            8 => 'success',
+            9 => 'light'
         ];
-
         return $colors[$this->status] ?? 'secondary';
     }
 
@@ -144,7 +257,6 @@ class CallLog extends Model
             'high' => 'danger',
             'urgent' => 'dark'
         ];
-
         return $colors[$this->priority] ?? 'secondary';
     }
 

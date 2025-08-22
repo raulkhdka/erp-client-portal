@@ -65,7 +65,9 @@
             border-radius: 16px;
             padding: 2px;
             background: linear-gradient(135deg, rgb(187, 34, 187) 0%, rgb(42, 42, 209) 100%);
-            -webkit-mask: linear-gradient(rgb(179, 39, 179) 0 0) content-box, linear-gradient(rgb(41, 41, 218) 0 0);
+            -webkit-mask:
+                linear-gradient(rgb(179, 39, 179) 0 0) content-box,
+                linear-gradient(rgb(41, 41, 218) 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
@@ -313,261 +315,339 @@
                 transform: translateY(0);
             }
         }
+
+        /* Custom flex layout for main content and quick actions */
+        .main-content-flex {
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            width: 100%;
+        }
+        .main-content-section {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        .side-panel {
+            width: 340px;
+            max-width: 100%;
+            margin-left: 0;
+            position: sticky;
+            top: 1.5rem;
+            align-self: flex-start;
+            z-index: 0;
+        }
+        @media (max-width: 1200px) {
+            .side-panel {
+                width: 280px;
+            }
+        }
+        @media (max-width: 992px) {
+            .main-content-flex {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .side-panel {
+                width: 100%;
+                position: static;
+            }
+        }
+
+        /* Layout for sidebar, main content, and quick actions */
+        .show-layout-flex {
+            display: flex;
+            align-items: flex-start;
+            width: 100%;
+            min-height: 100vh;
+        }
+        .show-layout-flex #sidebar {
+            position: static;
+            width: 250px;
+            min-width: 250px;
+            height: 100vh;
+            z-index: 2;
+        }
+        .show-layout-flex .main-content-section {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 0 2rem 0 2rem;
+            margin-left: 0;
+        }
+        .show-layout-flex .side-panel {
+            width: 340px;
+            max-width: 100%;
+            margin-left: 0;
+            position: sticky;
+            top: 1.5rem;
+            align-self: flex-start;
+            z-index: 0;
+        }
+        @media (max-width: 1200px) {
+            .show-layout-flex .side-panel {
+                width: 280px;
+            }
+        }
+        @media (max-width: 992px) {
+            .show-layout-flex {
+                flex-direction: column;
+            }
+            .show-layout-flex #sidebar,
+            .show-layout-flex .side-panel {
+                width: 100%;
+                position: static;
+                min-width: 0;
+                height: auto;
+            }
+            .show-layout-flex .main-content-section {
+                padding: 0 1rem;
+            }
+        }
     </style>
 @endpush
 
-{{-- @push('scripts')
-    <!-- Include Sajan Maharjan's Nepali Functions Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nepali-date-converter/1.0.0/nepali-functions.js"></script>
-
-    <!-- Include your updated nepalidatehelper.js -->
-    <script src="{{ asset('js/nepalidatehelper.js') }}"></script>
-@endpush --}}
-
 @section('content')
-    <div class="row">
-        <div class="col-lg-8 main-content">
-            <!-- Employee Information -->
-            <div class="card modern-card mb-4 fade-in">
-                <div class="card-header">
-                    <h5><i class="fas fa-user-tie me-2"></i>Employee Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3 text-nowrap">
-                            <strong><i class="fas fa-user me-2"></i>Full Name:</strong>
-                            <p class="text-muted">{{ $employee->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-id-badge me-2"></i>Employee ID:</strong>
-                            <p class="text-muted">{{ $employee->employee_id }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-briefcase me-2"></i>Position:</strong>
-                            <p class="text-muted">{{ $employee->position }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-building me-2"></i>Department:</strong>
-                            <p class="text-muted">{{ $employee->department ?: 'Not assigned' }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-calendar-alt me-2"></i>Hire Date:</strong>
-                            <p class="text-muted">
-                                @if($employee->hire_date)
-                                    {!! $employee->hire_date_nepali_html !!}
-                                @else
-                                    Not provided
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-money-bill-wave me-2"></i>Salary:</strong>
-                            <p class="text-muted">
-                                @if ($employee->salary)
-                                    रु{{ number_format($employee->salary, 2) }}
-                                @else
-                                    Not disclosed
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                </div>
+<div class="show-layout-flex">
+    <div class="main-content-section">
+        <!-- Employee Information -->
+        <div class="card modern-card mb-4 fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-user-tie me-2"></i>Employee Information</h5>
             </div>
-
-            <!-- Contact Methods -->
-            <div class="card modern-card mb-4 fade-in">
-                <div class="card-header">
-                    <h5><i class="fas fa-address-book me-2"></i>Contact Methods</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-phone me-2"></i>Phone:</strong>
-                            <p class="text-muted">
-                                @if ($employee->phone)
-                                    <a href="tel:{{ $employee->phone }}" class="text-decoration-none">{{ $employee->phone }}</a>
-                                @else
-                                    Not provided
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong><i class="fas fa-envelope me-2"></i>Email Address:</strong>
-                            <p class="text-muted">
-                                <a href="mailto:{{ $employee->user->email }}" class="text-decoration-none">{{ $employee->user->email }}</a>
-                            </p>
-                        </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3 text-nowrap">
+                        <strong><i class="fas fa-user me-2"></i>Full Name:</strong>
+                        <p class="text-muted">{{ $employee->name }}</p>
                     </div>
-                </div>
-            </div>
-
-            <!-- Client Access -->
-            <div class="card modern-card mb-4 fade-in">
-                <div class="card-header">
-                    <h5><i class="fas fa-users me-2"></i>Client Access</h5>
-                </div>
-                <div class="card-body">
-                    @if ($employee->accessibleClients->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table modern-table">
-                                <thead>
-                                    <tr>
-                                        <th><i class="fas fa-user me-2"></i>Client Name</th>
-                                        <th><i class="fas fa-building me-2"></i>Company</th>
-                                        <th><i class="fas fa-calendar-check me-2"></i>Access Granted</th>
-                                        <th><i class="fas fa-toggle-on me-2"></i>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($employee->accessibleClients as $client)
-                                        <tr>
-                                            <td>
-                                                <a href="{{ route('admin.clients.show', $client->id) }}" class="text-decoration-none">
-                                                    {{ $client->name }}
-                                                </a>
-                                            </td>
-                                            <td>{{ $client->company_name ?: '-' }}</td>
-                                            <td>{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($client->pivot->access_granted_date, 'readable') !!}</td>
-                                            <td>
-                                                <span class="badge bg-{{ $client->pivot->is_active ? 'success' : 'secondary' }}">
-                                                    {{ $client->pivot->is_active ? 'Active' : 'Inactive' }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <p class="text-muted">No client access assigned</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 side-panel">
-            <!-- Activity Summary -->
-            <div class="card modern-card mb-4 fade-in">
-                <div class="card-header">
-                    <h6><i class="fas fa-chart-line me-2"></i>Activity Summary</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span><i class="fas fa-users me-2"></i>Accessible Clients:</span>
-                        <span class="badge bg-primary">{{ $employee->accessibleClients->count() }}</span>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-id-badge me-2"></i>Employee ID:</strong>
+                        <p class="text-muted">{{ $employee->employee_id }}</p>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span><i class="fas fa-clock me-2"></i>Active Since:</span>
-                        <span class="text-muted">
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-briefcase me-2"></i>Position:</strong>
+                        <p class="text-muted">{{ $employee->position }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-building me-2"></i>Department:</strong>
+                        <p class="text-muted">{{ $employee->department ?: 'Not assigned' }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-calendar-alt me-2"></i>Hire Date:</strong>
+                        <p class="text-muted">
                             @if($employee->hire_date)
                                 {!! $employee->hire_date_nepali_html !!}
                             @else
                                 Not provided
                             @endif
-                        </span>
+                        </p>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span><i class="fas fa-user-plus me-2"></i>Account Created:</span>
-                        <span class="text-muted">{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($employee->user->created_at, 'readable') !!}</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-sync-alt me-2"></i>Last Updated:</span>
-                        <span class="text-muted">{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($employee->updated_at, 'readable') !!}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="card modern-card fade-in">
-                <div class="card-header">
-                    <h6><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('admin.employees.edit', $employee->id) }}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-edit me-2"></i>Edit Employee
-                        </a>
-                        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#statusModal">
-                            <i class="fas fa-toggle-on me-2"></i>Change Status
-                        </button>
-                        <button type="button" class="btn btn-outline-info btn-sm">
-                            <i class="fas fa-envelope me-2"></i>Send Email
-                        </button>
-                        <button type="button" class="btn btn-outline-success btn-sm">
-                            <i class="fas fa-history me-2"></i>View Activity Log
-                        </button>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-money-bill-wave me-2"></i>Salary:</strong>
+                        <p class="text-muted">
+                            @if ($employee->salary)
+                                रु{{ number_format($employee->salary, 2) }}
+                            @else
+                                Not disclosed
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Delete Employee</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Contact Methods -->
+        <div class="card modern-card mb-4 fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-address-book me-2"></i>Contact Methods</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-phone me-2"></i>Phone:</strong>
+                        <p class="text-muted">
+                            @if ($employee->phone)
+                                <a href="tel:{{ $employee->phone }}" class="text-decoration-none">{{ $employee->phone }}</a>
+                            @else
+                                Not provided
+                            @endif
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong><i class="fas fa-envelope me-2"></i>Email Address:</strong>
+                        <p class="text-muted">
+                            <a href="mailto:{{ $employee->user->email }}" class="text-decoration-none">{{ $employee->user->email }}</a>
+                        </p>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete <strong>{{ $employee->user->name }}</strong>?</p>
-                    <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This action cannot be undone and will also delete their user account.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form method="POST" action="{{ route('admin.employees.destroy', $employee->id) }}" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash me-2"></i>Delete Employee
-                        </button>
-                    </form>
-                </div>
+            </div>
+        </div>
+
+        <!-- Client Access -->
+        <div class="card modern-card mb-4 fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-users me-2"></i>Client Access</h5>
+            </div>
+            <div class="card-body">
+                @if ($employee->accessibleClients->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table modern-table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-user me-2"></i>Client Name</th>
+                                    <th><i class="fas fa-building me-2"></i>Company</th>
+                                    <th><i class="fas fa-calendar-check me-2"></i>Access Granted</th>
+                                    <th><i class="fas fa-toggle-on me-2"></i>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($employee->accessibleClients as $client)
+                                    <tr>
+                                        <td>
+                                            <a href="{{ route('admin.clients.show', $client->id) }}" class="text-decoration-none">
+                                                {{ $client->name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ $client->company_name ?: '-' }}</td>
+                                        <td>{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($client->pivot->access_granted_date, 'readable') !!}</td>
+                                        <td>
+                                            <span class="badge bg-{{ $client->pivot->is_active ? 'success' : 'secondary' }}">
+                                                {{ $client->pivot->is_active ? 'Active' : 'Inactive' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-muted">No client access assigned</p>
+                @endif
             </div>
         </div>
     </div>
 
-    <!-- Status Change Modal -->
-    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="statusModalLabel">Change Employee Status</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="side-panel">
+        <!-- Activity Summary -->
+        <div class="card modern-card mb-4 fade-in">
+            <div class="card-header">
+                <h6><i class="fas fa-chart-line me-2"></i>Activity Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span><i class="fas fa-users me-2"></i>Accessible Clients:</span>
+                    <span class="badge bg-primary">{{ $employee->accessibleClients->count() }}</span>
                 </div>
-                <form method="POST" action="{{ route('admin.employees.update', $employee->id) }}">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span><i class="fas fa-clock me-2"></i>Active Since:</span>
+                    <span class="text-muted">
+                        @if($employee->hire_date)
+                            {!! $employee->hire_date_nepali_html !!}
+                        @else
+                            Not provided
+                        @endif
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span><i class="fas fa-user-plus me-2"></i>Account Created:</span>
+                    <span class="text-muted">{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($employee->user->created_at, 'readable') !!}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-sync-alt me-2"></i>Last Updated:</span>
+                    <span class="text-muted">{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($employee->updated_at, 'readable') !!}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card modern-card fade-in">
+            <div class="card-header">
+                <h6><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ route('admin.employees.edit', $employee->id) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit me-2"></i>Edit Employee
+                    </a>
+                    <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#statusModal">
+                        <i class="fas fa-toggle-on me-2"></i>Change Status
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-envelope me-2"></i>Send Email
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-history me-2"></i>View Activity Log
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Delete Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ $employee->user->name }}</strong>?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>This action cannot be undone and will also delete their user account.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ route('admin.employees.destroy', $employee->id) }}" class="d-inline">
                     @csrf
-                    @method('PUT')
-                    <input type="hidden" name="name" value="{{ $employee->user->name }}">
-                    <input type="hidden" name="email" value="{{ $employee->user->email }}">
-                    <input type="hidden" name="employee_id" value="{{ $employee->employee_id }}">
-                    <input type="hidden" name="department" value="{{ $employee->department }}">
-                    <input type="hidden" name="position" value="{{ $employee->position }}">
-                    <input type="hidden" name="hire_date" value="{{ $employee->hire_date ?? 'N/A' }}">
-                    <input type="hidden" name="salary" value="{{ $employee->salary }}">
-                    @if ($employee->permissions)
-                        @foreach ($employee->permissions as $permission)
-                            <input type="hidden" name="permissions[]" value="{{ $permission }}">
-                        @endforeach
-                    @endif
-
-                    <div class="modal-body">
-                        <p>Current status: <span class="badge bg-{{ $employee->status === 'active' ? 'success' : ($employee->status === 'inactive' ? 'warning' : 'danger') }}">{{ ucfirst($employee->status) }}</span></p>
-
-                        <label for="status" class="form-label">New Status:</label>
-                        <select class="form-control" id="status" name="status" required>
-                            <option value="active" {{ $employee->status === 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ $employee->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                            <option value="terminated" {{ $employee->status === 'terminated' ? 'selected' : '' }}>Terminated</option>
-                        </select>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Update Status</button>
-                    </div>
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Employee
+                    </button>
                 </form>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Status Change Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">Change Employee Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ route('admin.employees.update', $employee->id) }}">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="name" value="{{ $employee->user->name }}">
+                <input type="hidden" name="email" value="{{ $employee->user->email }}">
+                <input type="hidden" name="employee_id" value="{{ $employee->employee_id }}">
+                <input type="hidden" name="department" value="{{ $employee->department }}">
+                <input type="hidden" name="position" value="{{ $employee->position }}">
+                <input type="hidden" name="hire_date" value="{{ $employee->hire_date ?? 'N/A' }}">
+                <input type="hidden" name="salary" value="{{ $employee->salary }}">
+                @if ($employee->permissions)
+                    @foreach ($employee->permissions as $permission)
+                        <input type="hidden" name="permissions[]" value="{{ $permission }}">
+                    @endforeach
+                @endif
+
+                <div class="modal-body">
+                    <p>Current status: <span class="badge bg-{{ $employee->status === 'active' ? 'success' : ($employee->status === 'inactive' ? 'warning' : 'danger') }}">{{ ucfirst($employee->status) }}</span></p>
+
+                    <label for="status" class="form-label">New Status:</label>
+                    <select class="form-control" id="status" name="status" required>
+                        <option value="active" {{ $employee->status === 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ $employee->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="terminated" {{ $employee->status === 'terminated' ? 'selected' : '' }}>Terminated</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

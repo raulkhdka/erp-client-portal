@@ -14,14 +14,10 @@
         rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    {{-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"> --}}
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css" />
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.0/css/buttons.dataTables.css" />
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.5/css/responsive.dataTables.css" />
 
     <!-- Custom Application Styles -->
     <link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
@@ -32,55 +28,63 @@
     <link href="{{ asset('assets/css/nepali.css') }}" rel="stylesheet">
 
     <style>
-        html,
-        body {
+        /* --- Essential Layout Fixes --- */
+         /* Reset */
+         html, body {
             height: 100%;
             margin: 0;
-            font-size: 0.975rem;
-        }
-
-        .container-fluid,
-        .row {
-            /* min-height: 100vh; */
-            */
-            /* full viewport height */
-            margin: 50px 0;
             padding: 0;
         }
 
-        .container-fluid>.row {
+        /* Layout wrapper */
+        .layout {
             display: flex;
-            flex-wrap: nowrap;
-            /* no wrapping */
+            height: 100vh; /* full screen */
+            overflow: hidden;
         }
 
-d
-        main.main-content {
-            flex: 1 1 auto;
+        /* Sidebar */
+        #sidebar {
+            width: 250px; /* adjust to your design */
+            background: #111827;
+            color: #fff;
+            flex-shrink: 0;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+        }
 
-            padding: 0 1rem;
+        /* Main content */
+        .content-wrapper {
+            flex: 1;
+            margin-left: 250px; /* same as sidebar width */
+            padding: 20px;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        /* Remove left margin when sidebar is hidden */
+        .no-sidebar .content-wrapper,
+        .no-sidebar .main-content {
+            margin-left: 0 !important;
         }
     </style>
     @yield('styles')
     @stack('styles')
 </head>
 
-<body class="m-0 p-0">
-    <div class="container-fluid">
-        <div >
+{{-- <body class="m-0 p-0"> --}}
+    {{-- <div class="container-fluid"> --}}
+        <!-- The layout wrapper that manages sidebar/main using flexbox -->
+        <div id="layout" class="@yield('layout_class')">
             <!-- Include Sidebar Component -->
             @include('components.sidebar')
 
             <!-- Main content -->
             <main class="main-content">
-
-                <!-- Flash Messages -->
-                {{-- @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif --}}
 
                 @if (session('status_update_success'))
                     <script>
@@ -136,24 +140,13 @@ d
 
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
     <!-- Tom Select JS -->
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
-    <!-- DataTables JS -->
-
-    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.2.0/js/dataTables.buttons.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.2.0/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/3.2.0/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/3.0.5/js/dataTables.responsive.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
-
 
     <!-- Custom Helper Scripts-->
-    <script src="{{ asset('assets/js/helpers/toastHelper.js') }}" > </script>
+    <script src="{{ asset('assets/js/helpers/toastHelper.js') }}"></script>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
@@ -163,11 +156,11 @@ d
     <script src="{{ asset('assets/js/utils.js') }}"></script>
     <script src="{{ asset('assets/js/sidebar.js') }}"></script>
     <!-- Custom Script for Nepali Date Picker -->
-    <script src="{{ asset('assets/js/ndp.min.js') }}" ></script>
+    <script src="{{ asset('assets/js/ndp.min.js') }}"></script>
 
     {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/nepali-date-converter/1.0.0/nepali-functions.js"></script> --}}
     <!-- Custom Script for Nepali Date Converter -->
-    <script src="{{ asset('assets/js/helpers/nepaliDateHelper.js') }}"> </script>
+    <script src="{{ asset('assets/js/helpers/nepaliDateHelper.js') }}"></script>
 
     <script src="{{ asset('assets/js/helpers/nepaliDatePickerHelper.js') }}"></script>
 

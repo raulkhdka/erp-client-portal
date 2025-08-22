@@ -1,34 +1,55 @@
+```html
 @extends('layouts.app')
-
 @section('title', 'Dynamic Form Responses')
-
 @section('breadcrumb')
     <span class="breadcrumb-item active">Dynamic Form Responses</span>
 @endsection
-
 @section('actions')
     <div class="btn-group">
-        <a href="{{ route('admin.dynamic-forms.index') }}" class="btn btn-secondary">
+        <a href="{{ route('admin.dynamic-forms.index') }}" class="btn btn-light">
             <i class="fas fa-arrow-left me-2"></i>Back to Forms
         </a>
     </div>
 @endsection
-
 @section('styles')
 <style>
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #4895ef;
+        --secondary-color: #3f37c9;
+        --success-color: #4cc9f0;
+        --dark-color: #2b2d42;
+        --light-color: #f8f9fa;
+        --border-color: #e0e0e0;
+        --card-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        background-color: #f5f7fb;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     .main-card {
         background: white;
         border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        box-shadow: var(--card-shadow);
         border: none;
         overflow: hidden;
+        margin-bottom: 2rem;
     }
 
     .card-header-custom {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-bottom: 1px solid #dee2e6;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border-bottom: 1px solid var(--border-color);
         padding: 1.5rem 2rem;
         border-radius: 20px 20px 0 0 !important;
+        color: white;
+    }
+
+    .card-header-custom h5 {
+        font-weight: 600;
+        margin: 0;
     }
 
     .table-container {
@@ -42,22 +63,22 @@
     }
 
     .table-modern thead th {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
+        background: #f8f9ff;
+        border: 1px solid var(--border-color);
         padding: 1rem 1.5rem;
         font-weight: 600;
-        color: #495057;
+        color: var(--dark-color);
         font-size: 0.9rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: var(--transition);
         position: relative;
         text-align: center;
     }
 
     .table-modern thead th:hover {
-        background: #e9ecef;
+        background: #eef2ff;
     }
 
     .table-modern thead th.sortable::after {
@@ -77,29 +98,30 @@
     .table-modern thead th.sort-asc::after {
         content: '\f0de';
         opacity: 1;
-        color: #10b981;
+        color: var(--primary-color);
     }
 
     .table-modern thead th.sort-desc::after {
         content: '\f0dd';
         opacity: 1;
-        color: #10b981;
+        color: var(--primary-color);
     }
 
     .table-modern tbody td {
         padding: 1.25rem 1.5rem;
-        border: 1px solid #dee2e6;
+        border: 1px solid var(--border-color);
         border-top: none;
         vertical-align: middle;
+        transition: var(--transition);
     }
 
     .table-modern tbody tr {
-        transition: all 0.3s ease;
+        transition: var(--transition);
     }
 
     .table-modern tbody tr:hover {
-        background-color: #f8f9ff;
-        transform: scale(1.01);
+        background-color: #f0f4ff;
+        transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
@@ -120,11 +142,12 @@
     .empty-state i {
         font-size: 3rem;
         opacity: 0.3;
+        margin-bottom: 1rem;
     }
 
     .empty-state h3 {
         margin-bottom: 1rem;
-        color: #495057;
+        color: var(--dark-color);
     }
 
     .pagination-modern .page-link {
@@ -132,20 +155,23 @@
         border-radius: 10px;
         margin: 0 2px;
         padding: 0.5rem 1rem;
-        color: #10b981;
-        transition: all 0.3s ease;
+        color: var(--primary-color);
+        transition: var(--transition);
+        background: white;
+        border: 1px solid var(--border-color);
     }
 
     .pagination-modern .page-link:hover {
-        background: #10b981;
+        background: var(--primary-color);
         color: white;
         transform: translateY(-2px);
+        border-color: var(--primary-color);
     }
 
     .pagination-modern .page-item.active .page-link {
-        background: #10b981;
-        border: none;
-        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
     }
 
     .btn-action {
@@ -156,14 +182,18 @@
         align-items: center;
         justify-content: center;
         margin: 0 2px;
-        transition: all 0.3s ease;
+        transition: var(--transition);
         border: none;
         font-size: 0.9rem;
+        background: #f0f4ff;
+        color: var(--primary-color);
     }
 
     .btn-action:hover {
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        background: var(--primary-color);
+        color: white;
     }
 
     .modal-modern .modal-content {
@@ -173,7 +203,7 @@
     }
 
     .modal-modern .modal-header {
-        background: #10b981;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         color: white;
         border-radius: 20px 20px 0 0;
         border: none;
@@ -191,7 +221,7 @@
     .modal-list-item {
         padding: 1rem;
         border-bottom: 1px solid #f1f3f4;
-        transition: all 0.3s ease;
+        transition: var(--transition);
     }
 
     .modal-list-item:hover {
@@ -211,7 +241,7 @@
     }
 
     .sn-number {
-        background: #10b981;
+        background: var(--primary-color);
         color: white;
         width: 30px;
         height: 30px;
@@ -228,33 +258,35 @@
         border-radius: 15px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        box-shadow: var(--card-shadow);
     }
 
     .filter-select {
         border-radius: 10px;
-        border: 2px solid #e9ecef;
+        border: 2px solid var(--border-color);
         padding: 0.5rem 1rem;
-        transition: all 0.3s ease;
+        transition: var(--transition);
+        background: #f8f9ff;
     }
 
     .filter-select:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        background: white;
     }
 
     .search-input {
         border-radius: 25px;
-        border: 2px solid #e9ecef;
+        border: 2px solid var(--border-color);
         padding: 0.75rem 1.5rem;
         padding-left: 3rem;
-        transition: all 0.3s ease;
-        background: #f8f9fa;
+        transition: var(--transition);
+        background: #f8f9ff;
     }
 
     .search-input:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
         background: white;
     }
 
@@ -281,369 +313,461 @@
         .search-filter-container {
             padding: 1rem;
         }
+
+        .table-modern thead th,
+        .table-modern tbody td {
+            padding: 0.75rem 1rem;
+        }
     }
 
-     /* Scoped to response modal so it won't affect other modals */
-  .response-modal .modal-dialog {
-    max-width: 980px;
-  }
-
-  @media (min-width: 1200px) {
+    /* Enhanced Response Modal Styles */
     .response-modal .modal-dialog {
-      max-width: 1120px;
+        max-width: 1000px;
     }
-  }
 
-  .response-modal .modal-content {
-    border-radius: 20px;
-    border: none;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
-    overflow: hidden;
-  }
+    @media (min-width: 1200px) {
+        .response-modal .modal-dialog {
+            max-width: 1200px;
+        }
+    }
 
-  .response-modal .modal-header {
-    background: linear-gradient(135deg, #10b981 0%, #0ea5a0 60%, #059669 100%);
-    color: #fff;
-    border: none;
-    padding: 1.25rem 1.25rem 1rem 1.25rem;
-  }
+    .response-modal .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+        overflow: hidden;
+    }
 
-  .response-modal .modal-title {
-    font-weight: 700;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
+    .response-modal .modal-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: #fff;
+        border: none;
+        padding: 1.5rem 1.5rem 1rem 1.5rem;
+    }
 
-  .response-modal .modal-title small {
-    font-weight: 500;
-    opacity: 0.9;
-  }
+    .response-modal .modal-title {
+        font-weight: 700;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
 
-  .response-modal .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+    .response-modal .modal-title small {
+        font-weight: 500;
+        opacity: 0.9;
+    }
 
-  .response-modal .header-actions .btn {
-    border: none;
-    border-radius: 12px;
-    padding: 0.5rem 0.75rem;
-    background: rgba(255, 255, 255, 0.16);
-    color: #fff;
-    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: none;
-  }
-  .response-modal .header-actions .btn:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.25);
-  }
+    .response-modal .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-  .response-modal .btn-close {
-    filter: invert(1);
-    opacity: 0.9;
-  }
+    .response-modal .header-actions .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 0.5rem 0.75rem;
+        background: rgba(255, 255, 255, 0.16);
+        color: #fff;
+        transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: none;
+    }
 
-  .response-modal .modal-body {
-    background: linear-gradient(180deg, #fbfbfd 0%, #f6f8fb 100%);
-    padding: 1.25rem;
-  }
+    .response-modal .header-actions .btn:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.25);
+    }
 
-  .response-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+    .response-modal .btn-close {
+        filter: invert(1);
+        opacity: 0.9;
+    }
 
-  @media (min-width: 992px) {
+    .response-modal .modal-body {
+        background: linear-gradient(180deg, #fbfbfd 0%, #f6f8fb 100%);
+        padding: 1.5rem;
+    }
+
     .response-grid {
-      grid-template-columns: 320px 1fr;
-      gap: 1.25rem;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
     }
-  }
 
-  /* Sidebar meta card */
-  .meta-card {
-    background: #ffffff;
-    border: 1px solid #eef2f6;
-    border-radius: 16px;
-    padding: 1rem;
-    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.06);
-  }
+    @media (min-width: 992px) {
+        .response-grid {
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+        }
+    }
 
-  .meta-card .meta-title {
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    color: #0f172a;
-  }
+    /* Sidebar meta card */
+    .meta-card {
+        background: #ffffff;
+        border: 1px solid #eef2f6;
+        border-radius: 16px;
+        padding: 1.25rem;
+        box-shadow: 0 10px 24px rgba(67, 97, 238, 0.06);
+    }
 
-  .meta-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 0.75rem;
-  }
+    .meta-card .meta-title {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #0f172a;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-  .meta-item {
-    display: grid;
-    grid-template-columns: 28px 1fr;
-    gap: 0.5rem;
-    align-items: center;
-  }
+    .meta-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 1rem;
+    }
 
-  .meta-item .meta-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: #f1faf7;
-    color: #10b981;
-    display: grid;
-    place-items: center;
-    font-size: 0.85rem;
-  }
+    .meta-item {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 0.75rem;
+        align-items: center;
+    }
 
-  .meta-item .meta-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
+    .meta-item .meta-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: #f0f4ff;
+        color: var(--primary-color);
+        display: grid;
+        place-items: center;
+        font-size: 0.9rem;
+    }
 
-  .meta-item .meta-label {
-    font-size: 0.75rem;
-    color: #64748b;
-  }
+    .meta-item .meta-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
 
-  .meta-item .meta-value {
-    font-size: 0.93rem;
-    color: #0f172a;
-    font-weight: 600;
-  }
+    .meta-item .meta-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-  .meta-divider {
-    height: 1px;
-    background: #eef2f6;
-    margin: 0.75rem 0;
-  }
+    .meta-item .meta-value {
+        font-size: 0.95rem;
+        color: #0f172a;
+        font-weight: 600;
+    }
 
-  .meta-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
+    .meta-divider {
+        height: 1px;
+        background: #eef2f6;
+        margin: 1rem 0;
+    }
 
-  .meta-badges .badge-soft {
-    border-radius: 999px;
-    background: #eefaf5;
-    color: #0f5132;
-    border: 1px solid #d3f4e8;
-    font-weight: 600;
-  }
+    .meta-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
 
-  /* Fields area */
-  .fields-panel {
-    background: #ffffff;
-    border: 1px solid #eef2f6;
-    border-radius: 16px;
-    padding: 1rem;
-    box-shadow: 0 10px 24px rgba(2, 6, 23, 0.04);
-  }
+    .meta-badges .badge-soft {
+        border-radius: 999px;
+        background: #f0f4ff;
+        color: #3f37c9;
+        border: 1px solid #d3ddf4;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-  .fields-toolbar {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
+    /* Fields area */
+    .fields-panel {
+        background: #ffffff;
+        border: 1px solid #eef2f6;
+        border-radius: 16px;
+        padding: 1.25rem;
+        box-shadow: 0 10px 24px rgba(2, 6, 23, 0.04);
+    }
 
-  @media (min-width: 576px) {
     .fields-toolbar {
-      grid-template-columns: 1fr auto auto;
-      align-items: center;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
     }
-  }
 
-  .fields-search {
-    position: relative;
-  }
-
-  .fields-search .search-icon {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-  }
-
-  .fields-search input {
-    padding-left: 2.25rem;
-    border-radius: 12px;
-    border: 2px solid #eef2f6;
-    background: #f8fafc;
-    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .fields-search input:focus {
-    background: #fff;
-    border-color: #10b981;
-    box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.15);
-  }
-
-  .fields-toggles .btn {
-    border-radius: 12px;
-  }
-
-  .field-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .field-card {
-    border: 1px solid #eef2f6;
-    border-radius: 14px;
-    padding: 0.9rem;
-    background: #ffffff;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .field-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(2, 6, 23, 0.06);
-  }
-
-  .field-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .field-label {
-    font-weight: 700;
-    color: #0f172a;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .field-required {
-    color: #ef4444;
-    font-weight: 800;
-  }
-
-  .field-type {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #f1f5f9;
-    color: #334155;
-    border: 1px solid #e2e8f0;
-    border-radius: 999px;
-    padding: 0.25rem 0.5rem;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
-  .field-help {
-    font-size: 0.8rem;
-    color: #64748b;
-    margin-bottom: 0.5rem;
-  }
-
-  .field-value {
-    position: relative;
-    background: #f8fafc;
-    border: 1px dashed #e2e8f0;
-    border-radius: 12px;
-    padding: 0.75rem 0.75rem;
-    color: #0f172a;
-    overflow: hidden;
-  }
-
-  .field-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-
-  .field-actions .btn {
-    border-radius: 10px;
-  }
-
-  .field-value input.form-control,
-  .field-value textarea.form-control {
-    background: transparent !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    padding: 0;
-    resize: vertical;
-  }
-
-  .field-file a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    color: #0f172a;
-    font-weight: 600;
-    padding: 0.5rem 0.75rem;
-    border-radius: 10px;
-    background: #f0fdf4;
-    border: 1px solid #dcfce7;
-  }
-  .field-file a:hover {
-    background: #e7fbe9;
-  }
-
-  .empty-value {
-    color: #9ca3af;
-    font-style: italic;
-  }
-
-  /* JSON view inside the panel */
-  .json-view {
-    display: none;
-  }
-  .json-view.active {
-    display: block;
-  }
-  .json-view pre {
-    background: #0b1220;
-    color: #d1e9ff;
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
-    overflow: auto;
-    border: 1px solid #0f1a33;
-    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
-  }
-
-  .response-modal .modal-footer {
-    border-top: 1px solid #eef2f6;
-    background: #ffffff;
-  }
-
-  /* Print: focus on fields panel only */
-  @media print {
-    body * {
-      visibility: hidden;
+    @media (min-width: 576px) {
+        .fields-toolbar {
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+        }
     }
-    .modal.show .fields-panel,
-    .modal.show .fields-panel * {
-      visibility: visible;
+
+    .fields-search {
+        position: relative;
     }
-    .modal.show .fields-panel {
-      position: absolute;
-      inset: 0.5in;
-      box-shadow: none !important;
-      border: none !important;
+
+    .fields-search .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
     }
-  }
+
+    .fields-search input {
+        padding-left: 2.75rem;
+        border-radius: 12px;
+        border: 2px solid #eef2f6;
+        background: #f8fafc;
+        transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        height: 42px;
+    }
+
+    .fields-search input:focus {
+        background: #fff;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.15);
+    }
+
+    .fields-toggles .btn {
+        border-radius: 12px;
+        background: #f0f4ff;
+        border: 1px solid #e0e6f5;
+        color: var(--primary-color);
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .fields-toggles .btn:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .field-list {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .field-card {
+        border: 1px solid #eef2f6;
+        border-radius: 14px;
+        padding: 1.25rem;
+        background: #ffffff;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(2, 6, 23, 0.06);
+    }
+
+    .field-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .field-label {
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.05rem;
+    }
+
+    .field-required {
+        color: #ef4444;
+        font-weight: 800;
+    }
+
+    .field-type {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .field-help {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+    }
+
+    .field-value {
+        position: relative;
+        background: #f8fafc;
+        border: 1px dashed #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        color: #0f172a;
+        overflow: hidden;
+    }
+
+    .field-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .field-actions .btn {
+        border-radius: 10px;
+        background: #f0f4ff;
+        border: 1px solid #e0e6f5;
+        color: var(--primary-color);
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .field-actions .btn:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .field-value input.form-control,
+    .field-value textarea.form-control {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        padding: 0;
+        resize: vertical;
+        font-size: 0.95rem;
+    }
+
+    .field-file a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: #0f172a;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        background: #f0f8ff;
+        border: 1px solid #d3e9f5;
+        transition: all 0.2s ease;
+    }
+
+    .field-file a:hover {
+        background: #e0f0ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-value {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    /* JSON view inside the panel */
+    .json-view {
+        display: none;
+    }
+
+    .json-view.active {
+        display: block;
+    }
+
+    .json-view pre {
+        background: #0b1220;
+        color: #d1e9ff;
+        border-radius: 12px;
+        padding: 1.25rem;
+        overflow: auto;
+        border: 1px solid #0f1a33;
+        box-shadow: inset 0 0 0 1px rgba(67, 97, 238, 0.2);
+        max-height: 400px;
+        margin-top: 1rem;
+    }
+
+    .response-modal .modal-footer {
+        border-top: 1px solid #eef2f6;
+        background: #ffffff;
+        padding: 1rem 1.5rem;
+    }
+
+    /* Print: focus on fields panel only */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .modal.show .fields-panel,
+        .modal.show .fields-panel * {
+            visibility: visible;
+        }
+        .modal.show .fields-panel {
+            position: absolute;
+            inset: 0.5in;
+            box-shadow: none !important;
+            border: none !important;
+        }
+    }
+
+    /* Additional modern touches */
+    .badge-count {
+        background: var(--primary-color);
+        color: white;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-weight: 600;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+    }
+
+    .btn-light {
+        background: white;
+        border: 1px solid var(--border-color);
+        color: var(--dark-color);
+        transition: var(--transition);
+    }
+
+    .btn-light:hover {
+        background: #f0f4ff;
+        border-color: var(--primary-light);
+        color: var(--primary-color);
+    }
+
+    .text-primary {
+        color: var(--primary-color) !important;
+    }
+
+    .bg-light {
+        background-color: #f8f9ff !important;
+    }
 </style>
 @endsection
-
 @section('content')
 <div class="container-fluid">
     <!-- Alerts -->
@@ -654,7 +778,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-
     @if (session('error'))
         <div class="alert alert-danger alert-modern alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-circle me-2"></i>
@@ -665,7 +788,7 @@
 
     <!-- Search and Filter -->
     <div class="search-filter-container">
-        <div class="row align-items-center">
+        <div class="row align-items-center g-3">
             <div class="col-md-6">
                 <div class="position-relative">
                     <i class="fas fa-search search-icon"></i>
@@ -673,7 +796,7 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="row">
+                <div class="row g-2">
                     <div class="col-md-4">
                         <select class="form-select filter-select" id="formFilter">
                             <option value="">All Forms</option>
@@ -689,7 +812,7 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <button class="btn btn-outline-secondary w-100" id="clearFilters">
+                        <button class="btn btn-light w-100" id="clearFilters">
                             <i class="fas fa-times me-2"></i>Clear
                         </button>
                     </div>
@@ -706,11 +829,10 @@
                     <h5 class="mb-0"><i class="fas fa-list me-2"></i>Responses Management</h5>
                 </div>
                 <div class="col-auto">
-                    <span class="badge bg-primary">{{ $responses->count() }} responses displayed</span>
+                    <span class="badge-count">{{ $responses->total() }} responses</span>
                 </div>
             </div>
         </div>
-
         <div class="table-container">
             @if($responses->count() > 0)
                 <div class="table-responsive">
@@ -764,7 +886,7 @@
                                     @endphp
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-primary btn-action" data-bs-toggle="modal" data-bs-target="#responseModal{{ $response->id }}" title="View Details" data-bs-toggle="tooltip">
+                                    <button type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#responseModal{{ $response->id }}" title="View Details" data-bs-toggle="tooltip">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 </td>
@@ -773,7 +895,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- Pagination -->
                 <div class="d-flex justify-content-center p-4">
                     <nav aria-label="Responses pagination">
@@ -787,7 +908,7 @@
                     <i class="fas fa-file-alt"></i>
                     <h3>No Responses Found</h3>
                     <p class="mb-4">No responses have been submitted yet.</p>
-                    <a href="{{ route('admin.dynamic-forms.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('admin.dynamic-forms.index') }}" class="btn btn-light">
                         <i class="fas fa-arrow-left me-2"></i>Back to Forms
                     </a>
                 </div>
@@ -806,7 +927,6 @@
       ->count();
     $prettyJson = json_encode($responseData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
   @endphp
-
   <div class="modal fade modal-modern response-modal" id="responseModal{{ $response->id }}" tabindex="-1" aria-labelledby="responseModalLabel{{ $response->id }}" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
@@ -818,7 +938,6 @@
               • ID: #{{ $response->id }}
             </small>
           </div>
-
           <div class="header-actions ms-auto">
             <button
               class="btn btn-sm"
@@ -863,12 +982,11 @@
             <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
         </div>
-
         <div class="modal-body">
           <div class="response-grid">
-             Sidebar Meta
+             <!-- Sidebar Meta -->
             <aside class="meta-card" aria-label="Response details">
-              <div class="meta-title">Overview</div>
+              <div class="meta-title"><i class="fas fa-info-circle"></i> Overview</div>
               <ul class="meta-list">
                 <li class="meta-item">
                   <div class="meta-icon"><i class="fas fa-user"></i></div>
@@ -892,25 +1010,21 @@
                   </div>
                 </li>
               </ul>
-
               <div class="meta-divider"></div>
-
               <div class="meta-badges">
                 <span class="badge badge-soft">
-                  <i class="fas fa-hashtag me-1"></i>{{ $formFields->count() }} fields
+                  <i class="fas fa-hashtag"></i>{{ $formFields->count() }} fields
                 </span>
                 <span class="badge badge-soft">
-                  <i class="fas fa-paperclip me-1"></i>{{ $attachmentsCount }} attachments
+                  <i class="fas fa-paperclip"></i>{{ $attachmentsCount }} attachments
                 </span>
               </div>
             </aside>
-
-             Fields Panel
+             <!-- Fields Panel -->
             <section class="fields-panel">
               @if ($response->dynamicForm && $response->dynamicForm->description)
-                <div class="mb-2 text-muted">{{ $response->dynamicForm->description }}</div>
+                <div class="mb-3 text-muted">{{ $response->dynamicForm->description }}</div>
               @endif
-
               <div class="fields-toolbar">
                 <div class="fields-search">
                   <i class="fas fa-search search-icon"></i>
@@ -930,7 +1044,7 @@
                     data-action="collapse-fields"
                     data-scope="#fields-{{ $response->id }}"
                   >
-                    <i class="fas fa-compress me-1"></i>Compact
+                    <i class="fas fa-compress"></i>Compact
                   </button>
                 </div>
                 <div class="fields-toggles">
@@ -940,16 +1054,14 @@
                     data-action="expand-fields"
                     data-scope="#fields-{{ $response->id }}"
                   >
-                    <i class="fas fa-expand me-1"></i>Comfortable
+                    <i class="fas fa-expand"></i>Comfortable
                   </button>
                 </div>
               </div>
-
               {{-- JSON view (hidden by default) --}}
               <div id="jsonView-{{ $response->id }}" class="json-view" aria-live="polite">
                 <pre id="jsonSource-{{ $response->id }}" data-json='@json($responseData, JSON_UNESCAPED_SLASHES)'>{{ $prettyJson }}</pre>
               </div>
-
               {{-- Fields list --}}
               <div id="fields-{{ $response->id }}" class="field-list">
                 @if ($formFields->isNotEmpty() && is_array($responseData))
@@ -967,11 +1079,10 @@
                         $displayValue = $fieldValue;
                       }
                     @endphp
-
                     <article class="field-card" data-field-label="{{ Str::lower($field->field_label) }}" data-field-value="{{ Str::lower($displayValue) }}">
                       <header class="field-head">
                         <div class="field-label">
-                          <i class="fas fa-align-left text-success"></i>
+                          <i class="fas fa-align-left text-primary"></i>
                           <span>{{ $field->field_label }}</span>
                           @if ($field->is_required)
                             <span class="field-required" aria-hidden="true">*</span>
@@ -979,11 +1090,9 @@
                         </div>
                         <span class="field-type">{{ $fieldType }}</span>
                       </header>
-
                       @if ($field->help_text)
                         <div class="field-help">{{ $field->help_text }}</div>
                       @endif
-
                       <div class="field-value @if($isFile) field-file @endif">
                         @if ($isFile)
                           <a href="{{ asset('storage/' . $fieldValue['path']) }}" target="_blank" rel="noopener">
@@ -1005,7 +1114,6 @@
                           @endif
                         @endif
                       </div>
-
                       <div class="field-actions">
                         @if (!$isFile && $displayValue !== '')
                           <button
@@ -1015,7 +1123,7 @@
                             data-copy-value="{{ $displayValue }}"
                             title="Copy value"
                           >
-                            <i class="fas fa-copy me-1"></i>Copy
+                            <i class="fas fa-copy"></i>Copy
                           </button>
                         @endif
                       </div>
@@ -1030,7 +1138,6 @@
             </section>
           </div>
         </div>
-
         <div class="modal-footer">
           <span class="text-muted me-auto">
             <i class="fas fa-info-circle me-1"></i>
@@ -1042,7 +1149,6 @@
     </div>
   </div>
 @endforeach
-
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1062,15 +1168,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function filterTable() {
         const searchTerm = searchInput.value.toLowerCase();
         const formId = formFilter.value;
-
         tableRows.forEach(row => {
             const formName = row.dataset.formName;
             const clientName = row.dataset.clientName;
             const formIdValue = row.dataset.formId;
-
             const matchesSearch = formName.includes(searchTerm) || clientName.includes(searchTerm);
             const matchesForm = !formId || formIdValue === formId;
-
             if (matchesSearch && matchesForm) {
                 row.style.display = '';
             } else {
@@ -1084,10 +1187,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const sortValue = sortFilter.value;
         const tbody = document.querySelector('#responsesTable tbody');
         const rows = Array.from(tableRows);
-
         rows.sort((a, b) => {
             let aValue, bValue;
-
             if (sortValue === 'submitted_at_asc') {
                 aValue = parseInt(a.dataset.submittedAt);
                 bValue = parseInt(b.dataset.submittedAt);
@@ -1107,7 +1208,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return 0;
         });
-
         rows.forEach(row => tbody.appendChild(row));
         filterTable(); // Reapply filters after sorting
     }
@@ -1116,7 +1216,6 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInput.addEventListener('input', filterTable);
     formFilter.addEventListener('change', filterTable);
     sortFilter.addEventListener('change', sortTable);
-
     clearFilters.addEventListener('click', function() {
         searchInput.value = '';
         formFilter.value = '';
@@ -1129,35 +1228,27 @@ document.addEventListener('DOMContentLoaded', function() {
         header.addEventListener('click', function() {
             const sortType = this.dataset.sort;
             const currentSort = sortFilter.value;
-
             // Toggle sort direction
             if (currentSort === sortType + '_asc') {
                 sortFilter.value = sortType + '_desc';
             } else {
                 sortFilter.value = sortType + '_asc';
             }
-
             // Update header classes
             document.querySelectorAll('.sortable').forEach(h => {
                 h.classList.remove('sort-asc', 'sort-desc');
             });
-
             if (sortFilter.value.includes('_asc')) {
                 this.classList.add('sort-asc');
             } else {
                 this.classList.add('sort-desc');
             }
-
             sortTable();
         });
     });
 });
-</script>
-@endpush
 
-@push('scripts')
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
     // Bootstrap tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (el) {
@@ -1219,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const scope = document.querySelector(scopeSel);
       if (!scope) return;
       scope.querySelectorAll('.field-card').forEach((card) => {
-        card.style.padding = dense ? '0.6rem' : '0.9rem';
+        card.style.padding = dense ? '0.8rem' : '1.25rem';
       });
       scope.querySelectorAll('.field-value textarea').forEach((ta) => {
         ta.rows = dense ? 2 : 4;
@@ -1230,14 +1321,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function (e) {
       const target = e.target.closest('[data-action]');
       if (!target) return;
-
       const action = target.getAttribute('data-action');
-
       if (action === 'toggle-json') {
         e.preventDefault();
         toggleJson(target.getAttribute('data-target'));
       }
-
       if (action === 'copy-json') {
         e.preventDefault();
         const sel = target.getAttribute('data-json-target');
@@ -1249,19 +1337,16 @@ document.addEventListener('DOMContentLoaded', function() {
           setTimeout(() => (target.innerHTML = '<i class="fas fa-copy"></i>'), 1200);
         }
       }
-
       if (action === 'download-json') {
         e.preventDefault();
         const sel = target.getAttribute('data-json-target');
         const name = target.getAttribute('data-filename') || 'response.json';
         downloadJsonFromPre(sel, name);
       }
-
       if (action === 'print') {
         e.preventDefault();
         window.print();
       }
-
       if (action === 'copy-field') {
         e.preventDefault();
         const val = target.getAttribute('data-copy-value') || '';
@@ -1269,7 +1354,6 @@ document.addEventListener('DOMContentLoaded', function() {
         target.innerHTML = '<i class="fas fa-check me-1"></i>Copied';
         setTimeout(() => (target.innerHTML = '<i class="fas fa-copy me-1"></i>Copy'), 1200);
       }
-
       if (action === 'collapse-fields' || action === 'expand-fields') {
         const scopeSel = target.getAttribute('data-scope');
         toggleDensity(scopeSel, action === 'collapse-fields');

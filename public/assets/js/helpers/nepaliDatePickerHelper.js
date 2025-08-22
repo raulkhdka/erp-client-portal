@@ -2,7 +2,6 @@
  * Global Nepali Date Picker Helper
  * This utility provides easy initialization of Nepali Date Pickers
  */
-
 class NepaliDatePickerHelper {
     constructor() {
         this.defaultOptions = {
@@ -21,6 +20,7 @@ class NepaliDatePickerHelper {
         };
         this.darkModeClass = 'ndp-dark-theme';
         this.observers = new Map(); // Track observers for cleanup
+        this.activeInput = null; // Track the currently active input
         this.setupDynamicContentObserver(); // New: Observe dynamic content
     }
 
@@ -159,6 +159,28 @@ class NepaliDatePickerHelper {
             this.observers.get(element).disconnect();
         }
 
+        // Update active input on click or focus
+        element.addEventListener('click', () => {
+            this.activeInput = element;
+            setTimeout(() => this.detectAndStyleCalendar(isDarkMode, element), 100);
+            setTimeout(() => this.detectAndStyleCalendar(isDarkMode, element), 300);
+        });
+
+        element.addEventListener('focus', () => {
+            this.activeInput = element;
+            setTimeout(() => this.detectAndStyleCalendar(isDarkMode, element), 100);
+            setTimeout(() => this.detectAndStyleCalendar(isDarkMode, element), 300);
+        });
+
+        // Clear active input on blur with delay to allow calendar interaction
+        element.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (this.activeInput === element) {
+                    this.activeInput = null;
+                }
+            }, 500);
+        });
+
         // Create observer for calendar detection
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
@@ -180,17 +202,6 @@ class NepaliDatePickerHelper {
 
         // Store observer for cleanup
         this.observers.set(element, observer);
-
-        // Add click listener to trigger calendar detection
-        element.addEventListener('click', () => {
-            setTimeout(() => this.detectAndStyleCalendar(isDarkMode, element), 100);
-            setTimeout(() => this.detectAndStyleCalendar(isDarkMode, element), 300);
-        });
-
-        element.addEventListener('focus', () => {
-            setTimeout(() => this.detectAndStyleCalendar(isDarkMode, element), 100);
-            setTimeout(() => this.detectAndStyleCalendar(isDarkMode, element), 300);
-        });
     }
 
     /**
@@ -224,7 +235,7 @@ class NepaliDatePickerHelper {
             }
         });
 
-        if (isCalendar) {
+        if (isCalendar && this.activeInput === inputElement) {
             this.styleCalendar(node, isDarkMode, inputElement);
         }
 
@@ -233,7 +244,9 @@ class NepaliDatePickerHelper {
             try {
                 const calendars = node.querySelectorAll ? node.querySelectorAll(selector) : [];
                 calendars.forEach(calendar => {
-                    this.styleCalendar(calendar, isDarkMode, inputElement);
+                    if (this.activeInput === inputElement) {
+                        this.styleCalendar(calendar, isDarkMode, inputElement);
+                    }
                 });
             } catch (e) {
                 // Ignore selector errors
@@ -247,6 +260,8 @@ class NepaliDatePickerHelper {
      * @param {HTMLElement} inputElement - The input element
      */
     detectAndStyleCalendar(isDarkMode, inputElement) {
+        if (this.activeInput !== inputElement) return; // Only process for active input
+
         const calendarSelectors = [
             '.datepicker',
             '.ndp-calendar',
@@ -302,13 +317,6 @@ class NepaliDatePickerHelper {
             }
         }
 
-        // Fix positioning (special handling for hire_date)
-        if (inputElement.id === 'hire_date') {
-            this.fixCalendarPositionForHireDate(calendar, inputElement);
-        } else {
-            this.fixCalendarPosition(calendar, inputElement);
-        }
-
         // Mark Saturday (7th child) as holiday with red color
         const days = calendar.querySelectorAll('td, th');
         days.forEach((day, index) => {
@@ -316,6 +324,13 @@ class NepaliDatePickerHelper {
                 day.classList.add('ndp-saturday-holiday');
             }
         });
+
+        // Fix positioning (special handling for hire_date)
+        if (inputElement.id === 'hire_date') {
+            this.fixCalendarPositionForHireDate(calendar, inputElement);
+        } else if (this.activeInput === inputElement) {
+            this.fixCalendarPosition(calendar, inputElement);
+        }
     }
 
     /**
@@ -327,15 +342,17 @@ class NepaliDatePickerHelper {
         // Apply positioning styles
         calendar.style.position = 'absolute';
         calendar.style.zIndex = '9999';
+        const offset = parseInt(inputElement.dataset.offset || 0); // Use data-offset or 0
 
         // Function to update position
         const updatePosition = () => {
+            if (this.activeInput !== inputElement) return; // Skip if not active
             const rect = inputElement.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-            // Position just below the input, adjusted for scroll
-            calendar.style.top = (rect.bottom + scrollTop) + 'px';
+            // Position just below the input, adjusted for scroll and offset
+            calendar.style.top = (rect.bottom + scrollTop + offset) + 'px';
             calendar.style.left = (rect.left + scrollLeft) + 'px';
 
             // Ensure calendar doesn't go off screen horizontally
@@ -351,6 +368,13 @@ class NepaliDatePickerHelper {
         // Update position on scroll and resize
         window.addEventListener('scroll', updatePosition, { passive: true });
         window.addEventListener('resize', updatePosition, { passive: true });
+
+        // Store event listeners for cleanup
+        if (!this.observers.has(inputElement)) {
+            this.observers.set(inputElement, []);
+        }
+        this.observers.get(inputElement).push({ event: 'scroll', handler: updatePosition });
+        this.observers.get(inputElement).push({ event: 'resize', handler: updatePosition });
     }
 
     /**
@@ -365,6 +389,7 @@ class NepaliDatePickerHelper {
 
         // Function to update position
         const updatePosition = () => {
+            if (this.activeInput !== inputElement) return; // Skip if not active
             const rect = inputElement.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
@@ -522,7 +547,15 @@ class NepaliDatePickerHelper {
      * Cleanup observers when needed
      */
     cleanup() {
-        this.observers.forEach(observer => observer.disconnect());
+        this.observers.forEach((observers, element) => {
+            if (observers instanceof MutationObserver) {
+                observers.disconnect();
+            } else if (Array.isArray(observers)) {
+                observers.forEach(({ event, handler }) => {
+                    window.removeEventListener(event, handler);
+                });
+            }
+        });
         this.observers.clear();
     }
 }

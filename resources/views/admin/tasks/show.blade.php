@@ -58,7 +58,7 @@
 
                                 <tr>
                                     <th>Created:</th>
-                                    <td>{{ $task->created_at->format('M d, Y \a\t H:i') }}</td>
+                                    <td>{!! $task->created_at_nepali_html !!}</td>
                                 </tr>
                             </table>
                         </div>
@@ -72,7 +72,7 @@
                                     </div>
                                     <div class="card-body">
                                         <p><strong>Subject:</strong> {{ $task->callLog->subject }}</p>
-                                        <p><strong>Date:</strong> {{ $task->callLog->call_date->format('M d, Y H:i') }}</p>
+                                        <p><strong>Date:</strong> {{ $task->callLog->call_date_formatted }}</p>
                                         <p><strong>Type:</strong>
                                             <span class="badge bg-{{ $task->callLog->call_type === 'incoming' ? 'success' : 'info' }}">
                                                 {{ ucfirst($task->callLog->call_type) }}

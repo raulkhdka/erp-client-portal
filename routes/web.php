@@ -86,10 +86,13 @@ Route::middleware(['auth'])->group(function () {
             ->controller(App\Http\Controllers\ClientController::class)
             ->group(function () {
                 Route::get('/', 'index')->name('index');
+                Route::get('/export', 'export')->name('export');
+                Route::get('/export-excel', 'exportExcel')->name('export-excel');
                 Route::get('/create', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
                 Route::get('/{id}/edit', 'edit')->name('edit');
                 Route::put('/{id}', 'update')->name('update');
+                Route::patch('/{id}/status', 'updateStatus')->name('update-status');
                 Route::delete('/{id}', 'destroy')->name('destroy');
                 Route::get('/{id}', 'show')->name('show');
                 Route::get('/{client}/manage-access', 'manageAccess')->name('manage-access');
@@ -102,6 +105,8 @@ Route::middleware(['auth'])->group(function () {
             ->controller(App\Http\Controllers\EmployeeController::class)
             ->group(function () {
                 Route::get('/', 'index')->name('index');
+                Route::get('/export', 'export')->name('export');
+                Route::get('/export-excel', 'exportExcel')->name('export-excel');
                 Route::get('/create', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
                 Route::get('/{id}/edit', 'edit')->name('edit');
@@ -109,6 +114,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::patch('/{id}/status', 'updateStatus')->name('update-status');
                 Route::delete('/{id}', 'destroy')->name('destroy');
                 Route::get('/{id}', 'show')->name('show');
+
             });
         // Blended routes for services management
         Route::prefix('admin/services')
@@ -116,13 +122,15 @@ Route::middleware(['auth'])->group(function () {
             ->controller(App\Http\Controllers\ServiceController::class)
             ->group(function () {
                 Route::get('/', 'index')->name('index');
+                Route::get('/export', 'export')->name('export');
+                Route::get('/export-excel', 'exportExcel')->name('export-excel');
                 Route::get('/create', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
                 Route::get('/{service}/edit', 'edit')->name('edit');
                 Route::put('/{service}', 'update')->name('update');
                 Route::delete('/{service}', 'destroy')->name('destroy');
                 Route::get('/{service}', 'show')->name('show');
-                Route::patch('/{service}/toggle-status', 'toggleStatus')->name('toggle-status');
+                Route::patch('/{service}/status', 'updateStatus')->name('update-status');
             });
 
         //Call Logs management blended route
@@ -131,6 +139,8 @@ Route::middleware(['auth'])->group(function () {
             ->controller(App\Http\Controllers\CallLogController::class)
             ->group(function () {
                 Route::get('/', 'index')->name('index');
+                Route::get('/export', 'export')->name('export');
+                Route::get('/export-excel', 'exportExcel')->name('export-excel');
                 Route::get('/create', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
                 Route::get('/{callLog}/edit', 'edit')->name('edit');

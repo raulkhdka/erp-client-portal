@@ -173,14 +173,14 @@
 .ndp-dark-theme .day:hover,
 .ndp-dark-theme td:hover {
     background: #4a5568 !important;
-    color: white !important;
+    color: #5ABAE8 !important;
 }
 
 /* Dark mode today */
 .ndp-dark-theme .ndp-today,
 .ndp-dark-theme .today {
     background: #4a5568 !important;
-    color: #63b3ed !important;
+    color: #5ABAE8 !important;
     border-color: #63b3ed !important;
 }
 

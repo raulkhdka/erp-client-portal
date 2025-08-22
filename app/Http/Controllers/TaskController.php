@@ -25,41 +25,73 @@ class TaskController extends Controller
         $query = Task::with(['client', 'assignedTo', 'createdBy', 'callLog'])
             ->orderBy('created_at', 'desc');
 
-        // Filter by employee role - employees only see their assigned tasks
-        if (Auth::user()->isEmployee()) {
-            $query->where('assigned_to', Auth::user()->employee->id);
+
+        // Handle AJAX/JSON requests
+        if ($request->ajax() || $request->expectsJson()) {
+            try {
+                $tasks = $query->get(); // Use get() for JSON response instead of paginate
+                return response()->json([
+                    'success' => true,
+                    'tasks' => $tasks->map(function ($task) {
+                        return [
+                            'id' => $task->id,
+                            'title' => $task->title,
+                            'description' => $task->description,
+                            'notes' => $task->notes,
+                            'priority' => $task->priority,
+                            'status' => $task->status,
+                            'status_label' => $task->status_label,
+                            'due_date' => $task->due_date_formatted !== 'N/A' ? Carbon::parse($task->due_date_formatted)->toISOString() : null,
+                            'started_at' => $task->started_at ? Carbon::parse($task->started_at)->toISOString() : null,
+                            'completed_at' => $task->completed_at ? Carbon::parse($task->completed_at)->toISOString() : null,
+                            'client_id' => $task->client_id,
+                            'call_log_id' => $task->call_log_id,
+                            'assigned_to' => $task->assigned_to,
+                            'client' => $task->client ? [
+                                'id' => $task->client->id,
+                                'company_name' => $task->client->company_name,
+                                'name' => $task->client->name,
+                            ] : null,
+                            'created_by' => $task->createdBy ? [
+                                'id' => $task->createdBy->id,
+                                'name' => $task->createdBy->name,
+                            ] : null,
+                            'assignedTo' => $task->assignedTo ? [
+                                'id' => $task->assignedTo->id,
+                                'name' => $task->assignedTo->name,
+                            ] : null,
+                            'callLog' => $task->callLog ? [
+                                'id' => $task->callLog->id,
+                                'subject' => $task->callLog->subject,
+                                'call_date' => $task->callLog->call_date ? Carbon::parse($task->callLog->call_date)->toISOString() : null,
+                            ] : null,
+                            'is_overdue' => $task->due_date && Carbon::parse($task->due_date)->isPast() && !in_array($task->status, [7, 8]),
+                        ];
+                    }),
+                ], 200);
+            } catch (\Exception $e) {
+                Log::error('Task index JSON error: ' . $e->getMessage(), [
+                    'user_id' => Auth::id(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to fetch tasks: ' . $e->getMessage(),
+                ], 500);
+            }
         }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filter by priority
-        if ($request->filled('priority')) {
-            $query->where('priority', $request->priority);
-        }
-
-        // Filter by client
-        if ($request->filled('client_id')) {
-            $query->where('client_id', $request->client_id);
-        }
-
-        // Filter by assigned employee (admin only)
-        if ($request->filled('assigned_to') && Auth::user()->isAdmin()) {
-            $query->where('assigned_to', $request->assigned_to);
-        }
-
-        $tasks = $query->paginate(16)->withQueryString();
+        // Handle regular page load
+        $tasks = $query->paginate(10)->withQueryString();
         $clients = ClientCacheService::getClientsWithUser();
         $employees = Employee::with('user')->orderBy('id')->get();
 
         // Count tasks by status
         $tasksCount = [
             'total' => Task::count(),
-            'pending' => Task::where('status', 1)->count(), // Assuming 1 is Pending
-            'in_progress' => Task::where('status', 2)->count(), // Assuming 2 is In Progress
-            'completed' => Task::whereIn('status', [7, 8])->count(), // Assuming 7 is Completed, 8 is Resolved
+            'pending' => Task::where('status', 1)->count(),
+            'in_progress' => Task::where('status', 2)->count(),
+            'completed' => Task::whereIn('status', [7, 8])->count(),
         ];
 
         return view('admin.tasks.index', compact('tasks', 'clients', 'employees', 'tasksCount'));
@@ -119,34 +151,49 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
+        // Clean and transform due_date before validation
+        $cleanDueDate = $request->due_date
+            ? (int) str_replace(['-', ' '], '', $request->due_date)
+            : null;
+
         $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
+            'client_id' => 'nullable|exists:clients,id',
             'assigned_to' => 'nullable|exists:employees,id',
             'call_log_id' => 'nullable|exists:call_logs,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|integer|min:1|max:9',
-            'due_date' => 'nullable|date',
+            'due_date' => 'nullable|date_format:Y-m-d',
             'started_at' => 'nullable|date',
             'completed_at' => 'nullable|date',
             'notes' => 'nullable|string'
         ]);
 
-        $validated['call_log_id'] = null;
+        $validated['due_date'] = $cleanDueDate;
+        $validated['call_log_id'] = $request->filled('call_log_id') ? $request->call_log_id : null;
 
-        // ✅ Set the creator of the task (user_id)
+        // Set the creator of the task (user_id)
         $validated['created_by'] = Auth::id();
 
-        // ✅ Optionally assign to self if admin and not specified
+        // Optionally assign to self if admin and not specified
         if (Auth::user()->isAdmin() && !$validated['assigned_to'] && Auth::user()->employee) {
             $validated['assigned_to'] = Auth::user()->employee->id;
         }
 
-        $task = Task::create($validated);
-
-        return redirect()->route('admin.tasks.index')
-            ->with('success', 'Task created successfully.');
+        try {
+            $task = Task::create($validated);
+            return redirect()->route('admin.tasks.index')
+                ->with('success', 'Task created successfully.');
+        } catch (\Exception $e) {
+            Log::error('Task creation failed: ' . $e->getMessage(), [
+                'input' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to create task: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -161,7 +208,7 @@ class TaskController extends Controller
             return response()->json([
                 'success' => true,
                 'task' => $task,
-                'statusOptions' => Task::getStatusOptions(), // Include statusOptions for frontend
+                'statusOptions' => Task::getStatusOptions(),
                 'status_label' => $task->status_label,
                 'priority_label' => ucfirst($task->priority),
             ], 200);
@@ -215,13 +262,12 @@ class TaskController extends Controller
                         'notes' => $task->notes,
                         'priority' => $task->priority,
                         'status' => $task->status,
-                        'due_date' => $task->due_date ? Carbon::parse($task->due_date)->toISOString() : null,
+                        'due_date' => $task->due_date_formatted !== 'N/A' ? Carbon::parse($task->due_date_formatted)->toISOString() : null,
                         'started_at' => $task->started_at ? Carbon::parse($task->started_at)->toISOString() : null,
                         'completed_at' => $task->completed_at ? Carbon::parse($task->completed_at)->toISOString() : null,
                         'client_id' => $task->client_id,
                         'call_log_id' => $task->call_log_id,
-                        'assigned_to' => $task->assigned_to, // Ensure consistency with update method
-                        // Include relationship data
+                        'assigned_to' => $task->assigned_to,
                         'client' => $task->client,
                         'assignedTo' => $task->assignedTo,
                         'callLog' => $task->callLog,
@@ -241,7 +287,6 @@ class TaskController extends Controller
                 ]);
             }
 
-            // Return view for regular requests
             return view('admin.tasks.edit', compact('task', 'clients', 'employees', 'callLogs', 'statusOptions'));
         } catch (\Exception $e) {
             Log::error('Task edit error: ' . $e->getMessage(), [
@@ -261,14 +306,16 @@ class TaskController extends Controller
         }
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, Task $task)
     {
         try {
-            // Log incoming request data for debugging
-            Log::debug('Task update request received:', [
-                'task_id' => $task->id,
-                'input' => $request->all()
-            ]);
+            // Clean and transform due_date before validation
+            $cleanDueDate = $request->due_date
+                ? (int) str_replace(['-', ' '], '', $request->due_date)
+                : null;
 
             // Validation rules using model constants
             $rules = [
@@ -282,10 +329,10 @@ class TaskController extends Controller
                     Task::PRIORITY_URGENT
                 ])],
                 'status' => ['required', 'integer', Rule::in(array_keys(Task::getStatusOptions()))],
-                'due_date' => 'nullable|date',
+                'due_date' => 'nullable|date_format:Y-m-d',
                 'started_at' => 'nullable|date',
                 'completed_at' => 'nullable|date',
-                'client_id' => 'required|exists:clients,id',
+                'client_id' => 'nullable|exists:clients,id',
                 'assigned_to' => 'nullable|exists:employees,id',
                 'call_log_id' => 'nullable|exists:call_logs,id',
                 'estimated_hours' => 'nullable|integer|min:0',
@@ -300,10 +347,10 @@ class TaskController extends Controller
                 'priority.in' => 'Invalid priority selected.',
                 'status.required' => 'Status is required.',
                 'status.in' => 'Invalid status selected.',
-                'client_id.required' => 'Client selection is required.',
                 'client_id.exists' => 'Selected client does not exist.',
                 'assigned_to.exists' => 'Selected employee does not exist.',
                 'call_log_id.exists' => 'Selected call log does not exist.',
+                'due_date.date_format' => 'Due date must be in YYYY-MM-DD format.',
                 'estimated_hours.integer' => 'Estimated hours must be a number.',
                 'actual_hours.integer' => 'Actual hours must be a number.',
             ];
@@ -311,11 +358,8 @@ class TaskController extends Controller
             // Validate the request
             $validatedData = $request->validate($rules, $messages);
 
-            // Log validated data
-            Log::debug('Validated data for task update:', [
-                'task_id' => $task->id,
-                'validated' => $validatedData
-            ]);
+            // Assign cleaned due_date
+            $validatedData['due_date'] = $cleanDueDate;
 
             // Convert status to integer
             $validatedData['status'] = (int) $validatedData['status'];
@@ -340,13 +384,6 @@ class TaskController extends Controller
             // Update the task
             $task->update($validatedData);
 
-            // Log the update
-            Log::info('Task updated', [
-                'task_id' => $task->id,
-                'updated_by' => Auth::id(),
-                'changes' => $task->getChanges()
-            ]);
-
             // Return JSON response for AJAX requests
             if ($request->wantsJson() || $request->ajax()) {
                 $task->refresh(); // Refresh the task to get updated relationships
@@ -360,7 +397,7 @@ class TaskController extends Controller
                         'notes' => $task->notes,
                         'priority' => $task->priority,
                         'status' => $task->status,
-                        'due_date' => $task->due_date ? Carbon::parse($task->due_date)->toISOString() : null,
+                        'due_date' => $task->due_date_formatted !== 'N/A' ? Carbon::parse($task->due_date_formatted)->toISOString() : null,
                         'started_at' => $task->started_at ? Carbon::parse($task->started_at)->toISOString() : null,
                         'completed_at' => $task->completed_at ? Carbon::parse($task->completed_at)->toISOString() : null,
                         'client_id' => $task->client_id,
@@ -501,16 +538,53 @@ class TaskController extends Controller
 
         $task->update($updateData);
 
+        // Load related data for the response
+        $task->load(['client', 'assignedTo', 'createdBy', 'callLog']);
+
         // Log for debugging
         Log::info('Task status updated', [
             'task_id' => $task->id,
             'status' => $task->status,
-            'status_label' => $task->status_label
+            'status_label' => $task->status_label,
         ]);
 
         return response()->json([
-            'status_label' => $task->status_label,
-            'message' => 'Task status updated successfully.'
+            'success' => true,
+            'message' => 'Task status updated successfully.',
+            'task' => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'notes' => $task->notes,
+                'priority' => $task->priority,
+                'status' => $task->status,
+                'status_label' => $task->status_label,
+                'status_color' => $task->status_color,
+                'due_date_formatted' => $task->due_date_formatted,
+                'client_id' => $task->client_id,
+                'call_log_id' => $task->call_log_id,
+                'assigned_to' => $task->assigned_to,
+                'client' => $task->client ? [
+                    'id' => $task->client->id,
+                    'company_name' => $task->client->company_name,
+                    'name' => $task->client->name,
+                ] : null,
+                'created_by' => $task->createdBy ? [
+                    'id' => $task->createdBy->id,
+                    'name' => $task->createdBy->name,
+                ] : null,
+                'assignedTo' => $task->assignedTo ? [
+                    'id' => $task->assignedTo->id,
+                    'name' => $task->assignedTo->name,
+                ] : null,
+                'callLog' => $task->callLog ? [
+                    'id' => $task->callLog->id,
+                    'subject' => $task->callLog->subject,
+                    'call_date' => $task->callLog->call_date ? Carbon::parse($task->callLog->call_date)->toISOString() : null,
+                ] : null,
+                'is_overdue' => $task->is_overdue,
+            ],
+            'statusOptions' => Task::getStatusOptions(),
         ], 200);
     }
 

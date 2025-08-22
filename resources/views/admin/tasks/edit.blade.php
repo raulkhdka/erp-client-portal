@@ -3,270 +3,426 @@
 @section('title', 'Edit Task')
 
 @section('breadcrumb')
-    <a href="{{ route('admin.tasks.index') }}">Tasks</a>
-    <span class="breadcrumb-item active">Edit</span>
+    <span class="breadcrumb-item"><a href="{{ route('admin.tasks.index') }}">Tasks</a></span>
+    <span class="breadcrumb-item active">Edit Task</span>
 @endsection
 
 @section('actions')
     <div class="btn-group">
-        <a href="{{ route('admin.tasks.show', $task) }}" class="btn btn-info">
-            <i class="fas fa-eye me-2"></i>View Task
-        </a>
-        <a href="{{ route('admin.tasks.index') }}" class="btn btn-secondary">
+        <a href="{{ route('admin.tasks.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i>Back to Tasks
         </a>
     </div>
 @endsection
 
+@push('styles')
+    <style>
+        .modal-content {
+            background: #f8fafc;
+        }
+        .card-modern {
+            border: 1px solid #eef2f6;
+            border-radius: 0;
+            box-shadow: 0 10px 28px rgba(2, 6, 23, 0.06);
+            background: #f8fafc;
+            padding: 1.25rem;
+        }
+        .card-modern:hover, .card-modern:focus-within {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(2, 6, 23, 0.08);
+            border-color: #e3eaf2;
+        }
+        @media (min-width: 992px) {
+            .card-modern {
+                padding: 1.5rem;
+            }
+        }
+        .card-modern::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: 0;
+        }
+        .card-modern:hover::before, .card-modern:focus-within::before {
+            box-shadow: inset 0 0 0 1px rgba(16,185,129,.15);
+        }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+        }
+        .section-title .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #eafaf3;
+            color: #10b981;
+            display: grid;
+            place-items: center;
+        }
+        .section-subtext {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .input-group-text {
+            background: #f8fafc;
+            border: 1px solid #eef2f6;
+            color: #64748b;
+            min-width: 42px;
+            justify-content: center;
+        }
+        .form-control, .form-select, textarea.form-control {
+            border-radius: 12px;
+            border: 2px solid #eef2f6;
+            background: #f8fafc;
+            transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+        }
+        .form-control:focus, .form-select:focus, textarea.form-control:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 .2rem rgba(16, 185, 129, 0.15);
+            background: #fff;
+        }
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #dc2626;
+        }
+        .error-messages {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .subcard {
+            border: 1px dashed #e5e7eb;
+            border-radius: 14px;
+            padding: 1rem;
+            background: white;
+        }
+        form > div {
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        .btn-ghost-danger {
+            border: 1px solid #fee2e2;
+            color: #dc2626;
+            background: #f8fafc;
+        }
+        .btn-ghost-danger:hover {
+            background: #ffeaea;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0ea5a0 0%, #047857 100%);
+        }
+    </style>
+@endpush
+
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
-
-                <div class="card-body">
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <form action="{{ route('admin.tasks.update', $task) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-
-                        <div class="row">
-                            <!-- Left Column -->
-                            <div class="col-md-6">
-                                <h5 class="mb-3">Task Information</h5>
-
-                                <div class="form-group">
-                                    <label for="title">Task Title *</label>
-                                    <input type="text" name="title" id="title" class="form-control"
-                                           value="{{ old('title', $task->title) }}" required placeholder="Brief title for the task">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow animate-slide-up">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-edit text-purple-600 me-2"></i>Edit Task
+                        </h3>
+                    </div>
+                    <div class="card-body form-shell">
+                        <div class="form-scroll">
+                            <form id="editTaskForm" action="{{ route('admin.tasks.update', $task->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="card-modern">
+                                    @if ($task->is_overdue)
+                                        <div class="alert alert-danger mt-3">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>This task is overdue!
+                                        </div>
+                                    @endif
+                                    <div class="mb-4">
+                                        <div class="section-title">
+                                            <div class="icon"><i class="fas fa-tasks"></i></div>
+                                            <div>
+                                                <div>Task Information</div>
+                                                <div class="section-subtext">Provide details about the task.</div>
+                                            </div>
+                                        </div>
+                                        <div class="subcard">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="edit_title" class="form-label">Task Title <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-heading"></i></span>
+                                                        <input type="text" name="title" id="edit_title" class="form-control" value="{{ old('title', $task->title) }}" required placeholder="e.g. Website Redesign">
+                                                        @error('title')
+                                                            <div class="error-messages">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="edit_client_id" class="form-label">Client <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
+                                                        <select name="client_id" id="edit_client_id" class="form-select" required>
+                                                            <option value="">Select a client</option>
+                                                            @foreach ($clients as $client)
+                                                                <option value="{{ $client->id }}" {{ old('client_id', $task->client_id) == $client->id ? 'selected' : '' }}>
+                                                                    {{ $client->name }} ({{ $client->company_name }})
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('client_id')
+                                                            <div class="error-messages">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="edit_assigned_to" class="form-label">Assign To</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                                        <select name="assigned_to" id="edit_assigned_to" class="form-select">
+                                                            <option value="">Select an employee</option>
+                                                            @foreach ($employees as $employee)
+                                                                <option value="{{ $employee['id'] }}" {{ old('assigned_to', $task->assigned_to) == $employee['id'] ? 'selected' : '' }}>
+                                                                    {{ $employee['name'] }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('assigned_to')
+                                                            <div class="error-messages">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <small class="form-text text-muted">Leave empty to keep unassigned</small>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="edit_priority" class="form-label">Priority <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-exclamation-circle"></i></span>
+                                                        <select name="priority" id="edit_priority" class="form-select" required>
+                                                            @foreach (\App\Models\Task::getPriorityOptions() as $value => $label)
+                                                                <option value="{{ $value }}" {{ old('priority', $task->priority) == $value ? 'selected' : '' }}>
+                                                                    {{ $label }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('priority')
+                                                            <div class="error-messages">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="edit_status" class="form-label">Status <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-info-circle"></i></span>
+                                                        <select name="status" id="edit_status" class="form-select" required>
+                                                            @foreach (\App\Models\Task::getStatusOptions() as $value => $label)
+                                                                <option value="{{ $value }}" {{ old('status', $task->status) == $value ? 'selected' : '' }}>
+                                                                    {{ $label }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('status')
+                                                            <div class="error-messages">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <small class="form-text text-muted">Current: <span class="badge bg-{{ $task->status_color }}">{{ $task->status_label }}</span></small>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="edit_call_log_id" class="form-label">Related Call Log (optional)</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                                        <select name="call_log_id" id="edit_call_log_id" class="form-select">
+                                                            <option value="">-- No Call Log --</option>
+                                                            @foreach ($callLogs as $log)
+                                                                <option value="{{ $log->id }}" {{ old('call_log_id', $task->call_log_id) == $log->id ? 'selected' : '' }}>
+                                                                    {{ $log->id }} - {{ $log->subject }} ({{ $log->call_date ? \Carbon\Carbon::parse($log->call_date)->format('Y-m-d') : 'N/A' }})
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('call_log_id')
+                                                            <div class="error-messages">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="section-title">
+                                            <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+                                            <div>
+                                                <div>Scheduling & Planning</div>
+                                                <div class="section-subtext">Set dates for task tracking.</div>
+                                            </div>
+                                        </div>
+                                        <div class="subcard">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="edit_due_date" class="form-label">Due Date</label>
+                                                    <div class="input-group">
+                                                        <input type="text" name="due_date" id="edit_due_date" class="form-control nepali-date" data-offset="5" data-mode="dark" value="{{ old('due_date', $task->due_date_formatted) }}" placeholder="Select date" autocomplete="off">
+                                                        <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                                        @error('due_date')
+                                                            <div class="error-messages">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <div class="section-title">
+                                            <div class="icon"><i class="fas fa-file-alt"></i></div>
+                                            <div>
+                                                <div>Description & Notes</div>
+                                                <div class="section-subtext">Provide detailed task information and additional notes.</div>
+                                            </div>
+                                        </div>
+                                        <div class="subcard">
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <label for="edit_description" class="form-label">Description <span class="text-danger">*</span></label>
+                                                    <textarea name="description" id="edit_description" class="form-control" rows="5" required placeholder="Detailed description of what needs to be done...">{{ old('description', $task->description) }}</textarea>
+                                                    @error('description')
+                                                        <div class="error-messages">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-12">
+                                                    <label for="edit_notes" class="form-label">Notes</label>
+                                                    <textarea name="notes" id="edit_notes" class="form-control" rows="3" placeholder="Any additional notes or comments...">{{ old('notes', $task->notes) }}</textarea>
+                                                    @error('notes')
+                                                        <div class="error-messages">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{{ route('admin.tasks.index') }}" class="btn btn-ghost-danger">
+                                            <i class="fas fa-times me-1"></i>Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-1"></i>Update Task
+                                        </button>
+                                    </div>
                                 </div>
-
-                                <div class="form-group">
-                                    <label for="client_id">Client *</label>
-                                    <select name="client_id" id="client_id" class="form-control client-select" required>
-                                        <option value="">Select a client</option>
-                                        @foreach($clients as $client)
-                                            <option value="{{ $client->id }}" {{ old('client_id', $task->client_id) == $client->id ? 'selected' : '' }}>
-                                                {{ $client->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="assigned_to">Assign To</label>
-                                    <select name="assigned_to" id="assigned_to" class="form-control">
-                                        <option value="">Select an employee</option>
-                                        @foreach($employees as $employee)
-                                            <option value="{{ $employee->id }}" {{ old('assigned_to', $task->assigned_to) == $employee->id ? 'selected' : '' }}>
-                                                {{ $employee->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <small class="form-text text-muted">Leave empty to keep unassigned</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="priority">Priority *</label>
-                                    <select name="priority" id="priority" class="form-control" required>
-                                        <option value="low" {{ old('priority', $task->priority) == 'low' ? 'selected' : '' }}>Low</option>
-                                        <option value="medium" {{ old('priority', $task->priority) == 'medium' ? 'selected' : '' }}>Medium</option>
-                                        <option value="high" {{ old('priority', $task->priority) == 'high' ? 'selected' : '' }}>High</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="status">Status *</label>
-                                    <select name="status" id="status" class="form-control" required>
-                                        <option value="1" {{ old('status', $task->status) == 1 ? 'selected' : '' }}>Pending</option>
-                                        <option value="2" {{ old('status', $task->status) == 2 ? 'selected' : '' }}>In Progress</option>
-                                        <option value="3" {{ old('status', $task->status) == 3 ? 'selected' : '' }}>On Hold</option>
-                                        <option value="4" {{ old('status', $task->status) == 4 ? 'selected' : '' }}>Escalated</option>
-                                        <option value="5" {{ old('status', $task->status) == 5 ? 'selected' : '' }}>Waiting for Client</option>
-                                        <option value="6" {{ old('status', $task->status) == 6 ? 'selected' : '' }}>Testing</option>
-                                        <option value="7" {{ old('status', $task->status) == 7 ? 'selected' : '' }}>Completed</option>
-                                        <option value="8" {{ old('status', $task->status) == 8 ? 'selected' : '' }}>Resolved</option>
-                                        <option value="9" {{ old('status', $task->status) == 9 ? 'selected' : '' }}>Backlog</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="due_date">Due Date</label>
-                                    <input type="date" name="due_date" id="due_date" class="form-control"
-                                        value="{{ old('due_date') }}">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="call_log_id">Related Call Log (optional)</label>
-                                    <select name="call_log_id" id="call_log_id" class="form-control">
-                                        <option value="">-- No Call Log --</option>
-                                        @foreach ($callLogs as $log)
-                                            <option value="{{ $log->id }}"
-                                                {{ old('call_log_id') == $log->id ? 'selected' : '' }}>
-                                                {{ $log->id }} - {{ Str::limit($log->notes, 50) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            </div>
-
-                            <!-- Right Column -->
-                            <div class="col-md-6">
-                                <h5 class="mb-3">Scheduling & Planning</h5>
-
-                                <!-- Date fields for status tracking -->
-                                <div class="form-group" id="started_at_group" style="{{ old('status', $task->status) >= 2 ? '' : 'display: none;' }}">
-                                    <label for="started_at">Started At</label>
-                                    <input type="datetime-local" name="started_at" id="started_at" class="form-control"
-                                           value="{{ old('started_at', $task->started_at ? $task->started_at->format('Y-m-d\TH:i') : '') }}">
-                                </div>
-
-                                <div class="form-group" id="completed_at_group" style="{{ old('status', $task->status) >= 7 ? '' : 'display: none;' }}">
-                                    <label for="completed_at">Completed At</label>
-                                    <input type="datetime-local" name="completed_at" id="completed_at" class="form-control"
-                                           value="{{ old('completed_at', $task->completed_at ? $task->completed_at->format('Y-m-d\TH:i') : '') }}">
-                                </div>
-
-                                <!-- Task metadata -->
-                                <div class="form-group">
-                                    <label>Created By:</label><br>
-                                    <span class="text-muted">
-                                        @if($task->creator)
-                                            {{ $task->creator->name }}
-                                        @else
-                                            System
-                                        @endif
-                                        on {{ $task->created_at->format('M d, Y H:i') }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Full Width Fields -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label for="description">Description *</label>
-                                    <textarea name="description" id="description" class="form-control" rows="5" required
-                                              placeholder="Detailed description of what needs to be done...">{{ old('description', $task->description) }}</textarea>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="notes">Notes</label>
-                                    <textarea name="notes" id="notes" class="form-control" rows="3"
-                                              placeholder="Any additional notes or comments...">{{ old('notes', $task->notes) }}</textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Update Task
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="window.history.back()">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Task History -->
-                    @if($task->updated_at != $task->created_at)
-                    <hr>
-                    <div class="mt-4">
-                        <h6>Task History</h6>
-                        <div class="bg-light p-3 rounded">
-                            <small class="text-muted">
-                                <strong>Created:</strong> {{ $task->created_at->format('M d, Y H:i') }}
-                                @if($task->creator)
-                                    by {{ $task->creator->name }}
-                                @endif
-                                <br>
-                                <strong>Last Updated:</strong> {{ $task->updated_at->format('M d, Y H:i') }}
-                                @if($task->updated_at->diffInMinutes($task->created_at) > 5)
-                                    ({{ $task->updated_at->diffForHumans($task->created_at) }} after creation)
-                                @endif
-                            </small>
+                            </form>
                         </div>
                     </div>
-                    @endif
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
 
-@section('scripts')
-<script>
-// Initialize Select2 for client dropdowns
-$(document).ready(function() {
-    $('.client-select').select2({
-        theme: 'bootstrap-5',
-        placeholder: 'Select a client',
-        allowClear: true,
-        width: '100%'
-    });
-});
+@push('scripts')
+    <script>
+        // Initialize Nepali date picker for due_date
+        document.addEventListener('DOMContentLoaded', function () {
 
-// Show/hide date fields based on status
-document.getElementById('status').addEventListener('change', function() {
-    const status = parseInt(this.value);
-    const startedGroup = document.getElementById('started_at_group');
-    const completedGroup = document.getElementById('completed_at_group');
+            // Form submission handling with Axios
+            const form = document.getElementById('editTaskForm');
+            form.addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent default form submission
 
-    // Show started_at field if status is in progress or higher
-    if (status >= 2) {
-        startedGroup.style.display = 'block';
-    } else {
-        startedGroup.style.display = 'none';
-        document.getElementById('started_at').value = '';
-    }
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Updating...';
 
-    // Show completed_at field if status is completed or resolved
-    if (status >= 7) {
-        completedGroup.style.display = 'block';
-    } else {
-        completedGroup.style.display = 'none';
-        document.getElementById('completed_at').value = '';
-    }
-});
+                // Clear previous error messages and invalid states
+                form.querySelectorAll('.error-messages').forEach(el => el.textContent = '');
+                form.querySelectorAll('.form-control.is-invalid, .form-select.is-invalid')
+                    .forEach(el => el.classList.remove('is-invalid'));
 
-// Trigger the status change event on page load
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('status').dispatchEvent(new Event('change'));
-});
+                // Perform client-side validation
+                const requiredFields = form.querySelectorAll('[required]');
+                let hasErrors = false;
 
-// Auto-fill started_at when status changes to in progress
-document.getElementById('status').addEventListener('change', function() {
-    const status = parseInt(this.value);
-    const startedAtField = document.getElementById('started_at');
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        hasErrors = true;
+                        field.classList.add('is-invalid');
+                        const errorDiv = field.parentElement.querySelector('.error-messages') ||
+                            field.parentElement.nextElementSibling;
+                        if (errorDiv && errorDiv.classList.contains('error-messages')) {
+                            errorDiv.textContent = `${field.name.charAt(0).toUpperCase() + field.name.slice(1)} is required.`;
+                        }
+                    }
+                });
 
-    if (status === 2 && !startedAtField.value) { // In Progress
-        const now = new Date();
-        const formattedDate = now.toISOString().slice(0, 16);
-        startedAtField.value = formattedDate;
-    }
-});
+                if (hasErrors) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-save me-1"></i>Update Task';
+                    showToast('error', 'Please fill in all required fields.');
+                    return;
+                }
 
-// Auto-fill completed_at when status changes to completed/resolved
-document.getElementById('status').addEventListener('change', function() {
-    const status = parseInt(this.value);
-    const completedAtField = document.getElementById('completed_at');
+                // Collect form data
+                const formData = new FormData(form);
+                // Ensure _method is included for PUT request
+                formData.append('_method', 'PUT');
 
-    if ((status === 7 || status === 8) && !completedAtField.value) { // Completed or Resolved
-        const now = new Date();
-        const formattedDate = now.toISOString().slice(0, 16);
-        completedAtField.value = formattedDate;
-    }
-});
-</script>
-@endsection
+                // Send Ajax request with Axios
+                axios({
+                    method: 'post', // Laravel expects POST for PUT with _method
+                    url: form.action,
+                    data: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ||
+                                        document.querySelector('input[name="_token"]').value
+                    }
+                })
+                .then(response => {
+                    // Success response
+                    showToast('success', response.data.message || 'Task updated successfully!');
+                    // Optionally redirect to tasks index after a delay
+                    setTimeout(() => {
+                        window.location.href = "{{ route('admin.tasks.index') }}";
+                    }, 1500);
+                })
+                .catch(error => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-save me-1"></i>Update Task';
+
+                    if (error.response && error.response.status === 422) {
+                        // Handle validation errors
+                        const errors = error.response.data.errors;
+                        Object.keys(errors).forEach(field => {
+                            const input = form.querySelector(`[name="${field}"]`);
+                            if (input) {
+                                input.classList.add('is-invalid');
+                                const errorDiv = input.parentElement.querySelector('.error-messages') ||
+                                    input.parentElement.nextElementSibling;
+                                if (errorDiv && errorDiv.classList.contains('error-messages')) {
+                                    errorDiv.textContent = errors[field][0];
+                                }
+                            }
+                        });
+                        showToast('error', 'Please correct the errors in the form.');
+                    } else {
+                        // Handle other errors
+                        showToast('error', error.response?.data?.message || 'Failed to update task.');
+                    }
+                });
+            });
+
+            // Reset form state on input change
+            form.querySelectorAll('.form-control, .form-select').forEach(input => {
+                input.addEventListener('change', function () {
+                    this.classList.remove('is-invalid');
+                    const errorDiv = this.parentElement.querySelector('.error-messages') ||
+                        this.parentElement.nextElementSibling;
+                    if (errorDiv && errorDiv.classList.contains('error-messages')) {
+                        errorDiv.textContent = '';
+                    }
+                });
+            });
+        });
+    </script>
+@endpush

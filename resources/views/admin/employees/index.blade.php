@@ -5,9 +5,11 @@
     <span class="breadcrumb-item active">Employees</span>
 @endsection
 @section('actions')
-    <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Add New Employee
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add New Employee
+        </a>
+    </div>
 @endsection
 
 @push('styles')
@@ -17,21 +19,31 @@
             border-collapse: separate !important;
             border-spacing: 0;
             border: 0.5px solid #000000 !important;
-            border-radius: 12px !important;
             overflow: hidden;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
             width: 100% !important;
             table-layout: auto !important;
+            border-radius: 0 !important;
         }
 
         .table-responsive {
-            border: 0.5px solid #000000 !important;
-            border-radius: 12px !important;
             background: white;
             width: 100%;
             margin: 0 auto;
-            box-sizing: border-box;
+        }
+
+        .btn-pdf {
+            background-color: #DC2626 !important;
+            color: white !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .btn-pdf:hover {
+            background-color: #B91C1C !important;
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+            transform: scale(1.05);
         }
 
         .enhanced-table thead th:first-child,
@@ -51,22 +63,6 @@
 
         .enhanced-table tbody tr:last-child td {
             border-bottom: none !important;
-        }
-
-        .enhanced-table thead th:first-child {
-            border-top-left-radius: 12px;
-        }
-
-        .enhanced-table thead th:last-child {
-            border-top-right-radius: 12px;
-        }
-
-        .enhanced-table tbody tr:last-child td:first-child {
-            border-bottom-left-radius: 12px;
-        }
-
-        .enhanced-table tbody tr:last-child td:last-child {
-            border-bottom-right-radius: 12px;
         }
 
         .enhanced-table thead th,
@@ -89,7 +85,7 @@
         }
 
         .enhanced-table thead th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #10b981 !important;
             color: white;
             text-align: center !important;
             vertical-align: middle;
@@ -122,7 +118,6 @@
             padding: 0.5rem 0.5rem;
             vertical-align: middle;
             text-align: center !important;
-            transition: all 0.3s ease;
             background-color: white;
             word-wrap: break-word;
             font-size: 0.875rem;
@@ -133,19 +128,8 @@
         }
 
         .enhanced-table tbody tr {
-            transition: all 0.3s ease;
             position: relative;
             height: auto;
-        }
-
-        .enhanced-table tbody tr:hover {
-            background-color: #f8fafc !important;
-            transform: scale(1.01);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .enhanced-table tbody tr:hover td {
-            background-color: #f8fafc !important;
         }
 
         .enhanced-table tbody tr:nth-child(even) {
@@ -154,10 +138,6 @@
 
         .enhanced-table tbody tr:nth-child(even) td {
             background-color: #f9fafb;
-        }
-
-        .enhanced-table tbody tr:nth-child(even):hover td {
-            background-color: #f1f5f9 !important;
         }
 
         .animated-badge {
@@ -195,14 +175,12 @@
             text-align: center;
         }
 
-        /* Allow dropdown to overflow table cells and rows */
         .enhanced-table tbody td,
         .enhanced-table tbody tr {
             overflow: visible !important;
             position: relative;
         }
 
-        /* Status dropdown button styling */
         .status-dropdown {
             position: relative !important;
             overflow: visible !important;
@@ -241,22 +219,90 @@
             color: #065f46;
         }
 
-        /* Dropdown animation */
         @keyframes fadeInDropdown {
             from {
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
+        .search-form {
+            margin-bottom: 0.5rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            max-width: 500px;
+        }
+
+        /* Add to the existing styles */
+        .search-form-container {
+            display: flex;
+            justify-content: flex-end;
+            /* Aligns the content to the right */
+            width: 100%;
+        }
+
+        .search-form .form-control {
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .search-form .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #10b981;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         @media (max-width: 1200px) {
             .enhanced-table {
                 font-size: 0.875rem;
-                border-radius: 12px !important;
                 width: 100% !important;
             }
 
@@ -265,24 +311,7 @@
                 padding: 0.5rem 0.25rem;
             }
 
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 12px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 12px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 12px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 12px;
-            }
-
             .table-responsive {
-                border-radius: 12px !important;
                 overflow: visible !important;
             }
         }
@@ -290,7 +319,6 @@
         @media (max-width: 992px) {
             .enhanced-table {
                 font-size: 0.8rem;
-                border-radius: 10px !important;
             }
 
             .enhanced-table thead th {
@@ -301,26 +329,6 @@
             .enhanced-table tbody td {
                 padding: 0.4rem 0.25rem;
                 overflow: visible;
-            }
-
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 10px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 10px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 10px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 10px;
-            }
-
-            .table-responsive {
-                border-radius: 10px !important;
             }
 
             .status-dropdown .btn {
@@ -336,7 +344,6 @@
         @media (max-width: 768px) {
             .enhanced-table {
                 font-size: 0.75rem;
-                border-radius: 8px !important;
             }
 
             .enhanced-table thead th {
@@ -347,26 +354,6 @@
                 padding: 0.3rem 0.2rem;
             }
 
-            .enhanced-table thead th:first-child {
-                border-top-left-radius: 8px;
-            }
-
-            .enhanced-table thead th:last-child {
-                border-top-right-radius: 8px;
-            }
-
-            .enhanced-table tbody tr:last-child td:first-child {
-                border-bottom-left-radius: 8px;
-            }
-
-            .enhanced-table tbody tr:last-child td:last-child {
-                border-bottom-right-radius: 8px;
-            }
-
-            .table-responsive {
-                border-radius: 8px !important;
-            }
-
             .status-dropdown .btn {
                 font-size: 0.65rem;
                 padding: 0.15rem 0.3rem;
@@ -375,10 +362,22 @@
             .status-dropdown .dropdown-menu {
                 z-index: 1050;
             }
+
+            .search-form {
+                flex-direction: column;
+                align-items: stretch;
+                max-width: 100%;
+            }
+
+            .search-form .form-control,
+            .search-form .btn {
+                width: 100%;
+            }
         }
 
         .table-container {
             animation: fadeInUp 0.6s ease-out;
+            position: relative;
         }
 
         @keyframes fadeInUp {
@@ -386,6 +385,7 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -393,7 +393,7 @@
         }
 
         .enhanced-card {
-            border-radius: 16px;
+            border-radius: 0 !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             transition: all 0.3s ease;
         }
@@ -410,6 +410,7 @@
             from {
                 opacity: 0;
             }
+
             to {
                 opacity: 1;
             }
@@ -420,12 +421,19 @@
         }
 
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
                 transform: translateY(0);
             }
+
             40% {
                 transform: translateY(-10px);
             }
+
             60% {
                 transform: translateY(-5px);
             }
@@ -482,13 +490,13 @@
         }
 
         .modal-content {
-            border-radius: 12px;
+            border-radius: 0 !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         .modal-header {
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
         }
 
         .icon-wrapper {
@@ -503,117 +511,135 @@
             from {
                 opacity: 1;
             }
+
             to {
                 opacity: 0;
             }
+        }
+
+        .card.enhanced-card {
+            border-radius: 0 !important;
         }
     </style>
 @endpush
 
 @section('content')
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card enhanced-card">
-                    <div class="card-body">
-                        @if ($employees->count() > 0)
-                            <div class="table-container">
-                                <div class="table-responsive">
-                                    <table class="table enhanced-table">
-                                        <thead>
-                                            <tr>
-                                                <th><i class="fas fa-list-ol me-2"></i>SN</th>
-                                                <th><i class="fas fa-user me-2"></i>Name</th>
-                                                <th><i class="fas fa-envelope me-2"></i>Email</th>
-                                                <th><i class="fas fa-building me-2"></i>Department</th>
-                                                <th><i class="fas fa-briefcase me-2"></i>Position</th>
-                                                <th><i class="fas fa-calendar-alt me-2"></i>Hire Date</th>
-                                                <th><i class="fas fa-toggle-on me-2"></i>Status</th>
-                                                <th><i class="fas fa-cogs me-2"></i>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($employees as $employee)
-                                                <tr>
-                                                    <td>
-                                                        <span class="truncated-content" data-bs-toggle="tooltip"
-                                                            title="Employee #{{ $loop->iteration }}">
-                                                            {{ $loop->iteration }}
-                                                        </span>
-                                                    </td>
-                                                    <td>{{ $employee->name }}</td>
-                                                    <td>{{ $employee->user->email }}</td>
-                                                    <td>{{ $employee->department ?? 'Not specified' }}</td>
-                                                    <td>{{ $employee->position }}</td>
-                                                    <td>
-                                                        {{ $employee->hire_date_formatted ?? 'N/A' }}
-                                                    </td>
-                                                    <td>
-                                                        <div class="status-dropdown">
-                                                            <button
-                                                                class="btn btn-sm btn-outline-{{ $employee->status === 'active' ? 'success' : ($employee->status === 'inactive' ? 'secondary' : 'warning') }} dropdown-toggle animated-badge"
-                                                                type="button" data-bs-toggle="dropdown"
-                                                                aria-expanded="false" data-bs-toggle="tooltip"
-                                                                title="Change Status">
-                                                                <span
-                                                                    class="status-text">{{ ucfirst($employee->status) }}</span>
-                                                            </button>
-                                                            <ul class="dropdown-menu">
-                                                                @foreach (['active', 'inactive', 'terminated'] as $status)
-                                                                    @if ($status !== $employee->status)
-                                                                        <li>
-                                                                            <button type="button"
-                                                                                class="dropdown-item change-status-btn"
-                                                                                data-id="{{ $employee->id }}"
-                                                                                data-status="{{ $status }}">
-                                                                                {{ ucfirst($status) }}
-                                                                            </button>
-                                                                        </li>
-                                                                    @endif
-                                                                @endforeach
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="btn-group" role="group">
-                                                            <a href="{{ route('admin.employees.show', $employee->id) }}"
-                                                                class="btn btn-sm btn-outline-primary"
-                                                                data-bs-toggle="tooltip" title="View">
-                                                                <i class="fas fa-eye"></i>
-                                                            </a>
-                                                            <a href="{{ route('admin.employees.edit', $employee->id) }}"
-                                                                class="btn btn-sm btn-outline-secondary"
-                                                                data-bs-toggle="tooltip" title="Edit">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                            <button type="button" class="btn btn-sm btn-outline-danger delete-employee-btn"
-                                                                data-bs-toggle="tooltip" title="Delete"
-                                                                data-id="{{ $employee->id }}">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+        <div class="enhanced-card no-radius">
+            <div class="card-body">
+                <!-- Search Form with PDF Button -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <a href="{{ route('admin.employees.export') }}" class="btn btn-pdf" id="export-pdf-btn"
+                        data-bs-toggle="tooltip" title="Export to PDF">
+                        <i class="fas fa-file-pdf me-2"></i>PDF
+                    </a>
+                    <form class="search-form flex-grow-1">
+                        <input type="text" name="search" id="search-input" class="form-control"
+                            placeholder="Search by name, email, department, or position" value="{{ request('search') }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i><span>Search</span>
+                        </button>
+                    </form>
+                </div>
 
-                                <div class="d-flex justify-content-center mt-4">
-                                    {{ $employees->links() }}
-                                </div>
+                <div class="table-container">
+                    @if ($employees->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table enhanced-table">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-list-ol me-2"></i>SN</th>
+                                        <th><i class="fas fa-user me-2"></i>Name</th>
+                                        <th><i class="fas fa-envelope me-2"></i>Email</th>
+                                        <th><i class="fas fa-building me-2"></i>Department</th>
+                                        <th><i class="fas fa-briefcase me-2"></i>Position</th>
+                                        <th><i class="fas fa-calendar-alt me-2"></i>Hire Date</th>
+                                        <th><i class="fas fa-toggle-on me-2"></i>Status</th>
+                                        <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employee-table-body">
+                                    @foreach ($employees as $employee)
+                                        <tr>
+                                            <td>
+                                                <span class="truncated-content" data-bs-toggle="tooltip"
+                                                    title="Employee #{{ $loop->iteration }}">
+                                                    {{ $loop->iteration }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $employee->name }}</td>
+                                            <td>{{ $employee->user->email }}</td>
+                                            <td>{{ $employee->department ?? 'Not specified' }}</td>
+                                            <td>{{ $employee->position }}</td>
+                                            <td>
+                                                {{ $employee->hire_date_formatted ?? 'N/A' }}
+                                            </td>
+                                            <td>
+                                                <div class="status-dropdown">
+                                                    <button
+                                                        class="btn btn-sm btn-outline-{{ $employee->status === 'active' ? 'success' : ($employee->status === 'inactive' ? 'secondary' : 'warning') }} dropdown-toggle animated-badge"
+                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                                        data-bs-toggle="tooltip" title="Change Status">
+                                                        <span class="status-text">{{ ucfirst($employee->status) }}</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        @foreach (['active', 'inactive', 'terminated'] as $status)
+                                                            @if ($status !== $employee->status)
+                                                                <li>
+                                                                    <button type="button"
+                                                                        class="dropdown-item change-status-btn"
+                                                                        data-id="{{ $employee->id }}"
+                                                                        data-status="{{ $status }}">
+                                                                        {{ ucfirst($status) }}
+                                                                    </button>
+                                                                </li>
+                                                            @endif
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ route('admin.employees.show', $employee->id) }}"
+                                                        class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip"
+                                                        title="View">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ route('admin.employees.edit', $employee->id) }}"
+                                                        class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip"
+                                                        title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-danger delete-employee-btn"
+                                                        data-bs-toggle="tooltip" title="Delete"
+                                                        data-id="{{ $employee->id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <div class="loading-overlay" id="loading-overlay">
+                                <div class="spinner"></div>
                             </div>
-                        @else
-                            <div class="text-center py-5 empty-state">
-                                <i class="fas fa-user-tie fa-4x text-muted mb-4"></i>
-                                <h4 class="text-muted mb-3">No employees found</h4>
-                                <p class="text-muted mb-4">Start by adding your first employee to the system.</p>
-                                <a href="{{ route('admin.employees.create') }}" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-plus me-2"></i>Add First Employee
-                                </a>
-                            </div>
-                        @endif
-                    </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center mt-4" id="pagination">
+                            {{ $employees->appends(request()->query())->links() }}
+                        </div>
+                    @else
+                        <div class="text-center py-5 empty-state" id="empty-state">
+                            <i class="fas fa-user-tie fa-4x text-muted mb-4"></i>
+                            <h4 class="text-muted mb-3">No employees found</h4>
+                            <p class="text-muted mb-4">Start by adding your first employee to the system.</p>
+                            <a href="{{ route('admin.employees.create') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>Add First Employee
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -622,7 +648,6 @@
 
 @push('scripts')
     <script>
-
         // Define deleteEmployee in global scope
         function deleteEmployee(employeeId) {
             // Validate employeeId
@@ -670,7 +695,8 @@
 
                         if (response.data.status === 'success') {
                             // Remove the employee row from the table
-                            const row = document.querySelector(`tr td button[data-id="${employeeId}"]`)?.closest('tr');
+                            const row = document.querySelector(`tr td button[data-id="${employeeId}"]`)
+                                ?.closest('tr');
                             if (row) {
                                 row.style.animation = 'fadeOut 0.5s ease-out forwards';
                                 setTimeout(() => row.remove(), 500);
@@ -728,22 +754,6 @@
                     setTimeout(() => {
                         this.style.transform = 'scale(1)';
                     }, 200);
-                });
-            });
-
-            // Smooth scroll for pagination
-            const paginationLinks = document.querySelectorAll('.pagination a');
-            paginationLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const tableContainer = document.querySelector('.table-container');
-                    if (tableContainer) {
-                        tableContainer.style.opacity = '0.7';
-                        tableContainer.style.transform = 'translateY(10px)';
-                        setTimeout(() => {
-                            tableContainer.style.opacity = '1';
-                            tableContainer.style.transform = 'translateY(0)';
-                        }, 300);
-                    }
                 });
             });
 
@@ -843,11 +853,15 @@
                         const btn = dropdown.querySelector('button.dropdown-toggle');
 
                         // Update button text
-                        statusText.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+                        statusText.textContent = newStatus.charAt(0).toUpperCase() + newStatus
+                            .slice(1);
 
                         // Update button classes
-                        btn.classList.remove('btn-outline-success', 'btn-outline-secondary', 'btn-outline-warning');
-                        btn.classList.add(`btn-outline-${newStatus === 'active' ? 'success' : (newStatus === 'inactive' ? 'secondary' : 'warning')}`);
+                        btn.classList.remove('btn-outline-success', 'btn-outline-secondary',
+                            'btn-outline-warning');
+                        btn.classList.add(
+                            `btn-outline-${newStatus === 'active' ? 'success' : (newStatus === 'inactive' ? 'secondary' : 'warning')}`
+                        );
 
                         // Update dropdown menu items
                         const menu = dropdown.querySelector('.dropdown-menu');
@@ -860,13 +874,16 @@
                                 btn.className = 'dropdown-item change-status-btn';
                                 btn.dataset.id = employeeId;
                                 btn.dataset.status = status;
-                                btn.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                                btn.textContent = status.charAt(0).toUpperCase() + status
+                                    .slice(1);
                                 li.appendChild(btn);
                                 menu.appendChild(li);
                             }
                         });
 
-                        showToast('success', `Status updated to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`);
+                        showToast('success',
+                            `Status updated to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`
+                        );
                     } else {
                         showToast('error', response.data.message || 'Failed to update status.');
                     }
@@ -877,7 +894,8 @@
                     let errorMessage = 'An error occurred while updating status.';
                     if (error.response) {
                         if (error.response.status === 405) {
-                            errorMessage = 'Method not allowed. Please check the server configuration.';
+                            errorMessage =
+                                'Method not allowed. Please check the server configuration.';
                         } else if (error.response.status === 404) {
                             errorMessage = 'Employee not found.';
                         } else if (error.response.data && error.response.data.message) {
@@ -899,6 +917,103 @@
                 event.preventDefault();
                 const employeeId = button.dataset.id;
                 deleteEmployee(employeeId);
+            });
+
+            // Real-time search with Axios
+            const searchInput = document.getElementById('search-input');
+            const searchForm = document.querySelector('.search-form');
+            const tableBody = document.getElementById('employee-table-body');
+            const tableContainer = document.querySelector('.table-container');
+            const emptyState = document.getElementById('empty-state');
+            const pagination = document.getElementById('pagination');
+
+            function performSearch() {
+                const searchTerm = searchInput.value.trim();
+                const baseUrl = window.location.origin;
+                const url = `${baseUrl}/admin/employees?search=${encodeURIComponent(searchTerm)}`;
+
+                axios.get(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(response => {
+                    if (response.data.employees && response.data.employees.data.length > 0) {
+                        // Update table body
+                        tableBody.innerHTML = response.data.employees.data.map((employee, index) => `
+                <tr>
+                    <td>
+                        <span class="truncated-content" data-bs-toggle="tooltip" title="Employee #${index + 1}">
+                            ${index + 1}
+                        </span>
+                    </td>
+                    <td>${employee.name}</td>
+                    <td>${employee.user ? employee.user.email : 'N/A'}</td>
+                    <td>${employee.department || 'Not specified'}</td>
+                    <td>${employee.position}</td>
+                    <td>${employee.hire_date_formatted || 'N/A'}</td>
+                    <td>
+                        <div class="status-dropdown">
+                            <button class="btn btn-sm btn-outline-${employee.status === 'active' ? 'success' : (employee.status === 'inactive' ? 'secondary' : 'warning')} dropdown-toggle animated-badge"
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Change Status">
+                                <span class="status-text">${employee.status.charAt(0).toUpperCase() + employee.status.slice(1)}</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                ${['active', 'inactive', 'terminated'].filter(status => status !== employee.status).map(status => `
+                                            <li>
+                                                <button type="button" class="dropdown-item change-status-btn"
+                                                    data-id="${employee.id}" data-status="${status}">
+                                                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                                                </button>
+                                            </li>
+                                        `).join('')}
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="${baseUrl}/admin/employees/${employee.id}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="${baseUrl}/admin/employees/${employee.id}/edit" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger delete-employee-btn" data-bs-toggle="tooltip" title="Delete" data-id="${employee.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+                        tableContainer.style.display = 'block';
+                        if (emptyState) emptyState.style.display = 'none';
+                        if (pagination) pagination.innerHTML = response.data.pagination || '';
+
+                        // Re-init tooltips
+                        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                            new bootstrap.Tooltip(el);
+                        });
+                    } else {
+                        tableBody.innerHTML = '';
+                        tableContainer.style.display = 'none';
+                        if (emptyState) emptyState.style.display = 'block';
+                        if (pagination) pagination.innerHTML = '';
+                    }
+                }).catch(error => {
+                    console.error('Search error:', error);
+                    showToast('error', error.response?.data?.message ||
+                        'An error occurred while searching.');
+                });
+            }
+
+            // Trigger search immediately on typing
+            searchInput.addEventListener('input', performSearch);
+
+            // Prevent form submission
+            searchForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                performSearch();
             });
         });
     </script>

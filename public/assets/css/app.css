@@ -137,8 +137,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color:  #10b981;
+    border-color:  #10b981;
 }
 
 .btn-primary:hover {

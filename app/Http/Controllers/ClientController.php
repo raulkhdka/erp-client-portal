@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Client;
 use App\Models\User;
-use App\Models\ClientPhone;
-use App\Models\ClientEmail;
 use App\Models\ClientEmployeeAccess;
 use App\Models\Employee;
 use App\Models\Service;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Yajra\DataTables\DataTables;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ClientsExport;
 
 class ClientController extends Controller
 {
@@ -22,87 +22,101 @@ class ClientController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->ajax()) {
-            $clients = Client::with(['user', 'phones', 'emails', 'services', 'assignedEmployees.user'])
-                     ->select('clients.*');
+        $query = Client::with(['user', 'phones', 'assignedEmployees', 'services', 'emails']);
 
-            return DataTables::of($clients)
-                ->addIndexColumn()
-                ->addColumn('client_name', function ($client) {
-                    return $client->name;
-                })
-                ->addColumn('company_info', function ($client) {
-                    $html = '<strong>' . $client->company_name . '</strong>';
-                    if (isset($client->services) &&
-                        $client->services instanceof \Illuminate\Database\Eloquent\Collection &&
-                        $client->services->count() > 0) {
-                        $html .= '<br><small class="text-muted">';
-                        foreach ($client->services->take(2) as $service) {
-                            $html .= '<span class="badge bg-light text-dark me-1 animated-badge">' . $service->name . '</span>';
-                        }
-                        if ($client->services->count() > 2) {
-                            $html .= '<span class="text-muted">+' . ($client->services->count() - 2) . ' more</span>';
-                        }
-                        $html .= '</small>';
-                    }
-                    return $html;
-                })
-                ->addColumn('employee_name', function ($client) {
-                    if ($client->assignedEmployees->first()) {
-                        return $client->assignedEmployees->first()->name ?? $client->assignedEmployees->first()->name;
-                    }
-                    return '<span class="text-muted">Unassigned</span>';
-                })
-                ->addColumn('email_info', function ($client) {
-                    $html = $client->user->email;
-                    if ($client->emails->count() > 0) {
-                        $html .= '<br><small class="text-muted">+' . $client->emails->count() . ' additional email(s)</small>';
-                    }
-                    return $html;
-                })
-                ->addColumn('phone_info', function ($client) {
-                    if ($client->phones->count() > 0) {
-                        $html = $client->phones->first()->phone;
-                        if ($client->phones->count() > 1) {
-                            $html .= '<br><small class="text-muted">+' . ($client->phones->count() - 1) . ' more</small>';
-                        }
-                        return $html;
-                    }
-                    return '<span class="text-muted">No phone</span>';
-                })
-                ->addColumn('status', function ($client) {
-                    $badgeClass = $client->status === 'active' ? 'success' :
-                                 ($client->status === 'inactive' ? 'secondary' : 'warning');
-                    return '<span class="badge bg-' . $badgeClass . ' animated-badge" data-bs-toggle="tooltip" title="Status: ' . ucfirst($client->status) . '">' . ucfirst($client->status) . '</span>';
-                })
-                ->addColumn('actions', function ($client) {
-                    return '
-                        <div class="btn-group" role="group">
-                            <a href="' . route('admin.clients.show', $client->id) . '"
-                               class="btn btn-sm btn-outline-primary icon-wrapper"
-                               data-bs-toggle="tooltip" title="View">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="' . route('admin.clients.edit', $client->id) . '"
-                               class="btn btn-sm btn-outline-secondary icon-wrapper"
-                               data-bs-toggle="tooltip" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-danger icon-wrapper"
-                                    data-bs-toggle="tooltip" title="Delete"
-                                    data-delete-url="' . route('admin.clients.destroy', $client->id) . '"
-                                    onclick="deleteClient(this)">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    ';
-                })
-                ->rawColumns(['company_info', 'employee_name', 'email_info', 'phone_info', 'status', 'actions'])
-                ->make(true);
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('email', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('phones', function ($q) use ($search) {
+                      $q->where('phone', 'like', "%{$search}%");
+                  });
+            });
         }
 
-        return view('admin.clients.index');
+        $clients = $query->paginate(6);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'clients' => $clients,
+                'pagination' => (string) $clients->appends(request()->query())->links()
+            ]);
+        }
+
+        return view('admin.clients.index', compact('clients'));
+    }
+
+    public function export(Request $request)
+    {
+        $query = Client::with(['user', 'phones', 'emails', 'services', 'assignedEmployees']);
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('email', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('phones', function ($q) use ($search) {
+                      $q->where('phone', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $clients = $query->get();
+        $pdf = Pdf::loadView('admin.clients.pdf', compact('clients'));
+        return $pdf->download('clients.pdf');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $query = Client::with(['user', 'phones', 'emails', 'services', 'assignedEmployees']);
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('email', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('phones', function ($q) use ($search) {
+                      $q->where('phone', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $clients = $query->get();
+        return Excel::download(new ClientsExport($clients), 'clients.xlsx');
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $client = Client::find($id);
+
+        if (!$client) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Client not found.'
+            ], 404);
+        }
+
+        $request->validate([
+            'status' => 'required|in:active,inactive'
+        ]);
+
+        $client->status = $request->status;
+        $client->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Status updated successfully.'
+        ]);
     }
 
     /**
@@ -140,12 +154,12 @@ class ClientController extends Controller
 
         // Validate that the first email is provided and unique
         if (empty($request->emails[0]['email']) || !filter_var($request->emails[0]['email'], FILTER_VALIDATE_EMAIL)) {
-            return back()->withErrors(['emails.0.email' => 'The first email address is required and must be a valid email.']);
+            return response()->json(['error' => 'The first email address is required and must be a valid email.'], 422);
         }
         $userEmail = $request->emails[0]['email'];
         $user = User::where('email', $userEmail)->first();
         if ($user) {
-            return back()->withErrors(['emails.0.email' => 'The first email address has already been taken.']);
+            return response()->json(['error' => 'The first email address has already been taken.'], 422);
         }
 
         try {
@@ -222,10 +236,10 @@ class ClientController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin.clients.index')->with('success', 'Client created successfully.');
+            return response()->json(['message' => 'Client created successfully.', 'redirect' => route('admin.clients.index')]);
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Failed to create client: ' . $e->getMessage()]);
+            return response()->json(['error' => 'Failed to create client: ' . $e->getMessage()], 500);
         }
     }
 
@@ -276,12 +290,12 @@ class ClientController extends Controller
 
         // Validate that the first email is provided and unique
         if (empty($request->emails[0]['email']) || !filter_var($request->emails[0]['email'], FILTER_VALIDATE_EMAIL)) {
-            return back()->withErrors(['emails.0.email' => 'The first email address is required and must be a valid email.']);
+            return response()->json(['error' => 'The first email address is required and must be a valid email.'], 422);
         }
         $userEmail = $request->emails[0]['email'];
         $user = User::where('email', $userEmail)->where('id', '!=', $client->user_id)->first();
         if ($user) {
-            return back()->withErrors(['emails.0.email' => 'The first email address has already been taken.']);
+            return response()->json(['error' => 'The first email address has already been taken.'], 422);
         }
 
         try {
@@ -329,7 +343,7 @@ class ClientController extends Controller
 
             // Update services
             if ($request->has('services')) {
-                $services = array_unique($request->services); // Remove duplicates
+                $services = array_unique($request->services);
                 $syncData = [];
                 foreach ($services as $serviceId) {
                     $syncData[$serviceId] = [
@@ -338,9 +352,9 @@ class ClientController extends Controller
                         'assigned_by' => Auth::id(),
                     ];
                 }
-                $client->services()->syncWithoutDetaching($syncData); // Use syncWithoutDetaching to add new services
+                $client->services()->syncWithoutDetaching($syncData);
             } else {
-                $client->services()->detach(); // Remove all services if none are selected
+                $client->services()->detach();
             }
 
             // Update phone numbers
@@ -357,10 +371,10 @@ class ClientController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('admin.clients.index')->with('success', 'Client updated successfully.');
+            return response()->json(['message' => 'Client updated successfully.', 'redirect' => route('admin.clients.index')]);
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Failed to update client: ' . $e->getMessage()]);
+            return response()->json(['error' => 'Failed to update client: ' . $e->getMessage()], 500);
         }
     }
 
@@ -377,10 +391,10 @@ class ClientController extends Controller
             $client->user->delete();
 
             DB::commit();
-            return redirect()->route('admin.clients.index')->with('success', 'Client deleted successfully.');
+            return response()->json(['message' => 'Client deleted successfully.']);
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Failed to delete client: ' . $e->getMessage()]);
+            return response()->json(['error' => 'Failed to delete client: ' . $e->getMessage()], 500);
         }
     }
 }

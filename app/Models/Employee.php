@@ -31,6 +31,16 @@ class Employee extends Model
         'updated_at' => 'datetime',
     ];
 
+     // Append these accessors automatically in JSON
+     protected $appends = [
+        'hire_date_formatted',
+        'hire_date_nepali_html',
+        'created_at_formatted',
+        'created_at_nepali_html',
+        'updated_at_formatted',
+        'updated_at_nepali_html'
+    ];
+
     /**
      * Accessor: get hire_date formatted as YYYY-MM-DD string.
      * Converts the integer BS date to a date string.

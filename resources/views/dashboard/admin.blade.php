@@ -602,9 +602,9 @@
                                                 <td class="border-dark">{{ $task->priority ?? 'No Priority' }}</td>
                                                 <td class="border-dark">{{ $task->status ?? 'No Status' }}</td>
                                                 <td class="border-dark">
-                                                    {{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}
+                                                    {{ $task->due_date_formatted }}
                                                 </td>
-                                                <td class="border-dark">{{ $task->created_at->format('M d') }}</td>
+                                                <td class="border-dark">{!! $task->created_at_nepali_html !!}</td>
                                                 <td class="border-dark">
                                                     <a href="{{ route('admin.tasks.show', $task) }}"
                                                         class="btn btn-sm btn-outline-primary">View</a>
