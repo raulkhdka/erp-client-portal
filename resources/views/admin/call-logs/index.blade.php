@@ -5,11 +5,11 @@
     <span class="breadcrumb-item active">Call Logs</span>
 @endsection
 @section('actions')
-    <div class="btn-group">
+    <div>
         <a href="{{ route('admin.call-logs.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>Record New Call
         </a>
-        <a href="{{ route('admin.call-logs.call-history') }}" class="btn btn-primary ms-2">
+        <a href="{{ route('admin.call-logs.call-history') }}" class="btn btn-secondary">
             <i class="fas fa-plus me-2"></i>Call History
         </a>
     </div>
@@ -17,6 +17,19 @@
 
 @push('styles')
     <style>
+        .btn-primary {
+            background-color: #10b981;
+            border-color: #10b981;
+            border-radius: 20px;
+            gap: 1rem;
+        }
+
+        .btn-secondary {
+            background-color: #10b981;
+            border-color: #10b981;
+            border-radius: 20px;
+        }
+
         /* Table Styling */
         .enhanced-table {
             border-collapse: separate;

@@ -800,7 +800,7 @@
                                                 N/A
                                             @endif
                                         </td>
-                                        <td>{{ $callLog->call_date ? $callLog->call_date->format('M d, Y H:i') : 'N/A' }}</td>
+                                        <td>{!! $callLog->call_date_formatted !!}</td>
                                         <td>{{ $callLog->duration_minutes ?? 0 }} minutes</td>
                                     </tr>
                                 @endforeach
@@ -831,7 +831,7 @@
                                     <td>{{ $callLog->caller_name ?? 'N/A' }}{{ $callLog->organization ? ' (' . $callLog->organization . ')' : '' }}</td>
                                     <td>
                                         @if($callLog->follow_up_date)
-                                            {{ $callLog->follow_up_date->format('M d, Y') }}
+                                            {!! $callLog->follow_up_date_formatted !!}
                                         @else
                                             N/A
                                         @endif

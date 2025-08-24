@@ -426,7 +426,7 @@
                                                     </ul>
                                                 </div>
                                             </td>
-                                            <td><small class="text-muted">{!! \App\Helpers\NepaliDateHelper::auto_nepali_date($service->created_at, 'readable') !!}</small></td>
+                                            <td><small class="text-muted">{!! $service->created_at_nepali_html !!}</small></td>
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <a href="{{ route('admin.services.show', $service) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View">

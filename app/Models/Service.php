@@ -26,6 +26,8 @@ class Service extends Model
 
     // Append these accessors automatically in JSON
     protected $appends =[
+        'created_at_formatted',
+        'updated_at_formatted',
         'created_at_nepali_html',
         'updated_at_nepali_html',
     ];
